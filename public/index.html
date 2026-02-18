@@ -623,7 +623,17 @@
                     console.log(`   3. Optic Disc Pallor: ${triad.optic_disc_pallor ? '✓' : '✗'}`);
                     console.log('===============================================\n');
                 } else {
+                    // Handle error responses (like angiography detection)
+                    const errorData = await response.json().catch(() => ({}));
                     console.error('❌ Flask API Error:', response.status);
+                    if (errorData.error === 'Incompatible image type') {
+                        console.error('⚠️  ANGIOGRAPHY DETECTED');
+                        console.error('   Reason:', errorData.reason);
+                        console.error('   Suggestion:', errorData.suggestion);
+                        alert(`⚠️ INCOMPATIBLE IMAGE TYPE\n\n${errorData.detail}\n\nReason: ${errorData.reason}\n\n${errorData.suggestion}`);
+                    } else if (errorData.error) {
+                        alert(`❌ Error: ${errorData.error}\n${errorData.detail || ''}`);
+                    }
                     currentAnalysisResult = null;
                 }
             } catch (error) {

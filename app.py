@@ -247,8 +247,9 @@ def extract_texture_features(img, fov_mask):
     
     return {'entropy': entropy}
 
-def extract_spatial_features(img):
-    """Supporting: Peripheral vs Central Degradation"""
+def extract_spatial_features(img, fov_mask):
+    """Supporting: Peripheral vs Central Degradation
+    BUG FIX: Now uses FOV mask to exclude background/vignetting artifacts."""
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     h, w = gray.shape
     center_y, center_x = h // 2, w // 2
@@ -257,14 +258,19 @@ def extract_spatial_features(img):
     distances = np.sqrt((X - center_x)**2 + (Y - center_y)**2)
     max_dist = np.sqrt(center_x**2 + center_y**2)
     
-    center_mask = distances < (max_dist * 0.4)
-    peripheral_mask = distances > (max_dist * 0.6)
+    # Create center and peripheral masks WITHIN the FOV only
+    center_mask = (distances < (max_dist * 0.4)) & (fov_mask > 0)
+    peripheral_mask = (distances > (max_dist * 0.6)) & (fov_mask > 0)
     
-    center_brightness = np.mean(gray[center_mask])
-    peripheral_brightness = np.mean(gray[peripheral_mask])
-    
-    if center_brightness > 0:
-        peripheral_degradation = (center_brightness - peripheral_brightness) / center_brightness
+    # Only calculate if we have valid pixels in both regions
+    if np.count_nonzero(center_mask) > 100 and np.count_nonzero(peripheral_mask) > 100:
+        center_brightness = np.mean(gray[center_mask])
+        peripheral_brightness = np.mean(gray[peripheral_mask])
+        
+        if center_brightness > 0:
+            peripheral_degradation = (center_brightness - peripheral_brightness) / center_brightness
+        else:
+            peripheral_degradation = 0.0
     else:
         peripheral_degradation = 0.0
     
@@ -462,6 +468,72 @@ def preprocess_image(image_data):
     except Exception as e:
         print(f"Error preprocessing image: {e}")
         return None
+
+def detect_angiography(img):
+    """Detect if image is fluorescein/ICG angiography instead of color fundus.
+    Angiography characteristics:
+    - Grayscale or near-grayscale (low color saturation)
+    - High contrast (bright vessels on dark background)
+    - Black background with bright features
+    Returns: (is_angio, confidence, reason)
+    """
+    # Convert to different color spaces
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    
+    # Check 1: Color saturation (angiograms are grayscale)
+    saturation = hsv[:, :, 1]
+    mean_saturation = np.mean(saturation)
+    
+    # Check 2: Channel similarity (R≈G≈B in grayscale)
+    b, g, r = cv2.split(img)
+    rg_diff = np.mean(np.abs(r.astype(float) - g.astype(float)))
+    rb_diff = np.mean(np.abs(r.astype(float) - b.astype(float)))
+    gb_diff = np.mean(np.abs(g.astype(float) - b.astype(float)))
+    max_channel_diff = max(rg_diff, rb_diff, gb_diff)
+    
+    # Check 3: High contrast (angiograms have very bright and very dark regions)
+    std_brightness = np.std(gray)
+    
+    # Check 4: Inverted histogram (lots of dark pixels, few bright pixels)
+    hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
+    dark_pixels = np.sum(hist[0:80])  # Very dark
+    bright_pixels = np.sum(hist[180:256])  # Very bright
+    total_pixels = img.shape[0] * img.shape[1]
+    dark_ratio = dark_pixels / total_pixels
+    
+    reasons = []
+    score = 0
+    
+    # Scoring system
+    if mean_saturation < 20:  # Very low saturation
+        score += 3
+        reasons.append(f"Low color saturation ({mean_saturation:.1f})")
+    elif mean_saturation < 35:
+        score += 1
+        reasons.append(f"Reduced saturation ({mean_saturation:.1f})")
+    
+    if max_channel_diff < 5:  # Channels almost identical (grayscale)
+        score += 3
+        reasons.append(f"Grayscale image (channel diff: {max_channel_diff:.1f})")
+    elif max_channel_diff < 15:
+        score += 1
+        reasons.append(f"Near-grayscale (channel diff: {max_channel_diff:.1f})")
+    
+    if std_brightness > 60:  # Very high contrast
+        score += 2
+        reasons.append(f"High contrast (std: {std_brightness:.1f})")
+    
+    if dark_ratio > 0.5:  # More than 50% very dark pixels
+        score += 2
+        reasons.append(f"Predominantly dark ({dark_ratio*100:.1f}% dark pixels)")
+    
+    # Decision
+    is_angio = score >= 5
+    confidence = min(score / 10.0, 1.0)
+    reason = " | ".join(reasons) if reasons else "Normal color fundus"
+    
+    return is_angio, confidence, reason
 
 # ==============================================================================
 #   EXPERT SYSTEMS - 7 Clinical Scanners
@@ -672,6 +744,11 @@ def optic_disc_pallor_expert(features):
         severity = "MILD"
         confidence = 0.55
         significance = 1.0
+    elif brightness < 140:
+        status = "LOW BRIGHTNESS"
+        severity = "NORMAL"
+        confidence = 0.15
+        significance = 1.0
     else:
         status = "NORMAL"
         severity = "NORMAL"
@@ -760,7 +837,7 @@ def texture_degeneration_expert(features):
         severity = "MODERATE"
         confidence = 0.70
         significance = CONFIG["SIGNIFICANCE_MULTIPLIERS"]["texture_irregular"]
-    elif entropy > 6.3:
+    elif entropy > 6.4:  # Increased from 6.3 to add 0.1 margin
         status = "MODERATE CHANGES"
         severity = "MILD"
         confidence = 0.50
@@ -777,7 +854,7 @@ def texture_degeneration_expert(features):
         "severity": severity,
         "significance": significance,
         "vote": confidence * CONFIG["EXPERT_WEIGHTS"]["texture_degeneration"] * significance,
-        "detail": f"Entropy: {entropy:.2f} (Normal: <6.3)"
+        "detail": f"Entropy: {entropy:.2f} (Normal: <6.4)"
     }
 
 def spatial_pattern_expert(features):
@@ -794,7 +871,7 @@ def spatial_pattern_expert(features):
         severity = "MODERATE"
         confidence = 0.65
         significance = 1.2
-    elif periph_deg > 0.35:
+    elif periph_deg > 0.40:  # Increased from 0.35 to add 0.05 margin
         status = "MILD ASYMMETRY"
         severity = "MILD"
         confidence = 0.45
@@ -811,7 +888,7 @@ def spatial_pattern_expert(features):
         "severity": severity,
         "significance": significance,
         "vote": confidence * CONFIG["EXPERT_WEIGHTS"]["spatial_pattern"] * significance,
-        "detail": f"Degradation: {periph_deg:.2f} (Normal: <0.35)"
+        "detail": f"Degradation: {periph_deg:.2f} (Normal: <0.40)"
     }
 
 def bright_lesion_expert(features):
@@ -956,6 +1033,13 @@ def analyze_retinal_scan():
         if img is None:
             return jsonify({"error": "Invalid image data"}), 400
         
+        # Detect image type (warn if angiography, but continue analysis)
+        is_angio, angio_confidence, angio_reason = detect_angiography(img)
+        if is_angio:
+            print(f"   ⚠️  WARNING: Angiography image detected (confidence: {angio_confidence*100:.1f}%)")
+            print(f"   📋 Reason: {angio_reason}")
+            print(f"   ℹ️  Continuing analysis with adjusted thresholds...")
+        
         # Extract features (with FOV mask to ignore black borders)
         print("   🧬 Extracting clinical features...")
         fov_mask = get_fov_mask(img)
@@ -963,7 +1047,7 @@ def analyze_retinal_scan():
         pigment_feats = extract_pigment_features(img, fov_mask)
         optic_disc_feats = extract_optic_disc_features(img, fov_mask)
         texture_feats = extract_texture_features(img, fov_mask)
-        spatial_feats = extract_spatial_features(img)
+        spatial_feats = extract_spatial_features(img, fov_mask)
         
         # NEW: Extract features for variant/complication detection
         bright_lesion_feats = extract_bright_lesion_features(img, fov_mask)
@@ -1206,32 +1290,40 @@ def analyze_retinal_scan():
             verdict_code = "SUSPICIOUS"
             print(f"      → Rule 6: CLINICAL CONSENSUS WITHOUT AI ({clinical_rp_votes} votes, AI={ai_confidence*100:.1f}%)")
 
-        # RULE 7: PERIPHERAL LOSS + AI CONCERN + OTHER FINDINGS (NEW)
-        # Spatial shows MODERATE/CRITICAL + AI shows ANY abnormality (>35%) + at least 1 other finding
+        # RULE 7: CRITICAL PERIPHERAL LOSS (STANDALONE)
+        # Spatial shows CRITICAL peripheral loss - this alone warrants investigation
+        # Peripheral degeneration is a hallmark of RP and should flag even if AI disagrees
+        elif spatial_result['severity'] == 'CRITICAL':
+            verdict = "SUSPICIOUS: MARKED PERIPHERAL DEGENERATION"
+            confidence = "MODERATE"
+            verdict_code = "SUSPICIOUS"
+            print(f"      → Rule 7: CRITICAL PERIPHERAL LOSS (Degradation={features['spatial']['peripheral_degradation']:.2f})")
+
+        # RULE 8: PERIPHERAL LOSS + AI CONCERN + OTHER FINDINGS
+        # Spatial shows MODERATE + AI shows ANY abnormality (>35%) + at least 1 other finding
         # This catches early/variant RP with peripheral degeneration
-        # The extra finding requirement prevents false positives from Spatial acting alone
-        elif spatial_result['severity'] in ['MODERATE', 'CRITICAL'] and ai_confidence > 0.35 and (mild_findings >= 1 or clinical_rp_votes >= 1):
+        elif spatial_result['severity'] == 'MODERATE' and ai_confidence > 0.35 and (mild_findings >= 1 or clinical_rp_votes >= 1):
             verdict = "SUSPICIOUS: PERIPHERAL DEGENERATION DETECTED"
             confidence = "MODERATE"
             verdict_code = "SUSPICIOUS"
-            print(f"      → Rule 7: PERIPHERAL LOSS + AI CONCERN (Spatial={spatial_result['severity']}, AI={ai_confidence*100:.1f}%, Mild={mild_findings})")
+            print(f"      → Rule 8: MODERATE PERIPHERAL LOSS + AI CONCERN (Spatial={spatial_result['severity']}, AI={ai_confidence*100:.1f}%, Mild={mild_findings})")
 
-        # RULE 8: MULTIPLE MILD FINDINGS (NEW)
+        # RULE 9: MULTIPLE MILD FINDINGS (NEW)
         # If 3+ scanners show MILD abnormalities + AI shows any concern (>30%)
         # Something is wrong - needs clinical review
         elif mild_findings >= 3 and ai_confidence > 0.30:
             verdict = "SUSPICIOUS: MULTIPLE SUBTLE ANOMALIES"
             confidence = "LOW"
             verdict_code = "SUSPICIOUS"
-            print(f"      → Rule 8: MULTIPLE MILD FINDINGS ({mild_findings} mild + AI={ai_confidence*100:.1f}%)")
+            print(f"      → Rule 9: MULTIPLE MILD FINDINGS ({mild_findings} mild + AI={ai_confidence*100:.1f}%)")
 
-        # RULE 9: HEALTHY / NEGATIVE
+        # RULE 10: HEALTHY / NEGATIVE
         # None of the above criteria met. Insufficient evidence for RP.
         else:
             verdict = "NEGATIVE: HEALTHY RETINA"
             confidence = "HIGH" if not ai_says_rp and clinical_rp_votes <= 1 and mild_findings <= 2 else "MODERATE"
             verdict_code = "HEALTHY"
-            print(f"      → Rule 9: INSUFFICIENT EVIDENCE")
+            print(f"      → Rule 10: INSUFFICIENT EVIDENCE")
 
         print(f"   🎯 VERDICT: {verdict_code}")
         print(f"   📊 Score: {base_score:.3f} | Confidence: {confidence}")
@@ -1300,7 +1392,10 @@ def analyze_retinal_scan():
             "confidence": confidence,
             "composite_score": round(base_score, 3),
             "critical_findings": critical_findings,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
+            "is_angiography": is_angio,
+            "angiography_confidence": round(angio_confidence * 100, 1) if is_angio else 0,
+            "warning": f"⚠️ ANGIOGRAPHY DETECTED: This appears to be a fluorescein/ICG angiography image. Results may be less reliable than color fundus analysis. ({angio_reason})" if is_angio else None
         }
         
         return jsonify(response), 200
