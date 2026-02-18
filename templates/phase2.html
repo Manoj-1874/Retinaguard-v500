@@ -1,0 +1,316 @@
+html_phase2_professional_v3 = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetinaGuard | Professional Interface V3</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
+        
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Rajdhani', sans-serif; }
+        
+        /* 3D Layer */
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+
+        /* UI Layer */
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
+            opacity: 0; transition: opacity 2s ease-in-out;
+            padding-bottom: 8vh; /* Percentage based padding for responsiveness */
+        }
+
+        /* Header positioning - Subtle and high up */
+        .header-text {
+            position: absolute; top: 40px; width: 100%; text-align: center; opacity: 0.6;
+            font-family: 'Orbitron'; color: #00f3ff; font-size: 11px; letter-spacing: 4px;
+        }
+
+        /* Container for side-by-side boxes */
+        .box-container {
+            display: flex; flex-direction: row; justify-content: center; gap: 30px;
+            width: 80%; max-width: 800px;
+        }
+
+        /* Common style for UI boxes */
+        .ui-box {
+            pointer-events: auto;
+            background: rgba(4, 8, 12, 0.85); /* Darker background */
+            border: 1px solid rgba(0, 243, 255, 0.3); /* Subtle border */
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.05); /* Very subtle shadow */
+            padding: 25px;
+            text-align: center;
+            border-radius: 8px; /* Sharper corners for tech look */
+            backdrop-filter: blur(5px);
+            transform: translateY(30px); opacity: 0;
+            transition: all 0.3s ease;
+            flex: 1; max-width: 320px;
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: center;
+            height: 180px; /* Fixed height for uniformity */
+        }
+
+        /* Upload Zone Hover */
+        .upload-zone:hover {
+            border-color: rgba(0, 243, 255, 0.8);
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+            transform: translateY(0);
+        }
+
+        /* V500 Crate Hover */
+        .v500-crate { border-color: rgba(255, 120, 0, 0.3); }
+        .v500-crate:hover {
+            border-color: rgba(255, 120, 0, 0.8);
+            box-shadow: 0 0 30px rgba(255, 120, 0, 0.2);
+            transform: translateY(0);
+        }
+
+        /* Text Styles */
+        h1 { font-family: 'Orbitron', sans-serif; text-transform: uppercase; letter-spacing: 2px; color: white; margin-bottom: 8px; font-size: 1.1rem; }
+        p { color: #88ccff; font-size: 0.8rem; letter-spacing: 1px; }
+
+        .upload-icon { font-size: 2rem; color: #00f3ff; margin-bottom: 10px; }
+        
+        /* Stats List */
+        ul { list-style: none; padding: 0; text-align: left; font-size: 0.85rem; width: 100%; padding-left: 20px;}
+        li { margin-bottom: 6px; display: flex; align-items: center; color: #aaa; }
+        li i { margin-right: 10px; color: #ff7b00; width: 15px;}
+        .stat-val { margin-left: auto; margin-right: 20px; color: white; font-weight: bold; font-family: 'Orbitron'; }
+
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div id="ui-layer">
+        
+        <div class="header-text">SYSTEM ONLINE // V500 ENGINE</div>
+
+        <div class="box-container">
+            
+            <div class="ui-box upload-zone" onclick="document.getElementById('fileInput').click()">
+                <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                <h1>Upload Scan</h1>
+                <p>INITIALIZE DIAGNOSIS</p>
+                <input type="file" id="fileInput" style="display: none;" accept="image/*">
+            </div>
+
+            <div class="ui-box v500-crate">
+                <h1 style="color: #ffbba0;">V500 STATUS</h1>
+                <ul>
+                    <li><i class="fa-solid fa-circle-nodes"></i>Network <span class="stat-val" style="color:#00ff88">ONLINE</span></li>
+                    <li><i class="fa-solid fa-crosshairs"></i>Precision <span class="stat-val">99.4%</span></li>
+                    <li><i class="fa-solid fa-microchip"></i>Processing <span class="stat-val">IDLE</span></li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION CORRECTIONS ---
+        const PARTICLE_COUNT = 22000; // Balanced count
+        // DRASTICALLY REDUCED BLOOM to fix the "White Blob" issue
+        const BLOOM_STRENGTH = 0.35; 
+        const BLOOM_RADIUS = 0.1;
+        const BLOOM_THRESHOLD = 0.1;
+
+        let scene, camera, renderer, composer, particles, geometry;
+        let positions, targetPositions, alphas;
+        let visibleCount = 0;
+
+        init();
+        animate();
+        startGenesis();
+
+        function init() {
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000000, 0.03); // Darker fog
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 30; 
+            camera.position.y = 0;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.toneMapping = THREE.ReinhardToneMapping;
+            container.appendChild(renderer.domElement);
+
+            const renderScene = new THREE.RenderPass(scene, camera);
+            const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+            bloomPass.strength = BLOOM_STRENGTH;
+            bloomPass.radius = BLOOM_RADIUS;
+            bloomPass.threshold = BLOOM_THRESHOLD;
+            
+            composer = new THREE.EffectComposer(renderer);
+            composer.addPass(renderScene);
+            composer.addPass(bloomPass);
+
+            geometry = new THREE.BufferGeometry();
+            positions = new Float32Array(PARTICLE_COUNT * 3);
+            targetPositions = new Float32Array(PARTICLE_COUNT * 3);
+            alphas = new Float32Array(PARTICLE_COUNT);
+            const sizes = new Float32Array(PARTICLE_COUNT);
+
+            // Möbius Strip Math
+            const radius = 9; const tubeWidth = 3.5;
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                // Random Start
+                positions[i*3] = (Math.random() - 0.5) * 120;
+                positions[i*3+1] = (Math.random() - 0.5) * 120;
+                positions[i*3+2] = (Math.random() - 0.5) * 120;
+                
+                // Target
+                const u = Math.random() * Math.PI * 2; 
+                const v = (Math.random() * 2 - 1);
+                targetPositions[i*3] = (radius + v * tubeWidth * Math.cos(u/2)) * Math.cos(u);
+                targetPositions[i*3+1] = (radius + v * tubeWidth * Math.cos(u/2)) * Math.sin(u);
+                targetPositions[i*3+2] = v * tubeWidth * Math.sin(u/2);
+                
+                alphas[i] = 0.0; 
+                // Smaller particles for cleaner look
+                sizes[i] = Math.random() * 0.8 + 0.2; 
+            }
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('alpha', new THREE.BufferAttribute(alphas, 1));
+            geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+            // Shader: Reduced Intensity via Color and Opacity
+            const material = new THREE.ShaderMaterial({
+                uniforms: { color: { value: new THREE.Color(0xaaaaaa) } }, // Grey-white, not pure white
+                vertexShader: `attribute float alpha; attribute float size; varying float vAlpha; void main() { vAlpha = alpha; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = size * (120.0 / -mv.z); gl_Position = projectionMatrix * mv; }`,
+                fragmentShader: `uniform vec3 color; varying float vAlpha; void main() { float r = distance(gl_PointCoord, vec2(0.5)); if(r > 0.5) discard; gl_FragColor = vec4(color, vAlpha * 0.7); }`, // 0.7 Opacity
+                transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+            });
+
+            particles = new THREE.Points(geometry, material);
+            particles.rotation.z = Math.PI / 6; particles.rotation.x = Math.PI / 4;
+            scene.add(particles);
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                composer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        function startGenesis() {
+            alphas[0] = 1.0; geometry.attributes.alpha.needsUpdate = true; visibleCount = 1;
+            setTimeout(multiplyDots, 1000);
+        }
+
+        function multiplyDots() {
+            if (visibleCount >= PARTICLE_COUNT) { setTimeout(attractToMobius, 500); return; }
+            let growth = Math.ceil(visibleCount * 0.2) + 5;
+            let nextLimit = Math.min(visibleCount + growth, PARTICLE_COUNT);
+            for (let i = visibleCount; i < nextLimit; i++) alphas[i] = 1.0;
+            visibleCount = nextLimit;
+            geometry.attributes.alpha.needsUpdate = true;
+            requestAnimationFrame(multiplyDots);
+        }
+
+        function attractToMobius() {
+            const startPos = Float32Array.from(geometry.attributes.position.array);
+            const obj = { t: 0 };
+            anime({
+                targets: obj, t: 1, duration: 4000, easing: 'easeInOutExpo',
+                update: () => {
+                    const curr = geometry.attributes.position.array;
+                    for(let i=0; i<PARTICLE_COUNT; i++) {
+                        const idx = i*3;
+                        curr[idx] = startPos[idx] + (targetPositions[idx] - startPos[idx]) * obj.t;
+                        curr[idx+1] = startPos[idx+1] + (targetPositions[idx+1] - startPos[idx+1]) * obj.t;
+                        curr[idx+2] = startPos[idx+2] + (targetPositions[idx+2] - startPos[idx+2]) * obj.t;
+                    }
+                    geometry.attributes.position.needsUpdate = true;
+                },
+                complete: () => { revealUI(); }
+            });
+        }
+
+        function revealUI() {
+            // 1. Move Camera DOWN so the object appears HIGHER in the frame
+            // This leaves empty space at the bottom for the UI
+            anime({
+                targets: camera.position,
+                y: -6, // Camera goes down -> Object goes UP
+                z: 28,
+                duration: 2000,
+                easing: 'easeInOutQuad'
+            });
+            
+            // 2. Rotate to face forward
+            anime({
+                targets: particles.rotation,
+                x: Math.PI / 3, 
+                z: Math.PI / 12,
+                duration: 2000,
+                easing: 'easeInOutQuad'
+            });
+
+            // 3. Fade in UI
+            document.getElementById('ui-layer').style.opacity = 1;
+            
+            // 4. Animate boxes
+            anime({
+                targets: '.ui-box',
+                translateY: [30, 0],
+                opacity: [0, 1],
+                duration: 1000,
+                delay: anime.stagger(150, {start: 500}),
+                easing: 'easeOutExpo'
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if(particles) particles.rotation.y += 0.001; 
+            composer.render();
+        }
+    </script>
+</body>
+</html>
+"""
+
+with open('templates/phase2.html', 'w') as f:
+    f.write(html_phase2_professional_v3)
+
+with open('backend.py', 'w') as f:
+    f.write("""
+import os
+import sys
+from flask import Flask, render_template
+
+app = Flask(__name__, static_folder='static', template_folder='templates')
+
+@app.route('/')
+def phase2():
+    return render_template('phase2.html')
+
+if __name__ == '__main__':
+    app.run(port=5000)
+""")
+
+print("✅ PHASE 2 V3: VISUALS CORRECTED.")
+print("- Intensity lowered (no more white blob).")
+print("- Model moved UP to leave space for future vibration.")
+print("- UI placed cleanly at the bottom.")

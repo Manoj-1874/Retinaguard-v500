@@ -1,0 +1,358 @@
+html_phase3_final_clean = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetinaGuard | Tactical V6</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
+        
+        body { margin: 0; overflow: hidden; background-color: #020205; font-family: 'Rajdhani', sans-serif; }
+        
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+
+        /* HUD OVERLAY */
+        .hud-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 2px, 3px 100%;
+        }
+        .corner-bracket {
+            position: absolute; width: 100px; height: 100px; border: 2px solid rgba(0, 243, 255, 0.3);
+            transition: all 0.5s;
+        }
+        .top-left { top: 20px; left: 20px; border-right: none; border-bottom: none; }
+        .top-right { top: 20px; right: 20px; border-left: none; border-bottom: none; }
+        .bottom-left { bottom: 20px; left: 20px; border-right: none; border-top: none; }
+        .bottom-right { bottom: 20px; right: 20px; border-left: none; border-top: none; }
+
+        /* HEADER */
+        .hud-header {
+            position: absolute; top: 0; left: 0; width: 100%; padding: 30px 50px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 20; pointer-events: none;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+        }
+        .brand { font-family: 'Orbitron'; font-weight: 900; font-size: 26px; color: white; letter-spacing: 4px; text-shadow: 0 0 20px rgba(0,243,255,0.5); }
+        .brand span { color: #00f3ff; }
+        
+        /* UI LAYER */
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; pointer-events: none;
+        }
+
+        /* --- LOBBY --- */
+        .lobby-ui {
+            position: absolute; width: 100%; top: 55%; left: 0; transform: translateY(-50%);
+            display: flex; justify-content: center; gap: 40px; 
+            opacity: 0; pointer-events: auto;
+        }
+        .action-card {
+            width: 320px; height: 200px;
+            background: rgba(5, 12, 20, 0.7); 
+            border: 1px solid rgba(0,243,255,0.1);
+            backdrop-filter: blur(10px); 
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            cursor: pointer; position: relative; overflow: hidden; transition: all 0.3s;
+            clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+        }
+        .action-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #00f3ff; opacity: 0; transition: 0.3s;
+        }
+        .action-card:hover { transform: translateY(-5px); background: rgba(5, 12, 20, 0.9); box-shadow: 0 0 50px rgba(0,243,255,0.15); }
+        .action-card:hover::before { opacity: 1; }
+        .action-card h2 { font-family: 'Orbitron'; font-size: 22px; color: white; margin-top: 15px; letter-spacing: 3px; }
+        .card-icon { font-size: 45px; color: #00f3ff; margin-bottom: 5px; filter: drop-shadow(0 0 15px rgba(0,243,255,0.4)); }
+        
+        .action-card.secondary:hover::before { background: #ff9900; }
+        .action-card.secondary .card-icon { color: #ff9900; }
+
+        /* --- ARMORY / LOGS --- */
+        .logs-ui {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transform: scale(0.95); transition: opacity 0.5s;
+        }
+        .logs-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+            width: 85%; max-width: 1400px; pointer-events: auto;
+        }
+        .model-card {
+            background: rgba(10, 15, 20, 0.85); 
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 20px; position: relative;
+            transition: all 0.3s; cursor: pointer;
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);
+        }
+        .model-card:hover { transform: translateY(-5px); background: rgba(20, 30, 40, 0.95); border-color: rgba(255,255,255,0.2); }
+        .model-card.vessel:hover { border-bottom: 2px solid #00f3ff; box-shadow: 0 5px 20px rgba(0,243,255,0.2); }
+        .model-card.macula:hover { border-bottom: 2px solid #00f3ff; box-shadow: 0 5px 20px rgba(0,243,255,0.2); }
+        .model-card.bleed:hover { border-bottom: 2px solid #ff0055; box-shadow: 0 5px 20px rgba(255,0,85,0.2); }
+        .model-card.verdict:hover { border-bottom: 2px solid #ff9900; box-shadow: 0 5px 20px rgba(255,153,0,0.2); }
+
+        .model-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .model-card h3 { font-family: 'Orbitron'; color: white; font-size: 16px; letter-spacing: 1px; }
+        .tier-badge { background: #222; color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 2px; border: 1px solid #444; }
+        
+        .tech-specs { display: flex; gap: 10px; font-size: 9px; color: #555; margin-bottom: 10px; font-family: monospace; }
+        .role { color: #00f3ff; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold; }
+        .model-card p { color: #888; font-size: 11px; line-height: 1.4; }
+        
+        .stat-bar { width: 100%; height: 2px; background: #222; margin-top: 15px; position: relative; }
+        .stat-fill { height: 100%; background: #00f3ff; width: 0%; position: absolute; box-shadow: 0 0 10px #00f3ff; }
+
+        .back-btn {
+            position: absolute; bottom: 40px; left: 60px; pointer-events: auto;
+            color: #666; font-family: 'Orbitron'; font-size: 14px; cursor: pointer;
+            transition: all 0.3s; display: flex; align-items: center; gap: 10px;
+            padding: 10px 20px; border: 1px solid transparent;
+        }
+        .back-btn:hover { color: white; border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); }
+
+        /* --- RESULTS --- */
+        .results-ui {
+            position: absolute; bottom: 8vh; left: 0; width: 100%;
+            display: flex; justify-content: center; gap: 20px;
+            opacity: 0; pointer-events: none; padding: 0 40px;
+        }
+        .crate-card {
+            pointer-events: auto; width: 150px; height: 200px;
+            background: linear-gradient(180deg, rgba(15,20,30,0.95) 0%, rgba(5,8,10,0.98) 100%);
+            border: 1px solid #333; border-top: 2px solid #555;
+            border-radius: 4px; position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            padding: 20px 10px; transition: all 0.3s; transform: translateY(100px); opacity: 0;
+            clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px);
+        }
+        .crate-card.unlocked { border-top-color: #00f3ff; box-shadow: 0 -5px 25px rgba(0,243,255,0.15); transform: translateY(0); opacity: 1; }
+        .crate-icon { font-size: 32px; color: #444; }
+        .unlocked .crate-icon { color: #00f3ff; filter: drop-shadow(0 0 8px rgba(0,243,255,0.6)); }
+
+        /* Processing Bar */
+        .processing-ui { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0; width: 500px; text-align: center; }
+        .progress-bar { width: 0%; height: 2px; background: #00f3ff; box-shadow: 0 0 20px #00f3ff; }
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+    
+    <div class="hud-overlay">
+        <div class="corner-bracket top-left"></div>
+        <div class="corner-bracket top-right"></div>
+        <div class="corner-bracket bottom-left"></div>
+        <div class="corner-bracket bottom-right"></div>
+    </div>
+
+    <div class="hud-header">
+        <div class="brand">RETINA<span>GUARD</span></div>
+        <div class="text-xs text-gray-500 font-mono">SYS.VER.5.0.2 // CONNECTED</div>
+    </div>
+
+    <div id="ui-layer">
+        
+        <div class="lobby-ui" id="lobby">
+            <div class="action-card" onclick="document.getElementById('fileInput').click()">
+                <i class="fa-solid fa-cloud-arrow-up card-icon"></i>
+                <h2>UPLOAD SCAN</h2>
+                <p>INITIALIZE DIAGNOSIS</p>
+                <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="handleFileSelect(this)">
+            </div>
+            <div class="action-card secondary" onclick="openLogs()">
+                <i class="fa-solid fa-layer-group card-icon"></i>
+                <h2>V500 ARMORY</h2>
+                <p>VIEW AI MODELS</p>
+            </div>
+        </div>
+
+        <div class="logs-ui" id="logs">
+            <div class="logs-grid">
+                <div class="model-card vessel">
+                    <div class="model-header"><h3>VESSELS</h3> <span class="tier-badge">TIER 1</span></div>
+                    <div class="tech-specs"><span>LAT: 12ms</span> <span>ACC: 99.1%</span></div>
+                    <div class="role">Vascular Analysis</div>
+                    <p>Detects attenuation and tortuosity.</p>
+                    <div class="stat-bar"><div class="stat-fill" style="width: 98%"></div></div>
+                </div>
+                <div class="model-card macula">
+                    <div class="model-header"><h3>MACULA</h3> <span class="tier-badge">TIER 1</span></div>
+                    <div class="tech-specs"><span>LAT: 14ms</span> <span>ACC: 99.4%</span></div>
+                    <div class="role">Foveal Targeting</div>
+                    <p>Identifies edema and degeneration.</p>
+                    <div class="stat-bar"><div class="stat-fill" style="width: 99%"></div></div>
+                </div>
+                <div class="model-card vessel">
+                    <div class="model-header"><h3>DRUSEN</h3> <span class="tier-badge">TIER 2</span></div>
+                    <div class="tech-specs"><span>LAT: 18ms</span> <span>ACC: 94.2%</span></div>
+                    <div class="role">Deposit Detection</div>
+                    <p>Scans for extracellular material.</p>
+                    <div class="stat-bar"><div class="stat-fill" style="width: 94%"></div></div>
+                </div>
+                 <div class="model-card vessel">
+                    <div class="model-header"><h3>NERVES</h3> <span class="tier-badge">TIER 2</span></div>
+                    <div class="tech-specs"><span>LAT: 15ms</span> <span>ACC: 97.0%</span></div>
+                    <div class="role">Optic Disc Integrity</div>
+                    <p>Analyzes cup-to-disc ratio.</p>
+                    <div class="stat-bar"><div class="stat-fill" style="width: 97%"></div></div>
+                </div>
+                 <div class="model-card bleed">
+                    <div class="model-header"><h3 style="color:#ff0055">BLEEDS</h3> <span class="tier-badge">TIER S</span></div>
+                    <div class="tech-specs"><span>LAT: 08ms</span> <span>ACC: 99.8%</span></div>
+                    <div class="role" style="color:#ff0055">Hemorrhage Scan</div>
+                    <p>Detects micro-aneurysms.</p>
+                    <div class="stat-bar" style="background:#300"><div class="stat-fill" style="width: 96%; background:#ff0055; box-shadow:0 0 10px #ff0055"></div></div>
+                </div>
+                 <div class="model-card vessel">
+                    <div class="model-header"><h3>SCAR</h3> <span class="tier-badge">TIER 3</span></div>
+                    <div class="tech-specs"><span>LAT: 22ms</span> <span>ACC: 92.5%</span></div>
+                    <div class="role">Tissue History</div>
+                    <p>Maps laser scars.</p>
+                    <div class="stat-bar"><div class="stat-fill" style="width: 92%"></div></div>
+                </div>
+                 <div class="model-card verdict" style="grid-column: span 2; border-color: #ff9900;">
+                    <div class="model-header"><h3 style="color:#ff9900">VERDICT</h3> <span class="tier-badge" style="color:#ff9900; border-color:#ff9900">COMMAND</span></div>
+                    <div class="tech-specs"><span>LAT: 05ms</span> <span>ACC: 99.9%</span></div>
+                    <div class="role" style="color:#ffcc88">Aggregator Node</div>
+                    <p>Final diagnostic synthesis engine.</p>
+                    <div class="stat-bar" style="background:#332200"><div class="stat-fill" style="width: 100%; background:#ff9900; box-shadow:0 0 10px #ff9900"></div></div>
+                </div>
+            </div>
+            <div class="back-btn" onclick="closeLogs()"><i class="fa-solid fa-arrow-left"></i> RETURN TO LOBBY</div>
+        </div>
+
+        <div class="processing-ui" id="processing">
+            <h2 style="font-family:'Orbitron'; letter-spacing:4px; color:#00f3ff; margin-bottom:20px;">DECRYPTING RETINAL MATRIX...</h2>
+            <div style="width:100%; height:2px; background:#222;"><div class="progress-bar" id="load-bar"></div></div>
+        </div>
+
+        <div class="results-ui" id="results">
+             <div class="crate-card" id="c1"><i class="fa-solid fa-dna crate-icon"></i><div class="crate-label">VESSELS</div></div>
+             <div class="crate-card" id="c2"><i class="fa-solid fa-eye crate-icon"></i><div class="crate-label">MACULA</div></div>
+             <div class="crate-card" id="c3"><i class="fa-solid fa-braille crate-icon"></i><div class="crate-label">DRUSEN</div></div>
+             <div class="crate-card" id="c4"><i class="fa-solid fa-wave-square crate-icon"></i><div class="crate-label">NERVES</div></div>
+             <div class="crate-card" id="c5"><i class="fa-solid fa-droplet crate-icon"></i><div class="crate-label">BLEEDS</div></div>
+             <div class="crate-card" id="c6"><i class="fa-solid fa-circle-nodes crate-icon"></i><div class="crate-label">SCAR</div></div>
+             <div class="crate-card" id="c7"><i class="fa-solid fa-shield-halved crate-icon"></i><div class="crate-label">VERDICT</div></div>
+        </div>
+
+    </div>
+
+    <script>
+        const PARTICLE_COUNT = 28000; 
+        let scene, camera, renderer, composer, particles, geometry, material;
+        let positions, targetPositions, alphas;
+        let visibleCount = 0;
+        let time = 0;
+        let isProcessing = false; 
+
+        init(); animate(); startGenesis();
+
+        function init() {
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene(); scene.fog = new THREE.FogExp2(0x020205, 0.02);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 30; camera.position.y = 0;
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            container.appendChild(renderer.domElement);
+            
+            const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+            bloomPass.strength = 0.4; bloomPass.radius = 0.3; bloomPass.threshold = 0.1;
+            composer = new THREE.EffectComposer(renderer);
+            composer.addPass(new THREE.RenderPass(scene, camera));
+            composer.addPass(bloomPass);
+
+            geometry = new THREE.BufferGeometry();
+            positions = new Float32Array(PARTICLE_COUNT * 3);
+            targetPositions = new Float32Array(PARTICLE_COUNT * 3);
+            alphas = new Float32Array(PARTICLE_COUNT);
+            const sizes = new Float32Array(PARTICLE_COUNT);
+
+            const radius = 9; const tubeWidth = 3.5;
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                positions[i*3] = (Math.random() - 0.5) * 200;
+                positions[i*3+1] = (Math.random() - 0.5) * 200;
+                positions[i*3+2] = (Math.random() - 0.5) * 200;
+                const u = Math.random() * Math.PI * 2; const v = (Math.random() * 2 - 1);
+                targetPositions[i*3] = (radius + v * tubeWidth * Math.cos(u/2)) * Math.cos(u);
+                targetPositions[i*3+1] = (radius + v * tubeWidth * Math.cos(u/2)) * Math.sin(u);
+                targetPositions[i*3+2] = v * tubeWidth * Math.sin(u/2);
+                alphas[i] = 0.0; sizes[i] = Math.random() * 0.8 + 0.2;
+            }
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('alpha', new THREE.BufferAttribute(alphas, 1));
+            geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+            material = new THREE.ShaderMaterial({
+                uniforms: { color: { value: new THREE.Color(0xaaccff) }, uTime: { value: 0.0 }, uScanActive: { value: 0.0 } },
+                vertexShader: `attribute float alpha; attribute float size; varying float vAlpha; varying float vY; void main() { vAlpha = alpha; vY = position.y; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = size * (120.0 / -mv.z); gl_Position = projectionMatrix * mv; }`,
+                fragmentShader: `uniform vec3 color; uniform float uTime; uniform float uScanActive; varying float vAlpha; varying float vY; void main() { float r = distance(gl_PointCoord, vec2(0.5)); if(r > 0.5) discard; float scanWave = 0.0; if(uScanActive > 0.5) { float wave = sin(vY * 0.8 - uTime * 8.0); scanWave = step(0.9, wave); } float blink = 1.0; if(uScanActive > 0.5) { blink = 0.8 + 0.2 * sin(uTime * 20.0); } float finalAlpha = (vAlpha * 0.5 + scanWave * 0.5) * blink; vec3 finalColor = mix(color, vec3(1.0), scanWave); gl_FragColor = vec4(finalColor, finalAlpha); }`,
+                transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            particles = new THREE.Points(geometry, material);
+            particles.rotation.z = Math.PI / 6; particles.rotation.x = Math.PI / 4;
+            scene.add(particles);
+            window.addEventListener('resize', () => { camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); composer.setSize(window.innerWidth, window.innerHeight); });
+        }
+
+        function startGenesis() { alphas[0] = 1.0; geometry.attributes.alpha.needsUpdate = true; visibleCount = 1; setTimeout(multiplyDots, 1000); }
+        function multiplyDots() { if (visibleCount >= PARTICLE_COUNT) { setTimeout(attractToMobius, 500); return; } let growth = Math.ceil(visibleCount * 0.2) + 5; let nextLimit = Math.min(visibleCount + growth, PARTICLE_COUNT); for (let i = visibleCount; i < nextLimit; i++) alphas[i] = 1.0; visibleCount = nextLimit; geometry.attributes.alpha.needsUpdate = true; requestAnimationFrame(multiplyDots); }
+        function attractToMobius() {
+            const startPos = Float32Array.from(geometry.attributes.position.array); const obj = { t: 0 };
+            anime({ targets: obj, t: 1, duration: 4000, easing: 'easeInOutExpo', update: () => { const curr = geometry.attributes.position.array; for(let i=0; i<PARTICLE_COUNT; i++) { const idx = i*3; curr[idx] = startPos[idx] + (targetPositions[idx] - startPos[idx]) * obj.t; curr[idx+1] = startPos[idx+1] + (targetPositions[idx+1] - startPos[idx+1]) * obj.t; curr[idx+2] = startPos[idx+2] + (targetPositions[idx+2] - startPos[idx+2]) * obj.t; } geometry.attributes.position.needsUpdate = true; }, complete: () => { revealLobby(); } });
+        }
+
+        function revealLobby() { anime({ targets: camera.position, y: -7, z: 28, duration: 2000, easing: 'easeInOutQuad' }); anime({ targets: particles.rotation, x: Math.PI / 3, duration: 2000, easing: 'easeInOutQuad' }); anime({ targets: '.lobby-ui', opacity: [0, 1], translateY: [50, 0], duration: 1000, delay: 500, easing: 'easeOutExpo' }); }
+        
+        function openLogs() { anime({ targets: '.lobby-ui', opacity: 0, translateY: 50, duration: 500, easing: 'easeInExpo' }); anime({ targets: camera.position, x: -15, y: 0, z: 20, duration: 1500, easing: 'easeInOutQuad' }); anime({ targets: particles.rotation, y: Math.PI / 2, duration: 1500, easing: 'easeInOutQuad' }); const logs = document.getElementById('logs'); logs.style.opacity = 1; logs.style.pointerEvents = 'auto'; logs.style.transform = 'scale(1)'; }
+        function closeLogs() { const logs = document.getElementById('logs'); logs.style.opacity = 0; logs.style.pointerEvents = 'none'; logs.style.transform = 'scale(0.95)'; anime({ targets: camera.position, x: 0, y: -7, z: 28, duration: 1500, easing: 'easeInOutQuad' }); anime({ targets: '.lobby-ui', opacity: 1, translateY: 0, duration: 1000, delay: 500, easing: 'easeOutExpo' }); }
+
+        function handleFileSelect(input) { if (input.files && input.files[0]) { anime({ targets: '.lobby-ui', opacity: 0, translateY: -50, duration: 500, easing: 'easeInExpo' }); isProcessing = true; material.uniforms.uScanActive.value = 1.0; anime({ targets: camera.position, y: 0, z: 24, duration: 1500, easing: 'easeInOutQuad' }); anime({ targets: particles.rotation, x: Math.PI/4, z: 0, duration: 1500, easing: 'easeInOutQuad' }); document.getElementById('processing').style.opacity = 1; anime({ targets: '#load-bar', width: '100%', duration: 3500, easing: 'linear', complete: () => { finishProcessing(); } }); } }
+        function finishProcessing() { isProcessing = false; material.uniforms.uScanActive.value = 0.0; anime({ targets: '#processing', opacity: 0, duration: 300 }); anime({ targets: camera.position, y: -6, z: 28, duration: 1500, easing: 'easeOutExpo' }); const resultsUI = document.getElementById('results'); resultsUI.style.opacity = 1; resultsUI.style.pointerEvents = 'auto'; const crates = document.querySelectorAll('.crate-card'); crates.forEach((crate, i) => { setTimeout(() => { crate.classList.add('unlocked'); }, i * 200); }); }
+        
+        function animate() { requestAnimationFrame(animate); time += 0.01; material.uniforms.uTime.value = time; if(particles) { if(isProcessing) particles.rotation.y += 0.08; else particles.rotation.y += 0.002; } composer.render(); }
+    </script>
+</body>
+</html>
+"""
+
+with open('templates/phase2.html', 'w') as f:
+    f.write(html_phase3_final_clean)
+
+with open('backend.py', 'w') as f:
+    f.write("""
+import os
+import sys
+from flask import Flask, render_template
+
+app = Flask(__name__, static_folder='static', template_folder='templates')
+
+@app.route('/')
+def phase2():
+    return render_template('phase2.html')
+
+if __name__ == '__main__':
+    app.run(port=5000)
+""")
+
+print("✅ PHASE 3.5 V6: CLEANED & FINAL.")
+print("- Removed color changing logic from Armory.")
+print("- All other 'Black Ops' features (HUD, Angled Corners, Tiers) remain.")

@@ -1,0 +1,20 @@
+{
+  "name": "retinaguard-v500",
+  "version": "5.0.0",
+  "description": "Clinical Decision Support System for Retinitis Pigmentosa Detection",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["retinitis-pigmentosa", "medical-ai", "retinal-imaging", "clinical-decision-support"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "mongoose": "^9.2.0"
+  }
+}
