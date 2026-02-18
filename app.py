@@ -24,9 +24,13 @@ from PIL import Image
 import base64
 import io
 import os
+import sys
 import warnings
 from datetime import datetime
 warnings.filterwarnings('ignore')
+
+# Force unbuffered output so logs appear immediately
+sys.stdout.reconfigure(line_buffering=True)
 
 # Optional: Load TensorFlow model if available
 try:
@@ -443,8 +447,128 @@ def extract_quadrant_features(img, fov_mask):
         'is_sectoral': is_truly_sectoral  # Much stricter threshold
     }
 
+def detect_grid_layout(img):
+    """Detect if image is a multi-panel grid (ABCD format common in clinical images).
+    Returns tuple: (is_grid, rows, cols, panels)
+    """
+    h, w = img.shape[:2]
+    aspect = w / h
+    
+    # Convert to grayscale for edge detection
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    # Look for vertical and horizontal dividing lines
+    # Grid images typically have bright or dark separator lines
+    
+    # Check for 2x2 grid (most common: ABCD format)
+    mid_h, mid_w = h // 2, w // 2
+    
+    # Sample horizontal line at middle
+    h_line = gray[mid_h-5:mid_h+5, :]
+    h_variance = np.var(np.mean(h_line, axis=0))
+    
+    # Sample vertical line at middle  
+    v_line = gray[:, mid_w-5:mid_w+5]
+    v_variance = np.var(np.mean(v_line, axis=1))
+    
+    # Check if there's a clear dividing line (low variance = uniform separator)
+    # OR check if there's a sharp edge at the midpoint
+    
+    # Better method: Check for circular fundus images in quadrants
+    quadrants = [
+        img[0:mid_h, 0:mid_w],           # Top-left (A)
+        img[0:mid_h, mid_w:w],           # Top-right (B)
+        img[mid_h:h, 0:mid_w],           # Bottom-left (C)
+        img[mid_h:h, mid_w:w]            # Bottom-right (D)
+    ]
+    
+    # Count how many quadrants look like fundus images (circular, with FOV)
+    fundus_scores = []
+    for i, quad in enumerate(quadrants):
+        if quad.size == 0:
+            fundus_scores.append(0)
+            continue
+            
+        qgray = cv2.cvtColor(quad, cv2.COLOR_BGR2GRAY)
+        
+        # Check for circular FOV pattern
+        _, mask = cv2.threshold(qgray, 15, 255, cv2.THRESH_BINARY)
+        fov_pixels = cv2.countNonZero(mask)
+        total_pixels = quad.shape[0] * quad.shape[1]
+        fov_ratio = fov_pixels / total_pixels if total_pixels > 0 else 0
+        
+        # Good fundus images typically have 50-85% FOV (circular field in rectangular frame)
+        is_fundus_like = 0.35 < fov_ratio < 0.95
+        
+        # Also check color variance (fundus images have orange/red tones)
+        mean_color = np.mean(quad, axis=(0,1))
+        has_fundus_colors = mean_color[2] > mean_color[0]  # More red than blue
+        
+        score = (1 if is_fundus_like else 0) + (0.5 if has_fundus_colors else 0)
+        fundus_scores.append(score)
+    
+    # If at least 2 quadrants look like fundus images, it's probably a grid
+    num_fundus = sum(1 for s in fundus_scores if s >= 1)
+    is_grid = num_fundus >= 2
+    
+    if is_grid:
+        return (True, 2, 2, quadrants, fundus_scores)
+    
+    # Check for 2x1 (side by side) or 1x2 (stacked) layouts
+    if aspect > 1.8:  # Wide image - likely 2x1
+        panels = [img[:, 0:mid_w], img[:, mid_w:w]]
+        return (True, 1, 2, panels, [1, 1])
+    elif aspect < 0.6:  # Tall image - likely 1x2
+        panels = [img[0:mid_h, :], img[mid_h:h, :]]
+        return (True, 2, 1, panels, [1, 1])
+    
+    return (False, 1, 1, [img], [1])
+
+def select_best_fundus_panel(panels, scores):
+    """Select the best fundus image from multiple panels.
+    Prefers color fundus over autofluorescence/grayscale."""
+    
+    best_idx = 0
+    best_score = -1
+    
+    for i, (panel, base_score) in enumerate(zip(panels, scores)):
+        if panel.size == 0:
+            continue
+            
+        # Calculate comprehensive quality score
+        score = base_score
+        
+        # Prefer color images (likely fundus photo vs autofluorescence)
+        hsv = cv2.cvtColor(panel, cv2.COLOR_BGR2HSV)
+        saturation = np.mean(hsv[:,:,1])
+        if saturation > 30:  # Color image
+            score += 1.5
+        
+        # Check for typical fundus orange/red coloration
+        mean_bgr = np.mean(panel, axis=(0,1))
+        if mean_bgr[2] > 100 and mean_bgr[2] > mean_bgr[0]:  # Red channel strong
+            score += 1.0
+        
+        # Check image brightness (not too dark)
+        brightness = np.mean(panel)
+        if 40 < brightness < 200:
+            score += 0.5
+        
+        # Get FOV area (prefer larger FOV)
+        gray = cv2.cvtColor(panel, cv2.COLOR_BGR2GRAY)
+        _, mask = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)
+        fov_ratio = cv2.countNonZero(mask) / (panel.shape[0] * panel.shape[1])
+        score += fov_ratio
+        
+        if score > best_score:
+            best_score = score
+            best_idx = i
+    
+    return best_idx, panels[best_idx]
+
 def preprocess_image(image_data):
-    """Decode base64 image and convert to numpy array"""
+    """Decode base64 image and convert to numpy array.
+    UPGRADED: Now handles composite/grid images (ABCD format)."""
     try:
         # Handle data URL format
         if ',' in image_data:
@@ -457,6 +581,19 @@ def preprocess_image(image_data):
         
         # OpenCV expects BGR
         img_bgr = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
+        
+        # NEW: Check if this is a composite/grid image
+        is_grid, rows, cols, panels, scores = detect_grid_layout(img_bgr)
+        
+        if is_grid and len(panels) > 1:
+            # Select the best fundus panel from the grid
+            best_idx, best_panel = select_best_fundus_panel(panels, scores)
+            panel_labels = ['A (Top-Left)', 'B (Top-Right)', 'C (Bottom-Left)', 'D (Bottom-Right)']
+            if best_idx < len(panel_labels):
+                print(f"   📐 GRID IMAGE DETECTED ({rows}x{cols}) - Using Panel {panel_labels[best_idx]}")
+            else:
+                print(f"   📐 GRID IMAGE DETECTED ({rows}x{cols}) - Using Panel {best_idx + 1}")
+            return best_panel
         
         return img_bgr
     except Exception as e:
@@ -1089,17 +1226,16 @@ def analyze_retinal_scan():
         # Pathway #3: Sine Pigmento (no pigment but AI shows concern + degeneration signs)
         # RELAXED: AI > 0.40 (was 0.65) + texture/spatial showing damage
         # This catches cases where AI isn't confident but sees something
-        spatial_severity = spatial_result['severity']
         elif ai_conf > 0.40 and pigment_conf < 0.35 and (
             texture_severity in ['MODERATE', 'CRITICAL'] or 
-            spatial_severity in ['MODERATE', 'CRITICAL']
+            spatial_result['severity'] in ['MODERATE', 'CRITICAL']
         ):
             is_sine_pigmento = True
             sine_bonus = 0.18
             base_score += sine_bonus
             print(f"   🧬 SINE PIGMENTO PATHWAY ACTIVATED! (+{sine_bonus:.3f} compensation)")
             print(f"      → AI concerned ({ai_conf*100:.1f}%) + No classic pigment + Degeneration signs")
-            print(f"      → Texture: {texture_severity}, Spatial: {spatial_severity}")
+            print(f"      → Texture: {texture_severity}, Spatial: {spatial_result['severity']}")
         
         # Pathway #4: Classic RP Triad Complete
         elif triad_complete:
@@ -1147,7 +1283,7 @@ def analyze_retinal_scan():
         print(f"      AI Confidence: {ai_confidence*100:.1f}% | AI Says RP: {'YES' if ai_says_rp else 'NO'}")
         print(f"      Clinical RP Votes: {clinical_rp_votes}/{total_clinical_scanners} | MILD findings: {mild_findings}")
         print(f"      Critical Findings: {critical_count} | Triad Complete: {triad_complete}")
-        print(f"      Pathways: SinePigmento={is_sine_pigmento}, RPA={is_rpa}, Sectoral={is_sectoral}"))
+        print(f"      Pathways: SinePigmento={is_sine_pigmento}, RPA={is_rpa}, Sectoral={is_sectoral}")
 
         # 2. DECISION MATRIX (Medical Priority Order)
         
@@ -1228,12 +1364,11 @@ def analyze_retinal_scan():
 
         # RULE 9: HEALTHY / NEGATIVE
         # None of the above criteria met. Insufficient evidence for RP.
-        # This correctly handles PT-3972 (AI=40.6%, 1 spatial vote).
         else:
             verdict = "NEGATIVE: HEALTHY RETINA"
-            confidence = "HIGH" if not ai_says_rp and clinical_rp_votes <= 1 else "MODERATE"
+            confidence = "HIGH" if not ai_says_rp and clinical_rp_votes <= 1 and mild_findings <= 2 else "MODERATE"
             verdict_code = "HEALTHY"
-            print(f"      → Rule 7: INSUFFICIENT EVIDENCE")
+            print(f"      → Rule 9: INSUFFICIENT EVIDENCE")
 
         print(f"   🎯 VERDICT: {verdict_code}")
         print(f"   📊 Score: {base_score:.3f} | Confidence: {confidence}")

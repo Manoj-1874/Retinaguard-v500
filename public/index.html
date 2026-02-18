@@ -587,7 +587,10 @@
                 }
             }, 700);
 
-            // Call Flask API for real analysis
+            // Call Flask API for real analysis (with 60-second timeout)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000);
+            
             try {
                 const response = await fetch('http://localhost:5001/api/analyze', {
                     method: 'POST',
@@ -595,18 +598,41 @@
                     body: JSON.stringify({
                         image: currentImageBase64,
                         patientId: currentPatientName
-                    })
+                    }),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
                 
                 if (response.ok) {
                     currentAnalysisResult = await response.json();
-                    console.log('✅ Flask API Response:', currentAnalysisResult);
+                    console.log('✅ Flask API Response received');
+                    
+                    // Detailed console report
+                    console.log('\n========== RETINAGUARD ANALYSIS REPORT ==========');
+                    console.log('🎯 VERDICT:', currentAnalysisResult.verdict_code);
+                    console.log('📊 COMPOSITE SCORE:', (currentAnalysisResult.composite_score * 100).toFixed(1) + '%');
+                    console.log('🔬 CONFIDENCE:', currentAnalysisResult.confidence);
+                    console.log('\n📋 EXPERT OPINIONS:');
+                    currentAnalysisResult.expert_opinions.forEach((expert, i) => {
+                        console.log(`   ${i+1}. ${expert.name}: ${expert.status} (${expert.severity})`);
+                    });
+                    console.log('\n🔺 TRIAD STATUS:');
+                    const triad = currentAnalysisResult.triad_status;
+                    console.log(`   1. Bone Spicule: ${triad.bone_spicule ? '✓' : '✗'}`);
+                    console.log(`   2. Vessel Attenuation: ${triad.vessel_attenuation ? '✓' : '✗'}`);
+                    console.log(`   3. Optic Disc Pallor: ${triad.optic_disc_pallor ? '✓' : '✗'}`);
+                    console.log('===============================================\n');
                 } else {
                     console.error('❌ Flask API Error:', response.status);
                     currentAnalysisResult = null;
                 }
             } catch (error) {
-                console.error('❌ Flask API Connection Failed:', error);
+                clearTimeout(timeoutId);
+                if (error.name === 'AbortError') {
+                    console.error('❌ Flask API Timeout - Analysis took too long (>60s)');
+                } else {
+                    console.error('❌ Flask API Connection Failed:', error);
+                }
                 currentAnalysisResult = null;
             }
 
@@ -776,7 +802,7 @@
                                     severityClass = 'critical';
                                     break;
                                 case 'SUSPICIOUS':
-                                    verdictDisplay = 'SUSPICIOUS - REVIEW REQUIRED';
+                                    verdictDisplay = 'ATYPICAL PRESENTATION - CLINICAL CORRELATION';
                                     severityClass = 'moderate';
                                     break;
                                 case 'HEALTHY':
