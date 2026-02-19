@@ -111,6 +111,7 @@
         .live-image { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; filter: sepia(1) hue-rotate(180deg) saturate(200%) contrast(150%); } 
         .scan-laser { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #fff; box-shadow: 0 0 20px 5px #00f3ff; animation: laserScan 2s linear infinite alternate; }
         @keyframes laserScan { 0% { top: 0%; } 100% { top: 100%; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
         .target-box { position: absolute; border: 1px solid #ff0055; width: 50px; height: 50px; box-shadow: inset 0 0 10px rgba(255,0,85,0.5); opacity: 0; transform: scale(1.5); transition: all 0.2s; background: linear-gradient(to right, #ff0055 2px, transparent 2px) 0 0, linear-gradient(to right, #ff0055 2px, transparent 2px) 0 100%, linear-gradient(to left, #ff0055 2px, transparent 2px) 100% 0, linear-gradient(to left, #ff0055 2px, transparent 2px) 100% 100%, linear-gradient(to bottom, #ff0055 2px, transparent 2px) 0 0, linear-gradient(to bottom, #ff0055 2px, transparent 2px) 100% 0, linear-gradient(to top, #ff0055 2px, transparent 2px) 0 100%, linear-gradient(to top, #ff0055 2px, transparent 2px) 100% 100%; background-repeat: no-repeat; background-size: 10px 10px; }
         
         /* Loading Progress Bar */
@@ -277,6 +278,17 @@
     </div>
 
     <div class="screen-section" id="results">
+        <!-- Angiography Warning Banner -->
+        <div id="angio-warning" style="display: none; margin-bottom: 20px; padding: 15px 20px; background: rgba(255,165,0,0.1); border: 1px solid rgba(255,165,0,0.5); border-left: 4px solid #ffa500; border-radius: 4px; font-family: 'Orbitron'; animation: pulse 2s infinite;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="fa-solid fa-triangle-exclamation" style="color: #ffa500; font-size: 20px;"></i>
+                <div>
+                    <div style="color: #ffa500; font-size: 14px; font-weight: bold; letter-spacing: 1px;">⚠️ ANGIOGRAPHY IMAGE DETECTED</div>
+                    <div id="angio-warning-text" style="color: #ffcc88; font-size: 11px; margin-top: 4px;">Analysis results may be less reliable. This system is optimized for color fundus photography.</div>
+                </div>
+            </div>
+        </div>
+        
         <div id="overall-diagnosis">
             <div class="diagnosis-label">RETINAGUARD V500 CLINICAL ANALYSIS</div>
             <div class="diagnosis-verdict" id="verdict-text">ANALYZING...</div>
@@ -606,32 +618,39 @@
                 if (response.ok) {
                     currentAnalysisResult = await response.json();
                     console.log('✅ Flask API Response received');
+                    console.log('📦 Full Response Object:', currentAnalysisResult);
                     
-                    // Detailed console report
-                    console.log('\n========== RETINAGUARD ANALYSIS REPORT ==========');
-                    console.log('🎯 VERDICT:', currentAnalysisResult.verdict_code);
-                    console.log('📊 COMPOSITE SCORE:', (currentAnalysisResult.composite_score * 100).toFixed(1) + '%');
-                    console.log('🔬 CONFIDENCE:', currentAnalysisResult.confidence);
-                    console.log('\n📋 EXPERT OPINIONS:');
-                    currentAnalysisResult.expert_opinions.forEach((expert, i) => {
-                        console.log(`   ${i+1}. ${expert.name}: ${expert.status} (${expert.severity})`);
-                    });
-                    console.log('\n🔺 TRIAD STATUS:');
-                    const triad = currentAnalysisResult.triad_status;
-                    console.log(`   1. Bone Spicule: ${triad.bone_spicule ? '✓' : '✗'}`);
-                    console.log(`   2. Vessel Attenuation: ${triad.vessel_attenuation ? '✓' : '✗'}`);
-                    console.log(`   3. Optic Disc Pallor: ${triad.optic_disc_pallor ? '✓' : '✗'}`);
-                    console.log('===============================================\n');
+                    try {
+                        // Check for angiography warning
+                        if (currentAnalysisResult.is_angiography) {
+                            console.warn('⚠️ ANGIOGRAPHY DETECTED:', currentAnalysisResult.warning);
+                        }
+                        
+                        // Detailed console report
+                        console.log('\n========== RETINAGUARD ANALYSIS REPORT ==========');
+                        console.log('🎯 VERDICT:', currentAnalysisResult.verdict_code);
+                        console.log('📊 COMPOSITE SCORE:', (currentAnalysisResult.composite_score * 100).toFixed(1) + '%');
+                        console.log('🔬 CONFIDENCE:', currentAnalysisResult.confidence);
+                        console.log('\n📋 EXPERT OPINIONS:');
+                        currentAnalysisResult.expert_opinions.forEach((expert, i) => {
+                            console.log(`   ${i+1}. ${expert.name}: ${expert.status} (${expert.severity})`);
+                        });
+                        console.log('\n🔺 TRIAD STATUS:');
+                        const triad = currentAnalysisResult.triad_status;
+                        console.log(`   1. Bone Spicules: ${triad.bone_spicules ? '✓' : '✗'}`);
+                        console.log(`   2. Vessel Attenuation: ${triad.vessel_attenuation ? '✓' : '✗'}`);
+                        console.log(`   3. Optic Disc Pallor: ${triad.optic_disc_pallor ? '✓' : '✗'}`);
+                        console.log('===============================================\n');
+                    } catch (logError) {
+                        console.error('❌ ERROR LOGGING RESULTS:', logError);
+                        console.error('❌ Error stack:', logError.stack);
+                        console.error('❌ Result object at time of error:', currentAnalysisResult);
+                    }
                 } else {
-                    // Handle error responses (like angiography detection)
+                    // Handle error responses
                     const errorData = await response.json().catch(() => ({}));
                     console.error('❌ Flask API Error:', response.status);
-                    if (errorData.error === 'Incompatible image type') {
-                        console.error('⚠️  ANGIOGRAPHY DETECTED');
-                        console.error('   Reason:', errorData.reason);
-                        console.error('   Suggestion:', errorData.suggestion);
-                        alert(`⚠️ INCOMPATIBLE IMAGE TYPE\n\n${errorData.detail}\n\nReason: ${errorData.reason}\n\n${errorData.suggestion}`);
-                    } else if (errorData.error) {
+                    if (errorData.error) {
                         alert(`❌ Error: ${errorData.error}\n${errorData.detail || ''}`);
                     }
                     currentAnalysisResult = null;
@@ -676,16 +695,39 @@
             // Animate crates popping up after navigation finishes
             setTimeout(() => {
                 if (!currentAnalysisResult) {
+                    console.error('❌ No analysis result available');
                     alert('⚠️ Flask API connection failed. Please ensure Flask server is running on port 5001.');
                     navigate('lobby', 0, -7, 28, Math.PI/3, 0);
                     return;
                 }
                 
-                displayRealResults(currentAnalysisResult);
+                try {
+                    console.log('🎬 Starting result display...');
+                    console.log('🎬 currentAnalysisResult:', currentAnalysisResult);
+                    displayRealResults(currentAnalysisResult);
+                    console.log('✅ displayRealResults completed successfully');
+                } catch (displayError) {
+                    console.error('❌ Error displaying results:', displayError);
+                    console.error('❌ Error stack:', displayError.stack);
+                    alert(`⚠️ Error displaying results: ${displayError.message}\n\nCheck browser console for details.`);
+                }
             }, 1200);
         }
         
         function displayRealResults(apiResult) {
+            console.log('🎯 displayRealResults called');
+            console.log('🎯 apiResult parameter:', apiResult);
+            console.log('🎯 apiResult.expert_opinions:', apiResult?.expert_opinions);
+            console.log('🎯 apiResult.verdict_code:', apiResult?.verdict_code);
+            
+            if (!apiResult || !apiResult.expert_opinions) {
+                console.error('❌ Invalid API result structure:', apiResult);
+                alert('⚠️ Invalid analysis result structure. Please try again.');
+                return;
+            }
+            
+            console.log('✓ Validation passed, proceeding with display...');
+            
             // Map Flask API expert names to crate indices (10 experts)
             const expertMap = {
                 'ai_pattern_recognition': 0,
@@ -787,6 +829,14 @@
                             const verdictText = document.getElementById('verdict-text');
                             const confidenceText = document.getElementById('confidence-text');
                             const detailBtn = document.getElementById('detail-report-btn');
+                            
+                            // Show angiography warning if detected
+                            if (apiResult.is_angiography) {
+                                const angioWarning = document.getElementById('angio-warning');
+                                const angioWarningText = document.getElementById('angio-warning-text');
+                                angioWarning.style.display = 'block';
+                                angioWarningText.textContent = `Analysis results may be less reliable. This system is optimized for color fundus photography. (Confidence: ${apiResult.angiography_confidence}%)`;
+                            }
                             
                             // USE verdict_code to determine display (not broken text matching)
                             let verdictDisplay, severityClass;

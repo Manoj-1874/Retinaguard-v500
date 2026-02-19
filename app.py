@@ -138,16 +138,24 @@ def get_fov_mask(img):
     mask = cv2.erode(mask, kernel, iterations=1)
     return mask
 
-def extract_vessel_features(img, fov_mask):
+def extract_vessel_features(img, fov_mask, is_angiography=False):
     """TRIAD #2: Vessel Attenuation Detection
-    BUG FIX #3: Apply FOV mask & divide by FOV area, not total image size."""
+    BUG FIX #3: Apply FOV mask & divide by FOV area, not total image size.
+    BUG FIX #12: Angiography vessels are BRIGHT, not dark - invert detection logic."""
     b, g, r = cv2.split(img)
     clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
     enhanced = clahe.apply(g)
-    inverted = cv2.bitwise_not(enhanced)
+    
+    # ANGIOGRAPHY FIX: Vessels are bright in angiography, dark in color fundus
+    if is_angiography:
+        # Don't invert - detect bright structures directly
+        vessel_source = enhanced
+    else:
+        # Standard: invert to make dark vessels bright
+        vessel_source = cv2.bitwise_not(enhanced)
     
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-    opened = cv2.morphologyEx(inverted, cv2.MORPH_OPEN, kernel)
+    opened = cv2.morphologyEx(vessel_source, cv2.MORPH_OPEN, kernel)
     
     kernel_large = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
     tophat = cv2.morphologyEx(opened, cv2.MORPH_TOPHAT, kernel_large)
@@ -165,12 +173,32 @@ def extract_vessel_features(img, fov_mask):
 
 def extract_pigment_features(img, fov_mask):
     """TRIAD #1: Bone Spicule Pigmentation Detection
-    BUG FIX #2: Apply FOV mask so black borders aren't counted as pigment."""
+    BUG FIX #2: Apply FOV mask so black borders aren't counted as pigment.
+    BUG FIX #13: ADAPTIVE threshold for different imaging modalities (autofluorescence, color shifts)."""
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     l_channel = lab[:, :, 0]
     
-    # Lowered threshold to only catch VERY dark actual pigment deposits
-    _, dark_mask = cv2.threshold(l_channel, 45, 255, cv2.THRESH_BINARY_INV)
+    # ADAPTIVE THRESHOLD: Calculate based on retinal L-channel distribution
+    retinal_l = l_channel[fov_mask > 0]
+    l_mean = np.mean(retinal_l)
+    l_std = np.std(retinal_l)
+    l_median = np.median(retinal_l)
+    
+    # Dark threshold: Use percentile-based detection for robustness
+    # Target: Bottom 15% of brightness (captures pigment in any color space)
+    dark_threshold = np.percentile(retinal_l, 15)
+    
+    # Also use relative threshold: mean - 1.5*std (statistical outliers)
+    relative_threshold = max(l_mean - 1.5 * l_std, 30)  # Min 30 to avoid noise
+    
+    # Use the HIGHER of the two (more conservative, less noise)
+    final_threshold = max(dark_threshold, relative_threshold)
+    final_threshold = min(final_threshold, 70)  # Cap at 70 for very bright images
+    
+    # DIAGNOSTIC: Log adaptive thresholds
+    print(f"[PIGMENT] L-channel: mean={l_mean:.1f}, std={std_val:.1f}, percentile_15={dark_threshold:.1f}, relative={relative_threshold:.1f}, final={final_threshold:.1f}")
+    
+    _, dark_mask = cv2.threshold(l_channel, final_threshold, 255, cv2.THRESH_BINARY_INV)
     
     # APPLY FOV MASK to ignore the black background entirely
     dark_mask = cv2.bitwise_and(dark_mask, fov_mask)
@@ -191,14 +219,20 @@ def extract_pigment_features(img, fov_mask):
 def extract_optic_disc_features(img, fov_mask):
     """TRIAD #3: Optic Disc Pallor Detection
     BUG FIX #4: Find the brightest region ANYWHERE in the FOV instead of
-    assuming optic disc is in the center (it's usually off to the side)."""
+    assuming optic disc is in the center (it's usually off to the side).
+    BUG FIX #6: Normalize disc brightness relative to overall image brightness
+    to avoid false positives from overexposed images."""
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     l_channel = lab[:, :, 0]
-    l_channel = cv2.bitwise_and(l_channel, fov_mask)  # Ignore background
+    l_channel_masked = cv2.bitwise_and(l_channel, fov_mask)  # Ignore background
+    
+    # Calculate overall image brightness for normalization
+    fov_pixels = l_channel[fov_mask > 0]
+    overall_brightness = float(np.mean(fov_pixels)) if len(fov_pixels) > 0 else 128.0
     
     # Look for the brightest 1% of the image (the Optic Disc) anywhere in the FOV
-    max_val = np.max(l_channel)
-    _, disc_mask = cv2.threshold(l_channel, max_val - 25, 255, cv2.THRESH_BINARY)
+    max_val = np.max(l_channel_masked)
+    _, disc_mask = cv2.threshold(l_channel_masked, max_val - 25, 255, cv2.THRESH_BINARY)
     
     # Dilate to capture full disc region
     kernel_small = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
@@ -206,9 +240,15 @@ def extract_optic_disc_features(img, fov_mask):
     
     if cv2.countNonZero(disc_mask) > 50:
         disc_pixels_l = l_channel[disc_mask > 0]
-        disc_brightness = float(np.mean(disc_pixels_l))
+        raw_disc_brightness = float(np.mean(disc_pixels_l))
         disc_std = float(np.std(disc_pixels_l))
         disc_uniformity = 1.0 / (1.0 + disc_std / 10.0)
+        
+        # Normalize disc brightness relative to overall image brightness
+        # This reduces false positives from overexposed images
+        # Subtract overall brightness, then add back a standard baseline (140)
+        disc_brightness = raw_disc_brightness - overall_brightness + 140.0
+        disc_brightness = max(80.0, min(255.0, disc_brightness))  # Clamp to valid range
         
         # Check color saturation for waxy pallor detection
         img_bgr = cv2.bitwise_and(img, img, mask=disc_mask)
@@ -231,12 +271,14 @@ def extract_optic_disc_features(img, fov_mask):
         'disc_uniformity': disc_uniformity,
         'color_saturation': color_saturation,
         'is_pale': is_pale,
-        'is_waxy': is_waxy
+        'is_waxy': is_waxy,
+        'overall_brightness': overall_brightness
     }
 
 def extract_texture_features(img, fov_mask):
     """Supporting: Texture Degeneration
-    BUG FIX: Apply FOV mask to histogram so black background doesn't skew entropy."""
+    BUG FIX: Apply FOV mask to histogram so black background doesn't skew entropy.
+    BUG FIX #14: Add local texture variation to detect atrophy on color-shifted images."""
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
     # Only analyze pixels inside the FOV
@@ -245,11 +287,29 @@ def extract_texture_features(img, fov_mask):
     hist = hist[hist > 0]
     entropy = -np.sum(hist * np.log2(hist))
     
-    return {'entropy': entropy}
+    # Add local texture variation (atrophy creates irregular patches)
+    # Use standard deviation in local neighborhoods
+    kernel_size = 15
+    gray_float = gray.astype(np.float32)
+    local_mean = cv2.blur(gray_float, (kernel_size, kernel_size))
+    local_sq_mean = cv2.blur(gray_float**2, (kernel_size, kernel_size))
+    local_variance = local_sq_mean - local_mean**2
+    local_variance = np.maximum(local_variance, 0)  # Numerical stability
+    local_std = np.sqrt(local_variance)
+    
+    # Only measure within FOV
+    fov_local_std = local_std[fov_mask > 0]
+    texture_variation = np.mean(fov_local_std)
+    
+    # DIAGNOSTIC: Log texture metrics
+    print(f"[TEXTURE] Global entropy={entropy:.2f}, Local variation={texture_variation:.2f}")
+    
+    return {'entropy': entropy, 'local_variation': texture_variation}
 
 def extract_spatial_features(img, fov_mask):
     """Supporting: Peripheral vs Central Degradation
-    BUG FIX: Now uses FOV mask to exclude background/vignetting artifacts."""
+    BUG FIX #5: Now uses FOV mask to exclude background/vignetting artifacts.
+    BUG FIX #7: Clamp degradation to [0.0, 1.0] to prevent negative values."""
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     h, w = gray.shape
     center_y, center_x = h // 2, w // 2
@@ -269,6 +329,8 @@ def extract_spatial_features(img, fov_mask):
         
         if center_brightness > 0:
             peripheral_degradation = (center_brightness - peripheral_brightness) / center_brightness
+            # Clamp to [0.0, 1.0] - negative means peripheral is brighter (artifact/angio)
+            peripheral_degradation = max(0.0, min(1.0, peripheral_degradation))
         else:
             peripheral_degradation = 0.0
     else:
@@ -539,9 +601,10 @@ def detect_angiography(img):
 #   EXPERT SYSTEMS - 7 Clinical Scanners
 # ==============================================================================
 
-def ai_pattern_recognition_expert(img):
+def ai_pattern_recognition_expert(img, is_angiography=False):
     """Expert #1: AI Pattern Recognition
     BUG FIX #1: Grab RP class probability explicitly, not np.max().
+    BUG FIX #9: Reduce confidence for angiography images (model not trained on them).
     Uses test-time augmentation (original + horizontal flip) for stability."""
     if DEEP_LEARNING_MODEL is not None:
         # Test-time augmentation: original + horizontal flip
@@ -566,6 +629,11 @@ def ai_pattern_recognition_expert(img):
             # Single sigmoid: output IS the RP probability
             confidence = float(np.mean(probs))
         
+        # ANGIOGRAPHY ADJUSTMENT: Slight reduction (model trained on color fundus)
+        # Reduce by 15% instead of 40% - RP patterns still visible in angiography
+        if is_angiography:
+            confidence = confidence * 0.85  # Reduce by 15%
+        
         if confidence > CONFIG["CRITICAL_THRESHOLDS"]["ai_high_confidence"]:
             status = "ANOMALY DETECTED"
             severity = "CRITICAL"
@@ -589,7 +657,8 @@ def ai_pattern_recognition_expert(img):
             "severity": severity,
             "significance": significance,
             "vote": confidence * CONFIG["EXPERT_WEIGHTS"]["ai_pattern_recognition"] * significance,
-            "detail": f"Neural network RP probability: {confidence*100:.1f}%"
+            "detail": f"Neural network RP probability: {confidence*100:.1f}%" + (" (angio adjusted)" if is_angiography else ""),
+            "raw_confidence": confidence
         }
     else:
         # Fallback: Rule-based analysis using multiple image features
@@ -828,20 +897,32 @@ def vessel_tortuosity_expert(features):
         "detail": f"Tortuosity: {mean_tort:.2f} (Normal: <1.3)"
     }
 
-def texture_degeneration_expert(features):
-    """Expert #6: Supporting - Texture Degeneration"""
+def texture_degeneration_expert(features, is_angiography=False):
+    """Expert #6: Supporting - Texture Degeneration
+    ANGIOGRAPHY NOTE: Keep severity but add note - RP texture still detectable in angiography.
+    BUG FIX #14: Use local variation to detect atrophy on color-shifted images."""
     entropy = features['texture']['entropy']
+    local_var = features['texture'].get('local_variation', 0)
     
-    if entropy > CONFIG["CRITICAL_THRESHOLDS"]["texture_high_entropy"]:
+    # Use both global entropy AND local variation (atrophy creates irregular patches)
+    # Local variation > 25 indicates significant texture irregularity
+    # Local variation > 35 indicates moderate atrophy
+    
+    # ANGIOGRAPHY: Add note but DON'T downgrade severity (RP texture visible in angiography)
+    if entropy > CONFIG["CRITICAL_THRESHOLDS"]["texture_high_entropy"] or local_var > 35:
         status = "HIGH IRREGULARITY"
         severity = "MODERATE"
         confidence = 0.70
         significance = CONFIG["SIGNIFICANCE_MULTIPLIERS"]["texture_irregular"]
-    elif entropy > 6.4:  # Increased from 6.3 to add 0.1 margin
+        if is_angiography:
+            status += " (verify color fundus)"
+    elif entropy > 6.4 or local_var > 25:  # Entropy increased from 6.3 to 6.4 for noise margin
         status = "MODERATE CHANGES"
         severity = "MILD"
         confidence = 0.50
         significance = 1.0
+        if is_angiography:
+            status += " (angio contrast)"
     else:
         status = "NORMAL"
         severity = "NORMAL"
@@ -854,7 +935,7 @@ def texture_degeneration_expert(features):
         "severity": severity,
         "significance": significance,
         "vote": confidence * CONFIG["EXPERT_WEIGHTS"]["texture_degeneration"] * significance,
-        "detail": f"Entropy: {entropy:.2f} (Normal: <6.4)"
+        "detail": f"Entropy: {entropy:.2f}, Local: {local_var:.1f} (Normal: <6.4/<25)"
     }
 
 def spatial_pattern_expert(features):
@@ -929,24 +1010,30 @@ def bright_lesion_expert(features):
         "detail": f"Flecks: {combined} | Density: {density:.4f}"
     }
 
-def macula_expert(features):
+def macula_expert(features, is_angiography=False):
     """Expert #9: Cystoid Macular Edema (CME) Detection
-    Detects central macular swelling/cysts seen in ~30% of RP patients."""
+    Detects central macular swelling/cysts seen in ~30% of RP patients.
+    ANGIOGRAPHY ADJUSTMENT: Raise thresholds (bright spots are normal contrast)."""
     macula = features['macula']
     cme_score = macula['cme_score']
     irregularity = macula['macula_irregularity']
     
-    if cme_score > 0.60:
+    # ANGIOGRAPHY: Raise thresholds by 50% (require stronger evidence for CME)
+    cme_threshold_critical = 0.60 if not is_angiography else 0.90
+    cme_threshold_moderate = 0.40 if not is_angiography else 0.65
+    cme_threshold_mild = 0.25 if not is_angiography else 0.45
+    
+    if cme_score > cme_threshold_critical:
         status = "CME SUSPECTED"
         severity = "CRITICAL"
         confidence = 0.85
         significance = 2.0  # CME is a serious complication
-    elif cme_score > 0.40:
+    elif cme_score > cme_threshold_moderate:
         status = "MACULAR ABNORMALITY"
         severity = "MODERATE"
         confidence = 0.65
         significance = 1.5
-    elif cme_score > 0.25:
+    elif cme_score > cme_threshold_mild:
         status = "MILD IRREGULARITY"
         severity = "MILD"
         confidence = 0.45
@@ -957,13 +1044,15 @@ def macula_expert(features):
         confidence = 0.15
         significance = 1.0
     
+    detail_suffix = " (angio: thresholds raised)" if is_angiography and cme_score > 0.25 else ""
+    
     return {
         "status": status,
         "confidence": round(confidence * 100, 1),
         "severity": severity,
         "significance": significance,
         "vote": confidence * CONFIG["EXPERT_WEIGHTS"]["macula"] * significance,
-        "detail": f"CME Score: {cme_score:.2f} | Irregularity: {irregularity:.1f}"
+        "detail": f"CME Score: {cme_score:.2f} | Irregularity: {irregularity:.1f}{detail_suffix}"
     }
 
 def quadrant_expert(features):
@@ -1043,7 +1132,7 @@ def analyze_retinal_scan():
         # Extract features (with FOV mask to ignore black borders)
         print("   🧬 Extracting clinical features...")
         fov_mask = get_fov_mask(img)
-        vessel_feats = extract_vessel_features(img, fov_mask)
+        vessel_feats = extract_vessel_features(img, fov_mask, is_angiography=is_angio)
         pigment_feats = extract_pigment_features(img, fov_mask)
         optic_disc_feats = extract_optic_disc_features(img, fov_mask)
         texture_feats = extract_texture_features(img, fov_mask)
@@ -1069,17 +1158,17 @@ def analyze_retinal_scan():
         print("   👨‍⚕️ Expert panel consultation (10 scanners)...")
         print("   " + "-"*66)
         
-        ai_result = ai_pattern_recognition_expert(img)
+        ai_result = ai_pattern_recognition_expert(img, is_angiography=is_angio)
         vessel_result = vessel_attenuation_expert(features)
         pigment_result = pigment_bone_spicules_expert(features)
         optic_result = optic_disc_pallor_expert(features)
         tortuosity_result = vessel_tortuosity_expert(features)
-        texture_result = texture_degeneration_expert(features)
+        texture_result = texture_degeneration_expert(features, is_angiography=is_angio)
         spatial_result = spatial_pattern_expert(features)
         
         # NEW: 3 additional variant/complication scanners
         bright_lesion_result = bright_lesion_expert(features)
-        macula_result = macula_expert(features)
+        macula_result = macula_expert(features, is_angiography=is_angio)
         quadrant_result = quadrant_expert(features)
         
         # Print expert results like Colab format
@@ -1172,17 +1261,16 @@ def analyze_retinal_scan():
         
         # Pathway #3: Sine Pigmento (no pigment but AI shows concern + degeneration signs)
         # RELAXED: AI > 0.40 (was 0.65) + texture/spatial showing damage
-        # This catches cases where AI isn't confident but sees something
-        elif ai_conf > 0.40 and pigment_conf < 0.35 and (
-            texture_severity in ['MODERATE', 'CRITICAL'] or 
-            spatial_result['severity'] in ['MODERATE', 'CRITICAL']
-        ):
-            is_sine_pigmento = True
-            sine_bonus = 0.18
-            base_score += sine_bonus
-            print(f"   🧬 SINE PIGMENTO PATHWAY ACTIVATED! (+{sine_bonus:.3f} compensation)")
-            print(f"      → AI concerned ({ai_conf*100:.1f}%) + No classic pigment + Degeneration signs")
-            print(f"      → Texture: {texture_severity}, Spatial: {spatial_result['severity']}")
+        # Angiography uses same logic since severity levels are now preserved
+        elif ai_conf > 0.40 and pigment_conf < 0.35:
+            if (texture_severity in ['MODERATE', 'CRITICAL'] or spatial_result['severity'] in ['MODERATE', 'CRITICAL']):
+                is_sine_pigmento = True
+                sine_bonus = 0.18
+                base_score += sine_bonus
+                angio_note = " (ANGIO)" if is_angio else ""
+                print(f"   🧬 SINE PIGMENTO PATHWAY ACTIVATED! (+{sine_bonus:.3f} compensation)")
+                print(f"      → AI concerned ({ai_conf*100:.1f}%) + No classic pigment + Degeneration signs{angio_note}")
+                print(f"      → Texture: {texture_severity}, Spatial: {spatial_result['severity']}")
         
         # Pathway #4: Classic RP Triad Complete
         elif triad_complete:
@@ -1321,9 +1409,14 @@ def analyze_retinal_scan():
         # None of the above criteria met. Insufficient evidence for RP.
         else:
             verdict = "NEGATIVE: HEALTHY RETINA"
-            confidence = "HIGH" if not ai_says_rp and clinical_rp_votes <= 1 and mild_findings <= 2 else "MODERATE"
+            # BUG FIX #8: Cap confidence at MODERATE if any scanner shows MODERATE findings
+            has_moderate_findings = any(r['severity'] == 'MODERATE' for r in results.values())
+            if has_moderate_findings:
+                confidence = "MODERATE"
+            else:
+                confidence = "HIGH" if not ai_says_rp and clinical_rp_votes <= 1 and mild_findings <= 2 else "MODERATE"
             verdict_code = "HEALTHY"
-            print(f"      → Rule 10: INSUFFICIENT EVIDENCE")
+            print(f"      → Rule 10: INSUFFICIENT EVIDENCE (Moderate findings: {has_moderate_findings})")
 
         print(f"   🎯 VERDICT: {verdict_code}")
         print(f"   📊 Score: {base_score:.3f} | Confidence: {confidence}")
