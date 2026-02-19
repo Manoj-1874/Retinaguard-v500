@@ -24,6 +24,7 @@ from PIL import Image
 import base64
 import io
 import os
+import sys
 import warnings
 from datetime import datetime
 warnings.filterwarnings('ignore')
@@ -77,19 +78,19 @@ CONFIG = {
         "macula": 0.07,                     # NEW: Cystoid Macular Edema
     },
 
-    # CLINICAL THRESHOLDS
+    # CLINICAL THRESHOLDS - REBALANCED FOR BETTER SENSITIVITY
     "CRITICAL_THRESHOLDS": {
-        "vessel_severe_attenuation": 0.05,
-        "vessel_moderate_attenuation": 0.10,
-        "pigment_extensive": 40,
-        "pigment_moderate": 25,
+        "vessel_severe_attenuation": 0.08,        # Raised from 0.05
+        "vessel_moderate_attenuation": 0.15,      # Raised from 0.10
+        "pigment_extensive": 30,                  # Lowered from 40
+        "pigment_moderate": 18,                   # Lowered from 25
         "pallor_severe": 210,
         "pallor_moderate": 195,
         "tortuosity_severe": 1.6,
         "tortuosity_moderate": 1.4,
         "texture_high_entropy": 6.8,
         "spatial_marked_degeneration": 0.60,
-        "ai_high_confidence": 0.75,
+        "ai_high_confidence": 0.70,               # Lowered from 0.75
     },
 
     # SIGNIFICANCE MULTIPLIERS
@@ -167,9 +168,31 @@ def extract_vessel_features(img, fov_mask, is_angiography=False):
     
     # Correct density: divide by visible retinal area, not total pixels
     fov_area = cv2.countNonZero(fov_mask)
-    density = cv2.countNonZero(vessel_mask) / fov_area if fov_area > 0 else 0
+    raw_density = cv2.countNonZero(vessel_mask) / fov_area if fov_area > 0 else 0
     
-    return {'density': density, 'mask': vessel_mask}
+    # COLOR COMPENSATION: Bright/color-shifted images inflate vessel density
+    # Detect if image is unusually bright (mean > 140 in grayscale)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    mean_brightness = np.mean(gray[fov_mask > 0]) if fov_area > 0 else 128
+    
+    # Apply correction factor for bright images
+    if mean_brightness > 140:
+        # Very bright: reduce density by 15%
+        correction_factor = 0.85
+    elif mean_brightness > 120:
+        # Moderately bright: reduce density by 10%
+        correction_factor = 0.90
+    else:
+        # Normal brightness: no correction
+        correction_factor = 1.0
+    
+    density = raw_density * correction_factor
+    
+    # DIAGNOSTIC: Log vessel density calculation
+    print(f"   [VESSEL] Raw density: {raw_density*100:.1f}%, Brightness: {mean_brightness:.1f}, Correction: {correction_factor:.2f}, Final: {density*100:.1f}%")
+    sys.stdout.flush()
+    
+    return {'density': density, 'mask': vessel_mask, 'brightness_corrected': correction_factor < 1.0}
 
 def extract_pigment_features(img, fov_mask):
     """TRIAD #1: Bone Spicule Pigmentation Detection
@@ -184,19 +207,26 @@ def extract_pigment_features(img, fov_mask):
     l_std = np.std(retinal_l)
     l_median = np.median(retinal_l)
     
-    # Dark threshold: Use percentile-based detection for robustness
-    # Target: Bottom 15% of brightness (captures pigment in any color space)
-    dark_threshold = np.percentile(retinal_l, 15)
-    
-    # Also use relative threshold: mean - 1.5*std (statistical outliers)
-    relative_threshold = max(l_mean - 1.5 * l_std, 30)  # Min 30 to avoid noise
+    # Adaptive approach for bright/color-shifted images
+    if l_mean > 80:
+        # BRIGHT images (autofluorescence, color-shifted): Use 25th percentile + aggressive stats
+        dark_threshold = np.percentile(retinal_l, 25)
+        relative_threshold = max(l_mean - 2.0 * l_std, 30)  # More aggressive
+        # Lower by 15 for brightness compensation
+        brightness_comp = -15
+    else:
+        # NORMAL images: Bottom 15%
+        dark_threshold = np.percentile(retinal_l, 15)
+        relative_threshold = max(l_mean - 1.5 * l_std, 30)
+        brightness_comp = 0
     
     # Use the HIGHER of the two (more conservative, less noise)
-    final_threshold = max(dark_threshold, relative_threshold)
+    final_threshold = max(dark_threshold, relative_threshold) + brightness_comp
     final_threshold = min(final_threshold, 70)  # Cap at 70 for very bright images
     
     # DIAGNOSTIC: Log adaptive thresholds
-    print(f"[PIGMENT] L-channel: mean={l_mean:.1f}, std={std_val:.1f}, percentile_15={dark_threshold:.1f}, relative={relative_threshold:.1f}, final={final_threshold:.1f}")
+    print(f"   [PIGMENT] L-channel: mean={l_mean:.1f}, std={l_std:.1f}, percentile={dark_threshold:.1f}, statistical={relative_threshold:.1f}, brightness_comp={brightness_comp}, final_threshold={final_threshold:.1f}")
+    sys.stdout.flush()
     
     _, dark_mask = cv2.threshold(l_channel, final_threshold, 255, cv2.THRESH_BINARY_INV)
     
@@ -302,7 +332,8 @@ def extract_texture_features(img, fov_mask):
     texture_variation = np.mean(fov_local_std)
     
     # DIAGNOSTIC: Log texture metrics
-    print(f"[TEXTURE] Global entropy={entropy:.2f}, Local variation={texture_variation:.2f}")
+    print(f"[TEXTURE] Global entropy={entropy:.2f}, Local variation={texture_variation:.2f}, Mean brightness={np.mean(gray_float):.1f}")
+    sys.stdout.flush()
     
     return {'entropy': entropy, 'local_variation': texture_variation}
 
@@ -638,11 +669,11 @@ def ai_pattern_recognition_expert(img, is_angiography=False):
             status = "ANOMALY DETECTED"
             severity = "CRITICAL"
             significance = CONFIG["SIGNIFICANCE_MULTIPLIERS"]["ai_high_confidence"]
-        elif confidence > 0.60:
+        elif confidence > 0.55:  # Lowered from 0.60
             status = "SUSPICIOUS"
             severity = "MODERATE"
             significance = 1.3
-        elif confidence > 0.30:
+        elif confidence > 0.25:  # Lowered from 0.30
             status = "MILD CHANGES"
             severity = "MILD"
             significance = 1.0
@@ -735,7 +766,7 @@ def vessel_attenuation_expert(features):
         severity = "MODERATE"
         confidence = 0.80
         significance = CONFIG["SIGNIFICANCE_MULTIPLIERS"]["vessel_moderate"]
-    elif density < 0.15:
+    elif density < 0.25:  # Raised from 0.15 - healthy retinas should be 25%+
         status = "MILD ATTENUATION"
         severity = "MILD"
         confidence = 0.60
@@ -746,13 +777,15 @@ def vessel_attenuation_expert(features):
         confidence = 0.20
         significance = 1.0
     
+    brightness_note = " (brightness corrected)" if features['vessel'].get('brightness_corrected', False) else ""
+    
     return {
         "status": status,
         "confidence": round(confidence * 100, 1),
         "severity": severity,
         "significance": significance,
         "vote": confidence * CONFIG["EXPERT_WEIGHTS"]["vessel_attenuation"] * significance,
-        "detail": f"Vessel density: {density*100:.1f}% (Normal: >15%)",
+        "detail": f"Vessel density: {density*100:.1f}% (Normal: >25%){brightness_note}",
         "triad_positive": severity in ["CRITICAL", "MODERATE"],
         "triad_component": True
     }
@@ -771,7 +804,7 @@ def pigment_bone_spicules_expert(features):
         severity = "MODERATE"
         confidence = 0.80
         significance = CONFIG["SIGNIFICANCE_MULTIPLIERS"]["pigment_moderate"]
-    elif num_clusters >= 15:
+    elif num_clusters >= 8:  # Lowered from 15 for better sensitivity
         status = "MILD PIGMENTATION"
         severity = "MILD"
         confidence = 0.55
@@ -788,7 +821,7 @@ def pigment_bone_spicules_expert(features):
         "severity": severity,
         "significance": significance,
         "vote": confidence * CONFIG["EXPERT_WEIGHTS"]["pigment_bone_spicules"] * significance,
-        "detail": f"Clusters: {num_clusters} (Normal: <15)",
+        "detail": f"Clusters: {num_clusters} (Normal: <8)",
         "triad_positive": severity in ["CRITICAL", "MODERATE"],
         "triad_component": True
     }
@@ -916,7 +949,7 @@ def texture_degeneration_expert(features, is_angiography=False):
         significance = CONFIG["SIGNIFICANCE_MULTIPLIERS"]["texture_irregular"]
         if is_angiography:
             status += " (verify color fundus)"
-    elif entropy > 6.4 or local_var > 25:  # Entropy increased from 6.3 to 6.4 for noise margin
+    elif entropy > 6.4 or local_var > 7.0:  # Lowered from 8 to 7 for better atrophy detection
         status = "MODERATE CHANGES"
         severity = "MILD"
         confidence = 0.50
@@ -935,7 +968,7 @@ def texture_degeneration_expert(features, is_angiography=False):
         "severity": severity,
         "significance": significance,
         "vote": confidence * CONFIG["EXPERT_WEIGHTS"]["texture_degeneration"] * significance,
-        "detail": f"Entropy: {entropy:.2f}, Local: {local_var:.1f} (Normal: <6.4/<25)"
+        "detail": f"Entropy: {entropy:.2f}, Local: {local_var:.1f} (Normal: <6.4/<7.0)"
     }
 
 def spatial_pattern_expert(features):
@@ -1108,6 +1141,12 @@ def analyze_retinal_scan():
     Expected JSON: { "image": "base64_encoded_image", "patientId": "PT-1234" }
     """
     try:
+        # VERY LOUD OUTPUT - Should be impossible to miss
+        print("\n" + "="*70)
+        print("🚨 IMAGE UPLOAD DETECTED - STARTING ANALYSIS 🚨")
+        print("="*70)
+        sys.stdout.flush()
+        
         data = request.get_json()
         
         if 'image' not in data:
@@ -1116,6 +1155,7 @@ def analyze_retinal_scan():
         print(f"\n{'='*70}")
         print(f"[{datetime.now().strftime('%H:%M:%S')}] 🔬 Analyzing scan for {data.get('patientId', 'Unknown')}")
         print(f"{'='*70}")
+        sys.stdout.flush()  # Force output to display immediately
         
         # Preprocess image
         img = preprocess_image(data['image'])
@@ -1128,9 +1168,11 @@ def analyze_retinal_scan():
             print(f"   ⚠️  WARNING: Angiography image detected (confidence: {angio_confidence*100:.1f}%)")
             print(f"   📋 Reason: {angio_reason}")
             print(f"   ℹ️  Continuing analysis with adjusted thresholds...")
+            sys.stdout.flush()
         
         # Extract features (with FOV mask to ignore black borders)
         print("   🧬 Extracting clinical features...")
+        sys.stdout.flush()
         fov_mask = get_fov_mask(img)
         vessel_feats = extract_vessel_features(img, fov_mask, is_angiography=is_angio)
         pigment_feats = extract_pigment_features(img, fov_mask)
@@ -1157,6 +1199,7 @@ def analyze_retinal_scan():
         # Run all 10 expert systems
         print("   👨‍⚕️ Expert panel consultation (10 scanners)...")
         print("   " + "-"*66)
+        sys.stdout.flush()
         
         ai_result = ai_pattern_recognition_expert(img, is_angiography=is_angio)
         vessel_result = vessel_attenuation_expert(features)
@@ -1188,6 +1231,7 @@ def analyze_retinal_scan():
             icon = "✅" if r['severity'] == 'NORMAL' else "⚠️"
             print(f"   {icon} {name:<40} → {r['status']:<20} ({r['confidence']:>5.1f}%)")
             print(f"      Vote: {r['vote']:.4f} | {r.get('detail', '')}")
+        sys.stdout.flush()
         
         # Organize results
         results = {
@@ -1319,6 +1363,7 @@ def analyze_retinal_scan():
         print(f"      Clinical RP Votes: {clinical_rp_votes}/{total_clinical_scanners} | MILD findings: {mild_findings}")
         print(f"      Critical Findings: {critical_count} | Triad Complete: {triad_complete}")
         print(f"      Pathways: SinePigmento={is_sine_pigmento}, RPA={is_rpa}, Sectoral={is_sectoral}")
+        sys.stdout.flush()
 
         # 2. DECISION MATRIX (Medical Priority Order)
         
@@ -1377,6 +1422,15 @@ def analyze_retinal_scan():
             confidence = "MODERATE"
             verdict_code = "SUSPICIOUS"
             print(f"      → Rule 6: CLINICAL CONSENSUS WITHOUT AI ({clinical_rp_votes} votes, AI={ai_confidence*100:.1f}%)")
+        
+        # RULE 6B: PIGMENT DETECTED + AI CONCERN (NEW - Critical for color-shifted RP)
+        # If pigment is MILD+ AND AI shows concern (>30%) → This is likely RP
+        # Pigment + AI agreement is highly specific for RP
+        elif pigment_result['severity'] in ['MILD', 'MODERATE', 'CRITICAL'] and ai_confidence > 0.30:
+            verdict = "POSITIVE: RP DETECTED (PIGMENT + AI CONFIRMED)"
+            confidence = "MODERATE" if ai_confidence < 0.50 else "HIGH"
+            verdict_code = "RP_POSITIVE"
+            print(f"      → Rule 6B: PIGMENT + AI CONCERN (Pigment={pigment_result['severity']}, AI={ai_confidence*100:.1f}%)")
 
         # RULE 7: CRITICAL PERIPHERAL LOSS (STANDALONE)
         # Spatial shows CRITICAL peripheral loss - this alone warrants investigation
@@ -1396,14 +1450,30 @@ def analyze_retinal_scan():
             verdict_code = "SUSPICIOUS"
             print(f"      → Rule 8: MODERATE PERIPHERAL LOSS + AI CONCERN (Spatial={spatial_result['severity']}, AI={ai_confidence*100:.1f}%, Mild={mild_findings})")
 
-        # RULE 9: MULTIPLE MILD FINDINGS (NEW)
-        # If 3+ scanners show MILD abnormalities + AI shows any concern (>30%)
-        # Something is wrong - needs clinical review
-        elif mild_findings >= 3 and ai_confidence > 0.30:
-            verdict = "SUSPICIOUS: MULTIPLE SUBTLE ANOMALIES"
+        # RULE 9: MULTIPLE MILD FINDINGS (STRENGTHENED)
+        # If 3+ scanners show MILD + AI concern + PIGMENT involved → POSITIVE
+        # Otherwise SUSPICIOUS for clinical review
+        elif mild_findings >= 3 and ai_confidence > 0.25:  # Lowered from 0.30 to 0.25
+            # If pigment is one of the findings, upgrade to POSITIVE
+            if pigment_result['severity'] in ['MILD', 'MODERATE', 'CRITICAL']:
+                verdict = "POSITIVE: RP DETECTED (MULTIPLE FINDINGS + PIGMENT)"
+                confidence = "MODERATE"
+                verdict_code = "RP_POSITIVE"
+                print(f"      → Rule 9: MULTIPLE FINDINGS + PIGMENT ({mild_findings} mild, Pigment={pigment_result['severity']}, AI={ai_confidence*100:.1f}%)")
+            else:
+                verdict = "SUSPICIOUS: MULTIPLE SUBTLE ANOMALIES"
+                confidence = "LOW"
+                verdict_code = "SUSPICIOUS"
+                print(f"      → Rule 9: MULTIPLE MILD FINDINGS ({mild_findings} mild + AI={ai_confidence*100:.1f}%)")
+        
+        # RULE 9B: AI MODERATE CONCERN + MILD FINDINGS
+        # If AI shows moderate concern (>35%) + 2+ mild findings
+        # Early RP or variant that needs attention
+        elif ai_confidence > 0.35 and mild_findings >= 2:
+            verdict = "SUSPICIOUS: AI CONCERN WITH CLINICAL FINDINGS"
             confidence = "LOW"
             verdict_code = "SUSPICIOUS"
-            print(f"      → Rule 9: MULTIPLE MILD FINDINGS ({mild_findings} mild + AI={ai_confidence*100:.1f}%)")
+            print(f"      → Rule 9B: AI CONCERN + FINDINGS (AI={ai_confidence*100:.1f}%, Mild={mild_findings})")
 
         # RULE 10: HEALTHY / NEGATIVE
         # None of the above criteria met. Insufficient evidence for RP.
@@ -1422,6 +1492,7 @@ def analyze_retinal_scan():
         print(f"   📊 Score: {base_score:.3f} | Confidence: {confidence}")
         print(f"   📋 Consensus: {clinical_rp_votes}/{total_clinical_scanners} Experts + AI: {'YES' if ai_says_rp else 'NO'}")
         print(f"{'='*70}\n")
+        sys.stdout.flush()  # Force output to terminal
         
         # Collect critical findings
         critical_findings = []
@@ -1491,7 +1562,13 @@ def analyze_retinal_scan():
             "warning": f"⚠️ ANGIOGRAPHY DETECTED: This appears to be a fluorescein/ICG angiography image. Results may be less reliable than color fundus analysis. ({angio_reason})" if is_angio else None
         }
         
-        return jsonify(response), 200
+        # Add cache control headers to prevent browser caching
+        import flask
+        resp = flask.make_response(jsonify(response), 200)
+        resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        resp.headers['Pragma'] = 'no-cache'
+        resp.headers['Expires'] = '0'
+        return resp
         
     except Exception as e:
         print(f"❌ Error during analysis: {str(e)}")
@@ -1596,5 +1673,8 @@ if __name__ == '__main__':
     print(f"📡 System Info: http://localhost:5001/api/models/info")
     print(f"📡 Analysis Endpoint: POST http://localhost:5001/api/analyze")
     print("\n" + "="*70 + "\n")
+    print("🔊 DEBUG MODE: DISABLED (Terminal output will show here)")
+    print("ℹ️  To enable auto-reload, set debug=True in app.run()\n")
+    sys.stdout.flush()
     
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=False)
