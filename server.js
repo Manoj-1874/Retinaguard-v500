@@ -25,16 +25,40 @@ mongoose.connect('mongodb://127.0.0.1:27017/retinaguard')
 const ReportSchema = new mongoose.Schema({
     patientId: String,
     date: { type: Date, default: Date.now },
-    results: {
-        vessels: String,
-        macula: String,
-        drusen: String,
-        nerves: String,
-        bleeds: String,
-        scar: String,
+    
+    // Patient Demographics & History
+    patient_history: {
+        age: Number,
+        ethnicity: String,
+        symptoms: Object,
+        family_history: Boolean,
+        risk_score: Number
     },
+    
+    // Image Metadata
+    camera_type: String,
+    quality_score: Number,
+    is_angiography: Boolean,
+    angiography_warning: String,
+    
+    // Expert Analysis Results
+    results: Object, // All expert opinions
+    expert_opinions: Array, // Full expert array
+    
+    // Diagnosis & Findings
     verdict: String,
-    confidence: String
+    verdict_code: String,
+    confidence: String,
+    compositeScore: Number,
+    
+    // Clinical Details
+    triadStatus: Object,
+    criticalFindings: Array,
+    differential_diagnosis: Array,
+    
+    // Metadata
+    image_resolution: String,
+    analysis_duration: Number
 });
 
 const Report = mongoose.model('Report', ReportSchema);
@@ -72,6 +96,25 @@ app.get('/api/reports', async (req, res) => {
         res.status(200).json(reports);
     } catch (error) {
         res.status(500).json({ error: "Failed to fetch reports" });
+    }
+});
+
+// Fetch individual report by ID
+app.get('/api/reports/:id', async (req, res) => {
+    if (!mongoConnected) {
+        return res.status(503).json({ 
+            error: "Database unavailable", 
+            message: "MongoDB is not running." 
+        });
+    }
+    try {
+        const report = await Report.findById(req.params.id);
+        if (!report) {
+            return res.status(404).json({ error: "Report not found" });
+        }
+        res.status(200).json(report);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to fetch report" });
     }
 });
 

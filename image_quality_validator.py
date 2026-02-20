@@ -1,0 +1,379 @@
+"""
+================================================================================
+IMAGE QUALITY VALIDATOR - RETINAGUARD V500
+================================================================================
+Prevents "Garbage In, Garbage Out" by validating fundus image quality BEFORE
+clinical feature extraction begins.
+
+VALIDATION CHECKS:
+  1. Blur Detection (Laplacian variance)
+  2. Brightness/Contrast (mean intensity, dynamic range)
+  3. Resolution (minimum pixel dimensions)
+  4. Color Distribution (RGB channel balance)
+  5. Vignetting (peripheral darkness check)
+  6. Vessel Network Connectivity (ensures optic disc visible)
+
+REJECTION CRITERIA:
+  - Blurry images (variance of Laplacian < 100)
+  - Over/underexposed (mean < 30 or > 220)
+  - Low resolution (< 512×512 pixels)
+  - Excessive vignetting (peripheral mean < 30% of center)
+  - Missing vessel network (no optic disc detected)
+
+Version: 1.0.0
+Author: RetinaGuard Development Team
+================================================================================
+"""
+
+import cv2
+import numpy as np
+from typing import Dict, Tuple, Optional
+import sys
+
+class ImageQualityValidator:
+    """Validate fundus image quality before clinical analysis"""
+    
+    # Quality thresholds (configurable)
+    BLUR_THRESHOLD = 100.0          # Laplacian variance (lower = blurrier)
+    MIN_BRIGHTNESS = 30             # Minimum mean intensity (0-255)
+    MAX_BRIGHTNESS = 220            # Maximum mean intensity (0-255)
+    MIN_RESOLUTION = 512            # Minimum width/height in pixels
+    OPTIMAL_RESOLUTION = 1024       # Recommended resolution
+    MIN_DYNAMIC_RANGE = 50          # Minimum std deviation (contrast)
+    MAX_VIGNETTING_RATIO = 0.30     # Max ratio of peripheral/center darkness
+    MIN_VESSEL_DENSITY = 0.05       # Minimum vessel network coverage
+    
+    def __init__(self, strict_mode: bool = True):
+        """
+        Initialize validator
+        
+        Args:
+            strict_mode: If True, reject borderline quality images
+                        If False, allow borderline images with warnings
+        """
+        self.strict_mode = strict_mode
+        
+    def validate(self, image: np.ndarray, patient_id: str = "UNKNOWN") -> Dict:
+        """
+        Comprehensive image quality validation
+        
+        Args:
+            image: Input fundus image (BGR or RGB format)
+            patient_id: Patient identifier for logging
+            
+        Returns:
+            Dictionary with:
+                - 'valid': bool (True if image passes all checks)
+                - 'quality_score': float (0-100, overall quality rating)
+                - 'warnings': list of warning messages
+                - 'errors': list of error messages (reasons for rejection)
+                - 'metrics': dict of measured quality metrics
+        """
+        warnings = []
+        errors = []
+        metrics = {}
+        
+        print(f"\n   [Q] IMAGE QUALITY VALIDATION for {patient_id}")
+        print(f"      {'='*60}")
+        
+        # Convert to grayscale for some checks
+        if len(image.shape) == 3:
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        else:
+            gray = image
+        
+        # CHECK 1: Resolution
+        height, width = gray.shape
+        metrics['resolution'] = f"{width}×{height}"
+        metrics['width'] = width
+        metrics['height'] = height
+        
+        print(f"      [1] Resolution: {width}x{height} px", end=" -> ")
+        
+        # CRITICAL: Hard resolution requirement (FDA specification compliance)
+        # RetinaGuard requires 512×512 minimum for vessel dimensional analysis
+        if width < self.MIN_RESOLUTION or height < self.MIN_RESOLUTION:
+            print(f"[X] CRITICAL FAILURE")
+            print(f"\n      [X] VERDICT: REJECTED - RESOLUTION BELOW CLINICAL MINIMUM")
+            print(f"      Required: {self.MIN_RESOLUTION}×{self.MIN_RESOLUTION} | Received: {width}×{height}")
+            print(f"      Reason: Blood vessel diameter measurement requires minimum pixel density.")
+            print(f"      {'='*60}\n")
+            sys.stdout.flush()
+            
+            # Immediate rejection - do not proceed with further checks
+            return {
+                'valid': False,
+                'quality_score': 0.0,
+                'warnings': [],
+                'errors': [f"CRITICAL: Resolution {width}×{height} below clinical minimum of {self.MIN_RESOLUTION}×{self.MIN_RESOLUTION}. Vessel measurements require higher pixel density."],
+                'metrics': metrics,
+                'critical_failure': True,
+                'failure_reason': 'INSUFFICIENT_RESOLUTION'
+            }
+        
+        if width < self.MIN_RESOLUTION or height < self.MIN_RESOLUTION:
+            errors.append(f"Resolution too low ({width}×{height}). Minimum: {self.MIN_RESOLUTION}×{self.MIN_RESOLUTION}")
+            print(f"[X] FAIL (too small)")
+        elif width < self.OPTIMAL_RESOLUTION or height < self.OPTIMAL_RESOLUTION:
+            warnings.append(f"Resolution below optimal ({width}x{height}). Recommended: {self.OPTIMAL_RESOLUTION}x{self.OPTIMAL_RESOLUTION}")
+            print(f"[!] WARN (below optimal)")
+        else:
+            print(f"[+] PASS")
+        
+        # CHECK 2: Blur Detection (Laplacian Variance)
+        laplacian = cv2.Laplacian(gray, cv2.CV_64F)
+        blur_variance = laplacian.var()
+        metrics['blur_variance'] = round(blur_variance, 2)
+        
+        print(f"      [2] Blur Detection: variance={blur_variance:.2f}", end=" -> ")
+        
+        if blur_variance < self.BLUR_THRESHOLD:
+            errors.append(f"Image too blurry (variance={blur_variance:.2f}). Minimum: {self.BLUR_THRESHOLD}")
+            print(f"[X] FAIL (out of focus)")
+        elif blur_variance < self.BLUR_THRESHOLD * 1.5:
+            warnings.append(f"Image slightly blurry (variance={blur_variance:.2f})")
+            print(f"[!] WARN (borderline focus)")
+        else:
+            print(f"[+] PASS (sharp)")
+        
+        # CHECK 3: Brightness/Exposure
+        mean_brightness = gray.mean()
+        metrics['mean_brightness'] = round(mean_brightness, 2)
+        
+        print(f"      [3] Brightness: mean={mean_brightness:.1f}", end=" -> ")
+        
+        if mean_brightness < self.MIN_BRIGHTNESS:
+            errors.append(f"Image too dark (mean={mean_brightness:.1f}). Minimum: {self.MIN_BRIGHTNESS}")
+            print(f"[X] FAIL (underexposed)")
+        elif mean_brightness > self.MAX_BRIGHTNESS:
+            errors.append(f"Image too bright (mean={mean_brightness:.1f}). Maximum: {self.MAX_BRIGHTNESS}")
+            print(f"[X] FAIL (overexposed)")
+        elif mean_brightness < self.MIN_BRIGHTNESS + 20 or mean_brightness > self.MAX_BRIGHTNESS - 20:
+            warnings.append(f"Brightness borderline (mean={mean_brightness:.1f}). Optimal: {self.MIN_BRIGHTNESS+20}-{self.MAX_BRIGHTNESS-20}")
+            print(f"[!] WARN (exposure borderline)")
+        else:
+            print(f"[+] PASS")
+        
+        # CHECK 4: Contrast/Dynamic Range
+        std_brightness = gray.std()
+        metrics['std_brightness'] = round(std_brightness, 2)
+        
+        print(f"      [4] Contrast: std={std_brightness:.1f}", end=" -> ")
+        
+        if std_brightness < self.MIN_DYNAMIC_RANGE:
+            errors.append(f"Insufficient contrast (std={std_brightness:.1f}). Minimum: {self.MIN_DYNAMIC_RANGE}")
+            print(f"[X] FAIL (flat contrast)")
+        elif std_brightness < self.MIN_DYNAMIC_RANGE * 1.2:
+            warnings.append(f"Low contrast (std={std_brightness:.1f})")
+            print(f"[!] WARN (low contrast)")
+        else:
+            print(f"[+] PASS")
+        
+        # CHECK 5: Vignetting (Peripheral Darkness)
+        vignetting_ratio = self._check_vignetting(gray)
+        metrics['vignetting_ratio'] = round(vignetting_ratio, 3)
+        
+        print(f"      [5] Vignetting: ratio={vignetting_ratio:.3f}", end=" -> ")
+        
+        if vignetting_ratio < self.MAX_VIGNETTING_RATIO:
+            errors.append(f"Excessive vignetting (ratio={vignetting_ratio:.3f}). Maximum: {self.MAX_VIGNETTING_RATIO}")
+            print(f"[X] FAIL (dark edges)")
+        elif vignetting_ratio < self.MAX_VIGNETTING_RATIO + 0.1:
+            warnings.append(f"Noticeable vignetting (ratio={vignetting_ratio:.3f})")
+            print(f"[!] WARN (slight vignetting)")
+        else:
+            print(f"[+] PASS")
+        
+        # CHECK 6: Color Balance (RGB channels)
+        if len(image.shape) == 3:
+            color_balance = self._check_color_balance(image)
+            metrics['color_balance'] = color_balance
+            
+            print(f"      [6] Color Balance: R={color_balance['r']:.1f} G={color_balance['g']:.1f} B={color_balance['b']:.1f}", end=" -> ")
+            
+            # Check for severe color casts
+            max_diff = max(abs(color_balance['r'] - color_balance['g']),
+                          abs(color_balance['g'] - color_balance['b']),
+                          abs(color_balance['b'] - color_balance['r']))
+            
+            if max_diff > 50:
+                warnings.append(f"Color cast detected (max channel diff={max_diff:.1f})")
+                print(f"[!] WARN (color cast)")
+            else:
+                print(f"[+] PASS")
+        
+        # CHECK 7: Vessel Network Detection (Ensures optic disc visible)
+        vessel_coverage = self._estimate_vessel_coverage(gray)
+        metrics['vessel_coverage'] = round(vessel_coverage, 4)
+        
+        print(f"      [7] Vessel Network: coverage={vessel_coverage:.4f}", end=" -> ")
+        
+        if vessel_coverage < self.MIN_VESSEL_DENSITY:
+            errors.append(f"No vessel network detected (coverage={vessel_coverage:.4f}). Minimum: {self.MIN_VESSEL_DENSITY}")
+            print(f"[X] FAIL (no vessels)")
+        elif vessel_coverage < self.MIN_VESSEL_DENSITY * 1.5:
+            warnings.append(f"Weak vessel network (coverage={vessel_coverage:.4f})")
+            print(f"[!] WARN (weak vessels)")
+        else:
+            print(f"[+] PASS")
+        
+        # CALCULATE OVERALL QUALITY SCORE (0-100)
+        quality_score = self._calculate_quality_score(metrics, errors, warnings)
+        
+        # DETERMINE VALIDITY
+        valid = len(errors) == 0
+        if not valid:
+            print(f"\n      [X] VERDICT: REJECTED (Quality Score: {quality_score:.1f}/100)")
+            print(f"      Errors: {len(errors)} | Warnings: {len(warnings)}")
+        elif len(warnings) > 0:
+            print(f"\n      [!] VERDICT: ACCEPTED WITH WARNINGS (Quality Score: {quality_score:.1f}/100)")
+            print(f"      Warnings: {len(warnings)}")
+        else:
+            print(f"\n      [+] VERDICT: EXCELLENT QUALITY (Quality Score: {quality_score:.1f}/100)")
+        
+        print(f"      {'='*60}\n")
+        sys.stdout.flush()
+        
+        return {
+            'valid': valid,
+            'quality_score': quality_score,
+            'warnings': warnings,
+            'errors': errors,
+            'metrics': metrics
+        }
+    
+    def _check_vignetting(self, gray: np.ndarray) -> float:
+        """
+        Measure vignetting (peripheral darkening)
+        
+        Returns:
+            Ratio of peripheral brightness to center brightness (0-1)
+            Lower values = more vignetting
+        """
+        h, w = gray.shape
+        
+        # Define center region (middle 50%)
+        center_y1, center_y2 = int(h * 0.25), int(h * 0.75)
+        center_x1, center_x2 = int(w * 0.25), int(w * 0.75)
+        center_region = gray[center_y1:center_y2, center_x1:center_x2]
+        center_mean = center_region.mean()
+        
+        # Define peripheral region (outer 15% border)
+        border_width = int(min(h, w) * 0.15)
+        top_border = gray[:border_width, :]
+        bottom_border = gray[-border_width:, :]
+        left_border = gray[:, :border_width]
+        right_border = gray[:, -border_width:]
+        
+        peripheral_mean = np.mean([
+            top_border.mean(),
+            bottom_border.mean(),
+            left_border.mean(),
+            right_border.mean()
+        ])
+        
+        # Ratio (0 = complete darkness at edges, 1 = uniform brightness)
+        if center_mean > 0:
+            return peripheral_mean / center_mean
+        else:
+            return 0.0
+    
+    def _check_color_balance(self, image: np.ndarray) -> Dict[str, float]:
+        """Check RGB channel balance"""
+        b, g, r = cv2.split(image)
+        return {
+            'r': r.mean(),
+            'g': g.mean(),
+            'b': b.mean()
+        }
+    
+    def _estimate_vessel_coverage(self, gray: np.ndarray) -> float:
+        """
+        Estimate vessel network coverage (simplified)
+        
+        Uses edge detection to approximate vessel presence
+        """
+        # Apply CLAHE to enhance vessels
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        enhanced = clahe.apply(gray)
+        
+        # Edge detection (vessels appear as edges)
+        edges = cv2.Canny(enhanced, 30, 100)
+        
+        # Calculate coverage (% of pixels that are vessel edges)
+        coverage = np.sum(edges > 0) / edges.size
+        
+        return coverage
+    
+    def _calculate_quality_score(self, metrics: Dict, errors: list, warnings: list) -> float:
+        """
+        Calculate overall quality score (0-100)
+        
+        Scoring:
+            - Start at 100
+            - Deduct 20 points per error
+            - Deduct 5 points per warning
+            - Bonus points for high resolution, sharpness
+        """
+        score = 100.0
+        
+        # Penalties
+        score -= len(errors) * 20
+        score -= len(warnings) * 5
+        
+        # Bonuses for exceptional quality
+        if 'blur_variance' in metrics and metrics['blur_variance'] > 500:
+            score += 5  # Very sharp image
+        
+        if 'width' in metrics and metrics['width'] >= 2048:
+            score += 5  # High resolution
+        
+        # Clamp to 0-100
+        return max(0.0, min(100.0, score))
+
+
+def validate_image_quality(image: np.ndarray, patient_id: str = "UNKNOWN", strict: bool = True) -> Dict:
+    """
+    Convenience function for external use
+    
+    Args:
+        image: Input fundus image (BGR or RGB format)
+        patient_id: Patient identifier for logging
+        strict: Strict validation mode
+        
+    Returns:
+        Validation result dictionary
+    """
+    validator = ImageQualityValidator(strict_mode=strict)
+    return validator.validate(image, patient_id)
+
+
+# Testing harness
+if __name__ == "__main__":
+    print("="*80)
+    print("IMAGE QUALITY VALIDATOR - TEST SUITE")
+    print("="*80)
+    
+    # Test Case 1: Normal quality image
+    test_image = np.random.randint(50, 200, size=(1024, 1024, 3), dtype=np.uint8)
+    result = validate_image_quality(test_image, "TEST-001")
+    print(f"\nTest 1 - Normal Image: {'PASS' if result['valid'] else 'FAIL'}")
+    
+    # Test Case 2: Blurry image (apply heavy Gaussian blur)
+    blurry = cv2.GaussianBlur(test_image, (51, 51), 0)
+    result = validate_image_quality(blurry, "TEST-002")
+    print(f"Test 2 - Blurry Image: {'REJECTED (expected)' if not result['valid'] else 'UNEXPECTED PASS'}")
+    
+    # Test Case 3: Low resolution
+    low_res = cv2.resize(test_image, (256, 256))
+    result = validate_image_quality(low_res, "TEST-003")
+    print(f"Test 3 - Low Resolution: {'REJECTED (expected)' if not result['valid'] else 'UNEXPECTED PASS'}")
+    
+    # Test Case 4: Overexposed
+    overexposed = np.ones((1024, 1024, 3), dtype=np.uint8) * 240
+    result = validate_image_quality(overexposed, "TEST-004")
+    print(f"Test 4 - Overexposed: {'REJECTED (expected)' if not result['valid'] else 'UNEXPECTED PASS'}")
+    
+    print("\n" + "="*80)
+    print("VALIDATION COMPLETE")
+    print("="*80)

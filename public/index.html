@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RetinaGuard | Command Center</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>👁️</text></svg>">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -329,11 +330,76 @@
     </div>
 
     <div class="modal-overlay" id="patient-modal">
-        <div class="modal-content" style="width: 450px; text-align: center;">
+        <div class="modal-content" style="width: 550px; text-align: center; max-height: 90vh; overflow-y: auto;">
             <i class="fa-solid fa-xmark modal-close btn-hover" onclick="closePatientModal()"></i>
             <div class="modal-header-text" style="font-size: 22px; margin-bottom: 10px; border:none;">INITIALIZE SCAN</div>
-            <p style="color: #88ccff; font-size: 12px; margin-bottom: 25px; letter-spacing: 1px;">ENTER PATIENT IDENTIFIER TO BEGIN</p>
-            <input type="text" id="patient-id-input" class="tactical-input" placeholder="e.g. PT-1042">
+            <p style="color: #88ccff; font-size: 12px; margin-bottom: 25px; letter-spacing: 1px;">ENTER PATIENT INFORMATION TO BEGIN</p>
+            
+            <!-- Patient ID -->
+            <input type="text" id="patient-id-input" class="tactical-input" placeholder="Patient ID (e.g. PT-1042)" style="margin-bottom: 15px;">
+            
+            <!-- NEW: Patient Demographics -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div>
+                    <label style="color: #88ccff; font-size: 11px; display: block; margin-bottom: 5px; text-align: left;">AGE (years)</label>
+                    <input type="number" id="patient-age-input" class="tactical-input" placeholder="e.g. 45" min="0" max="120">
+                </div>
+                <div>
+                    <label style="color: #88ccff; font-size: 11px; display: block; margin-bottom: 5px; text-align: left;">ETHNICITY</label>
+                    <select id="patient-ethnicity-input" class="tactical-input" style="cursor: pointer;">
+                        <option value="Caucasian">Caucasian</option>
+                        <option value="African">African/African American</option>
+                        <option value="Asian">East Asian</option>
+                        <option value="South_Asian">South Asian</option>
+                        <option value="Hispanic">Hispanic/Latino</option>
+                        <option value="Middle_Eastern">Middle Eastern</option>
+                        <option value="Other">Other/Mixed</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- NEW: Camera Type -->
+            <div style="margin-bottom: 15px;">
+                <label style="color: #88ccff; font-size: 11px; display: block; margin-bottom: 5px; text-align: left;">FUNDUS CAMERA TYPE</label>
+                <select id="camera-type-input" class="tactical-input" style="cursor: pointer;">
+                    <option value="Generic">Generic/Unknown</option>
+                    <option value="Topcon">Topcon</option>
+                    <option value="Zeiss">Zeiss</option>
+                    <option value="Canon">Canon</option>
+                    <option value="Optomed">Optomed (Handheld)</option>
+                    <option value="Smartphone">Smartphone Adapter</option>
+                </select>
+            </div>
+            
+            <!-- NEW: Clinical Symptoms -->
+            <div style="margin-bottom: 15px; text-align: left; background: rgba(0,243,255,0.05); padding: 15px; border: 1px solid rgba(0,243,255,0.2); border-radius: 4px;">
+                <label style="color: #00f3ff; font-size: 12px; font-weight: bold; display: block; margin-bottom: 10px;">CLINICAL SYMPTOMS (Check all that apply)</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <label style="color: #ccc; font-size: 11px; cursor: pointer; display: flex; align-items: center;">
+                        <input type="checkbox" id="symptom-night-blindness" style="margin-right: 8px; cursor: pointer;"> Night Blindness
+                    </label>
+                    <label style="color: #ccc; font-size: 11px; cursor: pointer; display: flex; align-items: center;">
+                        <input type="checkbox" id="symptom-tunnel-vision" style="margin-right: 8px; cursor: pointer;"> Tunnel Vision
+                    </label>
+                    <label style="color: #ccc; font-size: 11px; cursor: pointer; display: flex; align-items: center;">
+                        <input type="checkbox" id="symptom-dark-adaptation" style="margin-right: 8px; cursor: pointer;"> Poor Dark Adaptation
+                    </label>
+                    <label style="color: #ccc; font-size: 11px; cursor: pointer; display: flex; align-items: center;">
+                        <input type="checkbox" id="symptom-photophobia" style="margin-right: 8px; cursor: pointer;"> Photophobia
+                    </label>
+                    <label style="color: #ccc; font-size: 11px; cursor: pointer; display: flex; align-items: center;">
+                        <input type="checkbox" id="symptom-color-vision" style="margin-right: 8px; cursor: pointer;"> Color Vision Loss
+                    </label>
+                    <label style="color: #ccc; font-size: 11px; cursor: pointer; display: flex; align-items: center;">
+                        <input type="checkbox" id="symptom-floaters" style="margin-right: 8px; cursor: pointer;"> Floaters/Flashes
+                    </label>
+                </div>
+                <label style="color: #ccc; font-size: 11px; cursor: pointer; display: flex; align-items: center; margin-top: 10px;">
+                    <input type="checkbox" id="family-history-rp" style="margin-right: 8px; cursor: pointer;"> 
+                    <strong style="color: #ff9900;">Family History of RP</strong>
+                </label>
+            </div>
+            
             <button class="save-btn btn-hover" onclick="confirmPatientId()" style="width: 100%;">
                 <i class="fa-solid fa-fingerprint"></i> AUTHENTICATE & UPLOAD
             </button>
@@ -357,6 +423,39 @@
         </div>
     </div>
 
+    <!-- Error Modal for Quality Rejections -->
+    <div class="modal-overlay" id="error-modal">
+        <div class="modal-content" style="width: 650px; max-width: 90vw;">
+            <i class="fa-solid fa-xmark modal-close btn-hover" onclick="closeErrorModal()"></i>
+            <div class="modal-header-text" style="color: #ff4444; border-color: rgba(255,68,68,0.3);">
+                <i class="fa-solid fa-triangle-exclamation"></i> ANALYSIS REJECTED
+            </div>
+            <div style="padding: 20px 0;">
+                <div id="error-message" style="color: #ff8888; font-size: 16px; margin-bottom: 20px; line-height: 1.6;"></div>
+                <div id="error-issues" style="background: rgba(255,68,68,0.05); border: 1px solid rgba(255,68,68,0.2); border-radius: 4px; padding: 15px; margin-bottom: 20px;"></div>
+                <div id="error-recommendation" style="background: rgba(0,243,255,0.05); border: 1px solid rgba(0,243,255,0.2); border-radius: 4px; padding: 15px; color: #88ccff; font-size: 14px; line-height: 1.6;"></div>
+                <div style="text-align: center; margin-top: 25px;">
+                    <button onclick="closeErrorModal()" class="action-btn btn-hover" style="background: linear-gradient(135deg, #ff4444, #cc0000); padding: 12px 40px; border: none; color: white; font-family: 'Orbitron'; font-size: 14px; letter-spacing: 2px; cursor: pointer; border-radius: 4px; box-shadow: 0 0 20px rgba(255,68,68,0.3);">
+                        UNDERSTOOD
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Report Modal -->
+    <div class="modal-overlay" id="report-detail-modal">
+        <div class="modal-content" style="width: 900px; max-width: 95vw; max-height: 90vh; overflow-y: auto;">
+            <i class="fa-solid fa-xmark modal-close btn-hover" onclick="closeReportDetailModal()"></i>
+            <div class="modal-header-text">
+                <i class="fa-solid fa-file-medical"></i> PATIENT ANALYSIS REPORT
+            </div>
+            <div id="report-detail-content" style="padding: 20px 0;">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- AUDIO CONTROLLER ---
         const sfxHover = document.getElementById('sfx-hover');
@@ -374,6 +473,8 @@
         let currentPatientName = "Unknown";
         let currentImageBase64 = null;
         let currentAnalysisResult = null;
+        let currentPatientData = null; // NEW: Patient history data
+        let currentCameraType = "Generic"; // NEW: Camera type
         let isAnimating = false; // System lock for transitions
         let isProcessing = false;
         const ALL_SCREENS = ['lobby', 'armory-ui', 'archive-ui', 'processing', 'results'];
@@ -501,7 +602,7 @@
                             const sColor = isAnomaly ? "#ff9900" : "#00ff88";
                             const iColor = isAnomaly ? "#ff0055" : "#00ff88";
                             const iClass = isAnomaly ? "fa-triangle-exclamation" : "fa-check";
-                            return `<div style="background:rgba(10,15,25,0.8); border:1px solid rgba(255,255,255,0.05); border-left:4px solid ${iColor}; padding:20px 30px; display:flex; justify-content:space-between; align-items:center; border-radius:4px; margin-bottom:10px;">
+                            return `<div onclick="loadReportDetail('${record._id}')" class="btn-hover" style="background:rgba(10,15,25,0.8); border:1px solid rgba(255,255,255,0.05); border-left:4px solid ${iColor}; padding:20px 30px; display:flex; justify-content:space-between; align-items:center; border-radius:4px; margin-bottom:10px; cursor: pointer; transition: all 0.3s;">
                                 <div style="display:flex; align-items:center; gap:20px;">
                                     <i class="fa-solid ${iClass}" style="color:${iColor}; font-size:24px;"></i>
                                     <div><div style="font-family:'Orbitron'; font-size:20px; color:white;">${record.patientId || 'UNKNOWN'}</div><div style="color:#666; font-size:11px;">${date}</div></div>
@@ -535,11 +636,357 @@
             anime({ targets: pModal, opacity: 0, duration: 300, complete: () => { pModal.style.display = 'none'; } });
         }
 
+        function showErrorModal(errorData) {
+            const modal = document.getElementById('error-modal');
+            const messageEl = document.getElementById('error-message');
+            const issuesEl = document.getElementById('error-issues');
+            const recommendationEl = document.getElementById('error-recommendation');
+            
+            // Set main error message
+            messageEl.textContent = errorData.error || 'Image quality too low for reliable analysis';
+            
+            // Display quality issues
+            if (errorData.errors && errorData.errors.length > 0) {
+                issuesEl.innerHTML = '<div style="font-family: Orbitron; color: #ff4444; margin-bottom: 10px; font-size: 12px; letter-spacing: 1px;">CRITICAL ISSUES:</div>' +
+                    errorData.errors.map(issue => '<div style="color: #ffaaaa; margin-left: 15px; margin-bottom: 5px; font-size: 13px;">• ' + issue + '</div>').join('');
+                issuesEl.style.display = 'block';
+            } else if (errorData.issues && errorData.issues.length > 0) {
+                issuesEl.innerHTML = '<div style="font-family: Orbitron; color: #ff4444; margin-bottom: 10px; font-size: 12px; letter-spacing: 1px;">IMAGE QUALITY ISSUES:</div>' +
+                    errorData.issues.map(issue => '<div style="color: #ffaaaa; margin-left: 15px; margin-bottom: 5px; font-size: 13px;">• ' + issue + '</div>').join('');
+                issuesEl.style.display = 'block';
+            } else {
+                issuesEl.style.display = 'none';
+            }
+            
+            // Display recommendation
+            if (errorData.recommendation) {
+                recommendationEl.innerHTML = '<div style="font-family: Orbitron; color: #00f3ff; margin-bottom: 8px; font-size: 11px; letter-spacing: 1px;">RECOMMENDATION:</div>' +
+                    '<div>' + errorData.recommendation + '</div>';
+                recommendationEl.style.display = 'block';
+            } else {
+                recommendationEl.style.display = 'none';
+            }
+            
+            // Show modal
+            modal.style.display = 'flex';
+            anime({ targets: modal, opacity: 1, duration: 300, easing: 'easeOutQuad' });
+        }
+
+        function closeErrorModal() {
+            const modal = document.getElementById('error-modal');
+            anime({ targets: modal, opacity: 0, duration: 200, easing: 'linear',
+                complete: () => { 
+                    modal.style.display = 'none';
+                    // Navigate back to lobby after closing modal
+                    navigate('lobby', 0, -7, 28, Math.PI/3, 0);
+                }
+            });
+        }
+
+        // --- DETAILED REPORT VIEWING ---
+        async function loadReportDetail(reportId) {
+            sfxClick.play().catch(e=>{});
+            const modal = document.getElementById('report-detail-modal');
+            const content = document.getElementById('report-detail-content');
+            
+            // Show loading state
+            content.innerHTML = '<div style="text-align:center; padding:60px; color:#00f3ff;"><i class="fa-solid fa-spinner fa-spin" style="font-size:40px;"></i><div style="margin-top:20px; font-family:Orbitron; letter-spacing:2px;">LOADING REPORT...</div></div>';
+            modal.style.display = 'flex';
+            anime({ targets: modal, opacity: 1, duration: 300, easing: 'easeOutQuad' });
+            
+            try {
+                const response = await fetch(`http://localhost:5000/api/reports/${reportId}`);
+                if (!response.ok) throw new Error('Failed to fetch report');
+                const report = await response.json();
+                
+                console.log('📄 LOADING PATIENT REPORT:', report.patientId);
+                console.log('📦 Full Report Data:', report);
+                console.log('🔬 Expert Opinions Count:', report.expert_opinions?.length || 0);
+                console.log('🎯 Verdict:', report.verdict);
+                
+                displayReportDetail(report);
+            } catch (error) {
+                console.error('❌ Failed to load report:', error);
+                content.innerHTML = '<div style="text-align:center; padding:60px; color:#ff4444;"><i class="fa-solid fa-triangle-exclamation" style="font-size:40px;"></i><div style="margin-top:20px; font-family:Orbitron;">FAILED TO LOAD REPORT</div><div style="color:#ffaaaa; font-size:12px; margin-top:10px;">' + error.message + '</div></div>';
+            }
+        }
+
+        function displayReportDetail(report) {
+            const content = document.getElementById('report-detail-content');
+            const date = new Date(report.date).toLocaleString();
+            const isAnomaly = report.verdict.includes('POSITIVE');
+            const verdictColor = isAnomaly ? '#ff4444' : report.verdict.includes('SUSPICIOUS') ? '#ff9900' : report.verdict.includes('BORDERLINE') ? '#ffcc00' : '#00ff88';
+            
+            let html = `
+                <!-- Header Section -->
+                <div style="background: rgba(0,243,255,0.05); border: 1px solid rgba(0,243,255,0.2); padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-family: Orbitron; font-size: 24px; color: white; margin-bottom: 5px;">${report.patientId}</div>
+                            <div style="color: #88ccff; font-size: 12px;">${date}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-family: Orbitron; font-size: 18px; color: ${verdictColor}; margin-bottom: 5px;">${report.verdict}</div>
+                            <div style="color: #88ccff; font-size: 12px;">CONFIDENCE: <span style="color: white;">${report.confidence}</span></div>
+                            ${report.compositeScore !== undefined ? `<div style="color: #88ccff; font-size: 12px; margin-top: 3px;">COMPOSITE SCORE: <span style="color: white;">${(report.compositeScore * 100).toFixed(1)}%</span></div>` : ''}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Overall Analysis Summary -->
+                <div style="background: linear-gradient(135deg, rgba(0,243,255,0.1), rgba(0,243,255,0.05)); border: 2px solid ${verdictColor}; padding: 20px; border-radius: 6px; margin-bottom: 25px; box-shadow: 0 0 20px ${verdictColor}40;">
+                    <div style="font-family: Orbitron; color: ${verdictColor}; font-size: 16px; margin-bottom: 12px; letter-spacing: 2px; text-align: center;">
+                        <i class="fa-solid fa-stethoscope"></i> CLINICAL ASSESSMENT SUMMARY
+                    </div>
+                    <div style="text-align: center; font-size: 14px; color: #ccc; line-height: 1.8;">
+                        <div style="color: white; font-family: Orbitron; font-size: 20px; margin-bottom: 8px;">${report.verdict}</div>
+                        <div style="color: #88ccff;">System Confidence: <strong style="color: white;">${report.confidence}</strong></div>
+                        ${report.compositeScore !== undefined ? `<div style="color: #88ccff;">Composite Risk Score: <strong style="color: ${verdictColor};">${(report.compositeScore * 100).toFixed(1)}%</strong></div>` : ''}
+                        ${report.verdict_code ? `<div style="color: #88ccff; font-size: 11px; margin-top: 8px; opacity: 0.7;">Classification Code: ${report.verdict_code}</div>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            // Patient History Section
+            if (report.patient_history && Object.keys(report.patient_history).length > 0) {
+                const ph = report.patient_history;
+                html += `
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-family: Orbitron; color: #00f3ff; margin-bottom: 10px; font-size: 14px; letter-spacing: 1px; border-bottom: 1px solid rgba(0,243,255,0.2); padding-bottom: 5px;">
+                            <i class="fa-solid fa-user"></i> PATIENT DEMOGRAPHICS
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 4px;">
+                            ${ph.age ? `<div><span style="color: #88ccff; font-size: 11px;">AGE:</span><br><span style="color: white; font-family: Orbitron;">${ph.age} years</span></div>` : ''}
+                            ${ph.ethnicity ? `<div><span style="color: #88ccff; font-size: 11px;">ETHNICITY:</span><br><span style="color: white; font-family: Orbitron;">${ph.ethnicity}</span></div>` : ''}
+                            ${ph.family_history !== undefined ? `<div><span style="color: #88ccff; font-size: 11px;">FAMILY HISTORY:</span><br><span style="color: ${ph.family_history ? '#ff9900' : '#00ff88'}; font-family: Orbitron;">${ph.family_history ? 'POSITIVE' : 'NEGATIVE'}</span></div>` : ''}
+                            ${ph.risk_score !== undefined ? `<div><span style="color: #88ccff; font-size: 11px;">RISK SCORE:</span><br><span style="color: ${ph.risk_score > 50 ? '#ff9900' : '#00ff88'}; font-family: Orbitron;">${ph.risk_score}/100</span></div>` : ''}
+                        </div>
+                `;
+                
+                // Symptoms
+                if (ph.symptoms && Object.keys(ph.symptoms).length > 0) {
+                    const symptomsList = Object.entries(ph.symptoms)
+                        .filter(([key, value]) => value === true)
+                        .map(([key]) => key.replace(/_/g, ' ').toUpperCase());
+                    
+                    if (symptomsList.length > 0) {
+                        html += `
+                            <div style="margin-top: 10px; padding: 10px; background: rgba(255,153,0,0.05); border: 1px solid rgba(255,153,0,0.2); border-radius: 4px;">
+                                <div style="color: #ff9900; font-size: 11px; margin-bottom: 5px; font-weight: bold;">REPORTED SYMPTOMS:</div>
+                                <div style="color: #ffcc88; font-size: 12px;">${symptomsList.join(' • ')}</div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                html += `</div>`;
+            }
+            
+            // Image Quality Section
+            html += `
+                <div style="margin-bottom: 20px;">
+                    <div style="font-family: Orbitron; color: #00f3ff; margin-bottom: 10px; font-size: 14px; letter-spacing: 1px; border-bottom: 1px solid rgba(0,243,255,0.2); padding-bottom: 5px;">
+                        <i class="fa-solid fa-image"></i> IMAGE METADATA
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 4px;">
+                        ${report.camera_type ? `<div><span style="color: #88ccff; font-size: 11px;">CAMERA:</span><br><span style="color: white; font-family: Orbitron;">${report.camera_type}</span></div>` : ''}
+                        ${report.quality_score !== undefined && report.quality_score !== null ? `<div><span style="color: #88ccff; font-size: 11px;">QUALITY SCORE:</span><br><span style="color: ${report.quality_score >= 70 ? '#00ff88' : '#ff9900'}; font-family: Orbitron;">${report.quality_score}/100</span></div>` : ''}
+                        ${report.is_angiography !== undefined ? `<div><span style="color: #88ccff; font-size: 11px;">IMAGE TYPE:</span><br><span style="color: ${report.is_angiography ? '#ff9900' : '#00ff88'}; font-family: Orbitron;">${report.is_angiography ? 'ANGIOGRAPHY' : 'FUNDUS PHOTO'}</span></div>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            // RP Triad Status with 3-state display
+            if (report.triadStatus) {
+                const triad = report.triadStatus;
+                const getTriadDisplay = (severity, label) => {
+                    let icon, color, borderColor, bgColor, statusText;
+                    if (severity === 'CRITICAL' || severity === 'MODERATE') {
+                        icon = 'fa-circle-check'; color = '#ff4444'; borderColor = '#ff4444'; bgColor = 'rgba(255,68,68,0.1)'; statusText = 'PRESENT';
+                    } else if (severity === 'MILD') {
+                        icon = 'fa-triangle-exclamation'; color = '#ff9900'; borderColor = '#ff9900'; bgColor = 'rgba(255,153,0,0.1)'; statusText = 'PARTIAL';
+                    } else {
+                        icon = 'fa-circle-xmark'; color = '#666'; borderColor = '#333'; bgColor = 'transparent'; statusText = 'ABSENT';
+                    }
+                    return `
+                        <div style="text-align: center; padding: 12px; border: 1px solid ${borderColor}; border-radius: 4px; background: ${bgColor};">
+                            <i class="fa-solid ${icon}" style="color: ${color}; font-size: 24px;"></i>
+                            <div style="color: #88ccff; font-size: 10px; margin-top: 5px; font-weight: bold;">${label}</div>
+                            <div style="color: ${color}; font-size: 9px; margin-top: 3px;">${statusText}</div>
+                        </div>
+                    `;
+                };
+                
+                html += `
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-family: Orbitron; color: #00f3ff; margin-bottom: 10px; font-size: 14px; letter-spacing: 1px; border-bottom: 1px solid rgba(0,243,255,0.2); padding-bottom: 5px;">
+                            <i class="fa-solid fa-triangle-exclamation"></i> RP CLASSICAL TRIAD
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 4px;">
+                            ${getTriadDisplay(triad.bone_spicules, 'BONE SPICULES')}
+                            ${getTriadDisplay(triad.vessel_attenuation, 'VESSEL ATTENUATION')}
+                            ${getTriadDisplay(triad.optic_disc_pallor, 'OPTIC DISC PALLOR')}
+                        </div>
+                        <div style="color: #88ccff; font-size: 10px; margin-top: 8px; opacity: 0.7; text-align: center; line-height: 1.5;">
+                            <i class="fa-solid fa-info-circle"></i> Legend: <span style="color:#ff4444">✓ PRESENT</span> (moderate/severe) • <span style="color:#ff9900">⚠ PARTIAL</span> (mild findings) • <span style="color:#666">✗ ABSENT</span> (normal)<br>
+                            ${report.verdict.includes('POSITIVE') && (!report.triad_complete) ? '<span style="color:#ffcc00;">Note: RP diagnosis based on AI pattern analysis + multi-expert consensus despite incomplete classical triad</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Expert Opinions - ENHANCED DISPLAY
+            if (report.expert_opinions && report.expert_opinions.length > 0) {
+                const positiveCount = report.expert_opinions.filter(e => e.status === 'POSITIVE').length;
+                const suspiciousCount = report.expert_opinions.filter(e => e.status === 'SUSPICIOUS').length;
+                const normalCount = report.expert_opinions.filter(e => e.status === 'NORMAL' || e.status === 'NEGATIVE').length;
+                
+                html += `
+                    <div style="margin-bottom: 25px;">
+                        <div style="font-family: Orbitron; color: #00f3ff; margin-bottom: 12px; font-size: 14px; letter-spacing: 1px; border-bottom: 1px solid rgba(0,243,255,0.2); padding-bottom: 5px;">
+                            <i class="fa-solid fa-microscope"></i> EXPERT SCANNER RESULTS (${report.expert_opinions.length} MODULES)
+                        </div>
+                        
+                        <!-- Scanner Summary Stats -->
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 4px;">
+                            <div style="flex: 1; text-align: center; padding: 8px; border-radius: 3px; background: rgba(255,68,68,0.1);">
+                                <div style="color: #ff4444; font-family: Orbitron; font-size: 20px;">${positiveCount}</div>
+                                <div style="color: #ffaaaa; font-size: 10px;">POSITIVE</div>
+                            </div>
+                            <div style="flex: 1; text-align: center; padding: 8px; border-radius: 3px; background: rgba(255,153,0,0.1);">
+                                <div style="color: #ff9900; font-family: Orbitron; font-size: 20px;">${suspiciousCount}</div>
+                                <div style="color: #ffcc88; font-size: 10px;">SUSPICIOUS</div>
+                            </div>
+                            <div style="flex: 1; text-align: center; padding: 8px; border-radius: 3px; background: rgba(0,255,136,0.1);">
+                                <div style="color: #00ff88; font-family: Orbitron; font-size: 20px;">${normalCount}</div>
+                                <div style="color: #88ffcc; font-size: 10px;">NORMAL</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Individual Scanner Cards -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;">
+                            ${report.expert_opinions.map((expert, index) => {
+                                const statusColor = expert.status === 'POSITIVE' ? '#ff4444' : expert.status === 'SUSPICIOUS' ? '#ff9900' : '#00ff88';
+                                const iconMap = {
+                                    'Bone Spicule Scanner': 'fa-bone',
+                                    'Vessel Scanner': 'fa-heart-pulse',
+                                    'Optic Disc Scanner': 'fa-eye',
+                                    'Macula Scanner': 'fa-circle-dot',
+                                    'Hemorrhage Scanner': 'fa-droplet',
+                                    'Exudate Scanner': 'fa-snowflake',
+                                    'Cotton-Wool Scanner': 'fa-cloud',
+                                    'Microaneurysm Scanner': 'fa-magnifying-glass',
+                                    'Drusen Scanner': 'fa-star',
+                                    'Atrophy Scanner': 'fa-circle-radiation'
+                                };
+                                const icon = iconMap[expert.name] || 'fa-microscope';
+                                
+                                return `
+                                    <div style="background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.2)); border-left: 4px solid ${statusColor}; padding: 14px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+                                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                            <i class="fa-solid ${icon}" style="color: ${statusColor}; font-size: 14px;"></i>
+                                            <div style="color: white; font-family: Orbitron; font-size: 12px; flex: 1;">${expert.name}</div>
+                                            <div style="background: ${statusColor}22; color: ${statusColor}; padding: 2px 6px; border-radius: 3px; font-size: 9px; font-weight: bold;">#${index + 1}</div>
+                                        </div>
+                                        <div style="color: ${statusColor}; font-size: 13px; font-weight: bold; margin-bottom: 6px;">${expert.status}</div>
+                                        <div style="color: #88ccff; font-size: 11px; margin-bottom: 4px;">Confidence: <span style="color: white;">${expert.confidence?.toFixed(1) || 'N/A'}%</span></div>
+                                        ${expert.severity ? `<div style="color: #88ccff; font-size: 11px; margin-bottom: 4px;">Severity: <span style="color: #ffcc88;">${expert.severity}</span></div>` : ''}
+                                        ${expert.detail ? `<div style="color: #999; font-size: 10px; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05);">${expert.detail}</div>` : ''}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div style="margin-bottom: 20px; padding: 20px; background: rgba(255,153,0,0.05); border: 1px solid rgba(255,153,0,0.2); border-radius: 4px; text-align: center;">
+                        <i class="fa-solid fa-exclamation-triangle" style="color: #ff9900; font-size: 24px;"></i>
+                        <div style="color: #ffcc88; font-family: Orbitron; margin-top: 10px;">NO EXPERT SCANNER DATA AVAILABLE</div>
+                        <div style="color: #999; font-size: 11px; margin-top: 5px;">This report may be incomplete or from an older analysis version.</div>
+                    </div>
+                `;
+            }
+            
+            // Critical Findings
+            if (report.criticalFindings && report.criticalFindings.length > 0) {
+                html += `
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-family: Orbitron; color: #ff4444; margin-bottom: 10px; font-size: 14px; letter-spacing: 1px; border-bottom: 1px solid rgba(255,68,68,0.2); padding-bottom: 5px;">
+                            <i class="fa-solid fa-exclamation-triangle"></i> CRITICAL FINDINGS
+                        </div>
+                        <div style="background: rgba(255,68,68,0.05); border: 1px solid rgba(255,68,68,0.2); padding: 15px; border-radius: 4px;">
+                            ${report.criticalFindings.map(finding => `
+                                <div style="color: #ffaaaa; font-size: 13px; margin-bottom: 8px; padding-left: 10px; border-left: 2px solid #ff4444;">• ${finding}</div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Differential Diagnosis
+            const diffDiseases = report.differential_diagnosis || [];
+            if (diffDiseases.length > 0) {
+                html += `
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-family: Orbitron; color: #00f3ff; margin-bottom: 10px; font-size: 14px; letter-spacing: 1px; border-bottom: 1px solid rgba(0,243,255,0.2); padding-bottom: 5px;">
+                            <i class="fa-solid fa-list-check"></i> DIFFERENTIAL DIAGNOSIS
+                        </div>
+                        <div style="background: rgba(0,243,255,0.05); border: 1px solid rgba(0,243,255,0.2); padding: 15px; border-radius: 4px;">
+                            ${diffDiseases.slice(0, 5).map((dx, index) => {
+                                const confidence = dx.confidence !== undefined ? dx.confidence : 
+                                                  (dx.confidence_pct !== undefined ? dx.confidence_pct : 0);
+                                return `
+                                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: ${index < 4 ? '1px solid rgba(255,255,255,0.05)' : 'none'};">
+                                    <span style="color: white; font-family: Orbitron; font-size: 13px;">#${index + 1}. ${dx.disease || 'Unknown'}</span>
+                                    <span style="color: #00ff88; font-family: Orbitron; font-size: 13px;">${confidence}%</span>
+                                </div>
+                            `;}).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            content.innerHTML = html;
+        }
+
+        function closeReportDetailModal() {
+            const modal = document.getElementById('report-detail-modal');
+            anime({ targets: modal, opacity: 0, duration: 200, easing: 'linear',
+                complete: () => { 
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
         function confirmPatientId() {
             sfxClick.play().catch(e=>{});
             const inputField = document.getElementById('patient-id-input');
             if (inputField.value.trim() === "") { inputField.style.borderColor = "red"; return; }
             currentPatientName = inputField.value.trim();
+            
+            // NEW: Collect patient history data
+            const ageInput = document.getElementById('patient-age-input').value;
+            currentPatientData = {
+                age: ageInput ? parseInt(ageInput) : null,
+                ethnicity: document.getElementById('patient-ethnicity-input').value,
+                symptoms: {
+                    night_blindness: document.getElementById('symptom-night-blindness').checked,
+                    tunnel_vision: document.getElementById('symptom-tunnel-vision').checked,
+                    difficulty_dark_adaptation: document.getElementById('symptom-dark-adaptation').checked,
+                    light_sensitivity: document.getElementById('symptom-photophobia').checked,
+                    color_vision_loss: document.getElementById('symptom-color-vision').checked,
+                    floaters: document.getElementById('symptom-floaters').checked
+                },
+                family_history: document.getElementById('family-history-rp').checked,
+                visual_field_data: null // Can be added later via API
+            };
+            
+            currentCameraType = document.getElementById('camera-type-input').value;
+            
+            console.log('✅ Patient data collected:', currentPatientData);
+            console.log('📷 Camera type:', currentCameraType);
+            
             closePatientModal();
             document.getElementById('fileInput').click(); // Opens File browser safely
         }
@@ -609,7 +1056,9 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         image: currentImageBase64,
-                        patientId: currentPatientName
+                        patientId: currentPatientName,
+                        patient_history: currentPatientData, // NEW: Demographics and symptoms
+                        cameraType: currentCameraType // NEW: Camera calibration
                     }),
                     signal: controller.signal
                 });
@@ -649,23 +1098,66 @@
                 } else {
                     // Handle error responses
                     const errorData = await response.json().catch(() => ({}));
-                    console.error('❌ Flask API Error:', response.status);
-                    if (errorData.error) {
-                        alert(`❌ Error: ${errorData.error}\n${errorData.detail || ''}`);
-                    }
+                    console.error('[X] Flask API Error:', response.status);
+                    console.error('[X] Error details:', JSON.stringify(errorData, null, 2));
+                    console.error('[X] Raw error object:', errorData);
+                    
                     currentAnalysisResult = null;
+                    
+                    // Stop processing animation
+                    clearInterval(loadingInterval);
+                    isProcessing = false;
+                    clearInterval(targetInterval);
+                    sfxScan.pause();
+                    sfxScan.currentTime = 0;
+                    
+                    // Reset progress bar to 0%
+                    progressFill.style.width = '0%';
+                    progressText.textContent = '0%';
+                    progressStage.textContent = 'Analysis Rejected';
+                    
+                    // Show error modal with quality issues
+                    showErrorModal(errorData);
+                    
+                    return; // Exit early, don't call finishProcessing
                 }
             } catch (error) {
                 clearTimeout(timeoutId);
-                if (error.name === 'AbortError') {
-                    console.error('❌ Flask API Timeout - Analysis took too long (>60s)');
-                } else {
-                    console.error('❌ Flask API Connection Failed:', error);
-                }
+                
                 currentAnalysisResult = null;
+                
+                // Stop processing animation
+                clearInterval(loadingInterval);
+                isProcessing = false;
+                clearInterval(targetInterval);
+                sfxScan.pause();
+                sfxScan.currentTime = 0;
+                
+                // Reset progress bar
+                progressFill.style.width = '0%';
+                progressText.textContent = '0%';
+                progressStage.textContent = 'Connection Error';
+                
+                if (error.name === 'AbortError') {
+                    console.error('[X] Flask API Timeout - Analysis took too long (>60s)');
+                    showErrorModal({
+                        error: 'Analysis Timeout',
+                        errors: ['The analysis took longer than 60 seconds to complete.'],
+                        recommendation: 'Please try again with a higher quality image or check server performance.'
+                    });
+                } else {
+                    console.error('[X] Flask API Connection Failed:', error);
+                    showErrorModal({
+                        error: 'Server Connection Failed',
+                        errors: ['Could not connect to Flask API server on port 5001.'],
+                        recommendation: 'Please ensure the Flask server is running and accessible. Check terminal for server status.'
+                    });
+                }
+                
+                return; // Exit early, don't call finishProcessing
             }
 
-            // Complete the loading animation
+            // Complete the loading animation (only if no errors)
             clearInterval(loadingInterval);
             progressFill.style.width = '100%';
             progressText.textContent = '100%';
@@ -862,16 +1354,27 @@
                                     severityClass = 'critical';
                                     break;
                                 case 'SUSPICIOUS':
-                                    verdictDisplay = 'ATYPICAL PRESENTATION - CLINICAL CORRELATION';
+                                    verdictDisplay = 'SUSPICIOUS - RECOMMEND CLINICAL REVIEW';
                                     severityClass = 'moderate';
+                                    break;
+                                case 'SUSPICIOUS_ISOLATED':
+                                    verdictDisplay = 'SUSPICIOUS - ISOLATED FINDING DETECTED';
+                                    severityClass = 'moderate';
+                                    break;
+                                case 'BORDERLINE':
+                                    verdictDisplay = 'BORDERLINE - RECOMMEND MONITORING';
+                                    severityClass = 'mild';
                                     break;
                                 case 'HEALTHY':
                                     verdictDisplay = 'HEALTHY - NO RP DETECTED';
                                     severityClass = 'normal';
                                     break;
                                 default:
-                                    verdictDisplay = 'UNCERTAIN - FURTHER TESTING';
-                                    severityClass = 'mild';
+                                    // Fallback: use the verdict text from backend
+                                    verdictDisplay = apiResult.verdict || 'UNCERTAIN - FURTHER TESTING';
+                                    severityClass = apiResult.severity === 'CRITICAL' ? 'critical' : 
+                                                   apiResult.severity === 'MODERATE' ? 'moderate' : 
+                                                   apiResult.severity === 'MILD' ? 'mild' : 'normal';
                             }
                             const confidencePercent = (apiResult.composite_score * 100).toFixed(1);
                             
@@ -881,14 +1384,29 @@
                             overallDiag.style.opacity = 1;
                             detailBtn.style.display = 'inline-block';
                             
-                            // Update RP Triad Status
+                            // Update RP Triad Status with 3-state display
                             const triad = apiResult.triad_status;
+                            const getTriadIcon = (severity) => {
+                                if (severity === 'CRITICAL' || severity === 'MODERATE') return '<span style="color:#ff4444">✓</span>';
+                                if (severity === 'MILD') return '<span style="color:#ff9900">⚠</span>';
+                                return '<span style="color:#666">✗</span>';
+                            };
                             document.getElementById('triad-1-status').innerHTML = 
-                                `${triad.bone_spicules ? '✅' : '❌'} Bone Spicules`;
+                                `${getTriadIcon(triad.bone_spicules)} Bone Spicules`;
                             document.getElementById('triad-2-status').innerHTML = 
-                                `${triad.vessel_attenuation ? '✅' : '❌'} Vessel Attenuation`;
+                                `${getTriadIcon(triad.vessel_attenuation)} Vessel Attenuation`;
                             document.getElementById('triad-3-status').innerHTML = 
-                                `${triad.optic_disc_pallor ? '✅' : '❌'} Optic Disc Pallor`;
+                                `${getTriadIcon(triad.optic_disc_pallor)} Optic Disc Pallor`;
+                            
+                            // Add note if triad incomplete but RP positive
+                            const verdictPositive = apiResult.verdict_code.includes('RP');
+                            const triadIncomplete = apiResult.triad_partial || !apiResult.triad_complete;
+                            if (verdictPositive && triadIncomplete) {
+                                const note = document.createElement('div');
+                                note.style.cssText = 'color:#88ccff; font-size:9px; margin-top:8px; opacity:0.8; text-align:center; line-height:1.4;';
+                                note.innerHTML = '<i class="fa-solid fa-info-circle"></i> Diagnosis via AI pattern recognition + multi-expert consensus (classical triad ' + (apiResult.triad_partial ? 'partially present' : 'incomplete') + ')';
+                                document.getElementById('triad-status').querySelector('div:last-child').appendChild(note);
+                            }
                             document.getElementById('triad-status').style.opacity = 1;
                         }, 300);
                         
@@ -941,6 +1459,55 @@
             });
             html += `</div>`;
             
+            // NEW: Image Quality Report
+            if (currentAnalysisResult.image_quality) {
+                const quality = currentAnalysisResult.image_quality;
+                const qualityColor = quality.quality_score >= 70 ? '#00ff88' : quality.quality_score >= 50 ? '#ff9900' : '#ff0055';
+                html += `<div style="background:rgba(0,243,255,0.05); border:1px solid rgba(0,243,255,0.3); padding:15px; margin-bottom:15px;">`;
+                html += `<div style="color:#88ccff; font-size:12px; margin-bottom:10px;">🔍 IMAGE QUALITY ASSESSMENT:</div>`;
+                html += `<div style="font-size:13px; color:${qualityColor}; font-weight:bold; margin-bottom:8px;">Score: ${quality.quality_score}/100</div>`;
+                if (quality.issues.length > 0) {
+                    html += `<div style="font-size:12px; color:#ccc;">Issues Detected:</div>`;
+                    quality.issues.forEach(issue => {
+                        html += `<div style="font-size:11px; margin-left:10px;">• ${issue}</div>`;
+                    });
+                }
+                html += `</div>`;
+            }
+            
+            // NEW: Differential Diagnosis
+            if (currentAnalysisResult.differential_diagnosis) {
+                const diff = currentAnalysisResult.differential_diagnosis;
+                // Access the differential array (not ranked_diseases)
+                const diseases = diff.differential || diff.ranked_diseases || [];
+                if (diseases.length > 0) {
+                    html += `<div style="background:rgba(255,153,0,0.05); border:1px solid rgba(255,153,0,0.3); padding:15px; margin-bottom:15px;">`;
+                    html += `<div style="color:#ff9900; font-size:12px; margin-bottom:10px;">🧬 DIFFERENTIAL DIAGNOSIS:</div>`;
+                    diseases.slice(0, 3).forEach((disease, idx) => {
+                        const percentile = disease.confidence || (disease.confidence_pct ? disease.confidence_pct : 0);
+                        html += `<div style="font-size:12px; margin-bottom:5px;"><strong>${idx+1}. ${disease.disease}</strong>: ${percentile}%</div>`;
+                        if (disease.clinical_note) {
+                            html += `<div style="font-size:11px; color:#888; margin-left:15px; margin-bottom:8px;">${disease.clinical_note}</div>`;
+                        }
+                    });
+                    html += `</div>`;
+                }
+            }
+            
+            // NEW: Patient Risk Profile
+            if (currentAnalysisResult.patient_risk_profile) {
+                const profile = currentAnalysisResult.patient_risk_profile;
+                html += `<div style="background:rgba(0,255,136,0.05); border:1px solid rgba(0,255,136,0.3); padding:15px; margin-bottom:15px;">`;
+                html += `<div style="color:#00ff88; font-size:12px; margin-bottom:10px;">👤 PATIENT RISK PROFILE:</div>`;
+                html += `<div style="font-size:12px;">`;
+                html += `Age: ${profile.age} years (Category: ${profile.age_category})<br>`;
+                html += `Ethnicity: ${profile.ethnicity}<br>`;
+                html += `Risk Score: ${profile.risk_score}/100 (${profile.risk_level})<br>`;
+                html += `Family History: ${profile.has_family_history ? 'YES (High Risk)' : 'NO'}<br>`;
+                html += `Symptom Score: ${profile.symptom_score.toFixed(1)}/10`;
+                html += `</div></div>`;
+            }
+            
             // Critical Findings
             if (currentAnalysisResult.critical_findings && currentAnalysisResult.critical_findings.length > 0) {
                 html += `<div style="background:rgba(255,153,0,0.05); border:1px solid rgba(255,153,0,0.3); padding:15px;">`;
@@ -979,6 +1546,7 @@
                 case 'CLASSIC_RP': verdict = 'POSITIVE: CLASSIC RETINITIS PIGMENTOSA'; break;
                 case 'RP_POSITIVE': verdict = 'POSITIVE: RETINITIS PIGMENTOSA'; break;
                 case 'SUSPICIOUS': verdict = 'SUSPICIOUS - CLINICAL REVIEW REQUIRED'; break;
+                case 'BORDERLINE': verdict = 'BORDERLINE - RECOMMEND MONITORING'; break;
                 case 'HEALTHY': verdict = 'NEGATIVE: NO RP DETECTED'; break;
                 default: verdict = 'UNCERTAIN - FURTHER TESTING RECOMMENDED';
             }
@@ -993,12 +1561,31 @@
             
             const reportData = {
                 patientId: currentPatientName,
+                
+                // Patient history
+                patient_history: currentPatientData || {},
+                
+                // Image metadata
+                camera_type: currentCameraType || 'Unknown',
+                quality_score: currentAnalysisResult.quality_score || (currentAnalysisResult.image_quality ? currentAnalysisResult.image_quality.quality_score : null),
+                is_angiography: currentAnalysisResult.is_angiography || false,
+                angiography_warning: currentAnalysisResult.angiography_warning || currentAnalysisResult.warning || null,
+                
+                // Expert results
                 results: expertResults,
+                expert_opinions: currentAnalysisResult.expert_opinions,
+                
+                // Diagnosis
                 verdict: verdict,
+                verdict_code: currentAnalysisResult.verdict_code,
                 confidence: confidencePercent,
                 compositeScore: currentAnalysisResult.composite_score,
+                
+                // Clinical details
                 triadStatus: currentAnalysisResult.triad_status,
-                criticalFindings: currentAnalysisResult.critical_findings
+                criticalFindings: currentAnalysisResult.critical_findings || [],
+                // Extract the differential array from the differential_diagnosis object
+                differential_diagnosis: currentAnalysisResult.differential_diagnosis?.differential || currentAnalysisResult.differential_diagnosis || []
             };
 
             try {
@@ -1031,7 +1618,7 @@
                 if (res.ok) {
                     const data = await res.json();
                     document.getElementById('total-scans-val').innerText = data.length;
-                    document.getElementById('anomalies-val').innerText = data.filter(r => r.verdict.includes("POSITIVE") || r.verdict.includes("SUSPICIOUS")).length;
+                    document.getElementById('anomalies-val').innerText = data.filter(r => r.verdict.includes("POSITIVE") || r.verdict.includes("SUSPICIOUS") || r.verdict.includes("BORDERLINE")).length;
                 }
             } catch (e) {}
         }
