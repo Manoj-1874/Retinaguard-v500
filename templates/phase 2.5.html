@@ -5,7 +5,7 @@ html_phase2_v5 = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RetinaGuard | Tactical V5</title>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
@@ -19,9 +19,9 @@ html_phase2_v5 = """
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
-        
+
         body { margin: 0; overflow: hidden; background-color: #020205; font-family: 'Rajdhani', sans-serif; }
-        
+
         /* 3D Canvas */
         #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
 
@@ -34,9 +34,9 @@ html_phase2_v5 = """
         }
         .brand { font-family: 'Orbitron'; font-weight: 900; font-size: 26px; color: white; letter-spacing: 4px; text-shadow: 0 0 20px rgba(0,243,255,0.5); }
         .brand span { color: #00f3ff; }
-        .server-status { 
-            color: #00f3ff; font-size: 12px; letter-spacing: 2px; 
-            border: 1px solid rgba(0,243,255,0.3); padding: 8px 20px; 
+        .server-status {
+            color: #00f3ff; font-size: 12px; letter-spacing: 2px;
+            border: 1px solid rgba(0,243,255,0.3); padding: 8px 20px;
             background: rgba(0,243,255,0.05); border-radius: 4px;
         }
 
@@ -49,9 +49,9 @@ html_phase2_v5 = """
 
         /* --- SCREEN 1: LOBBY --- */
         .lobby-ui {
-            display: flex; gap: 40px; 
+            display: flex; gap: 40px;
             opacity: 0; transform: translateY(50px); /* Hidden initially */
-            margin-top: 350px; 
+            margin-top: 350px;
         }
         .action-card {
             pointer-events: auto; width: 300px; height: 180px;
@@ -64,7 +64,7 @@ html_phase2_v5 = """
         .action-card h2 { font-family: 'Orbitron'; font-size: 20px; color: white; margin-top: 15px; letter-spacing: 2px; }
         .action-card p { font-size: 12px; color: #88ccff; letter-spacing: 1px; margin-top: 5px; }
         .card-icon { font-size: 40px; color: #00f3ff; margin-bottom: 5px; filter: drop-shadow(0 0 10px rgba(0,243,255,0.6)); }
-        
+
         /* Secondary Card */
         .action-card.secondary { border-color: rgba(255,150,0,0.2); }
         .action-card.secondary:hover { border-color: #ff9900; box-shadow: 0 0 40px rgba(255,150,0,0.2); }
@@ -78,10 +78,10 @@ html_phase2_v5 = """
         }
         .scan-text { font-family: 'Orbitron'; color: #00f3ff; font-size: 16px; letter-spacing: 6px; margin-bottom: 20px; text-shadow: 0 0 20px #00f3ff; animation: pulseText 2s infinite; }
         @keyframes pulseText { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        
+
         .progress-track { width: 100%; height: 2px; background: rgba(255,255,255,0.1); position: relative; }
         .progress-bar { width: 0%; height: 100%; background: #00f3ff; box-shadow: 0 0 20px #00f3ff; position: absolute; top: 0; left: 0; }
-        
+
         /* --- SCREEN 3: RESULTS --- */
         .results-ui {
             position: absolute; bottom: 8vh; left: 0; width: 100%;
@@ -105,7 +105,7 @@ html_phase2_v5 = """
         .crate-label { font-family: 'Orbitron'; font-size: 14px; color: white; letter-spacing: 1px; }
         .status-indicator { font-size: 10px; padding: 6px 10px; border-radius: 2px; background: #222; color: #555; width: 80%; text-align: center; font-weight: bold; }
         .unlocked .status-indicator { background: rgba(0,243,255,0.1); color: #00f3ff; }
-        
+
         .hidden { display: none !important; }
     </style>
 </head>
@@ -119,7 +119,7 @@ html_phase2_v5 = """
     </div>
 
     <div id="ui-layer">
-        
+
         <div class="lobby-ui" id="lobby">
             <div class="action-card" onclick="document.getElementById('fileInput').click()">
                 <i class="fa-solid fa-cloud-arrow-up card-icon"></i>
@@ -158,7 +158,7 @@ html_phase2_v5 = """
         let positions, targetPositions, alphas;
         let visibleCount = 0;
         let time = 0;
-        let isProcessing = false; 
+        let isProcessing = false;
 
         init();
         animate();
@@ -181,7 +181,7 @@ html_phase2_v5 = """
             const renderScene = new THREE.RenderPass(scene, camera);
             const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
             bloomPass.strength = 0.4; bloomPass.radius = 0.3; bloomPass.threshold = 0.1;
-            
+
             composer = new THREE.EffectComposer(renderer);
             composer.addPass(renderScene);
             composer.addPass(bloomPass);
@@ -212,26 +212,26 @@ html_phase2_v5 = """
 
             // --- DIGITAL SCAN SHADER ---
             material = new THREE.ShaderMaterial({
-                uniforms: { 
-                    color: { value: new THREE.Color(0xaaccff) }, 
-                    uTime: { value: 0.0 }, 
-                    uScanActive: { value: 0.0 } 
+                uniforms: {
+                    color: { value: new THREE.Color(0xaaccff) },
+                    uTime: { value: 0.0 },
+                    uScanActive: { value: 0.0 }
                 },
                 vertexShader: `
                     attribute float alpha; attribute float size; varying float vAlpha; varying float vY;
-                    void main() { 
-                        vAlpha = alpha; vY = position.y; 
-                        vec4 mv = modelViewMatrix * vec4(position, 1.0); 
-                        gl_PointSize = size * (120.0 / -mv.z); 
-                        gl_Position = projectionMatrix * mv; 
+                    void main() {
+                        vAlpha = alpha; vY = position.y;
+                        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+                        gl_PointSize = size * (120.0 / -mv.z);
+                        gl_Position = projectionMatrix * mv;
                     }
                 `,
                 fragmentShader: `
-                    uniform vec3 color; uniform float uTime; uniform float uScanActive; 
+                    uniform vec3 color; uniform float uTime; uniform float uScanActive;
                     varying float vAlpha; varying float vY;
-                    void main() { 
+                    void main() {
                         float r = distance(gl_PointCoord, vec2(0.5)); if(r > 0.5) discard;
-                        
+
                         // "Digital Glitch" Scan Wave
                         float scanWave = 0.0;
                         if(uScanActive > 0.5) {
@@ -249,7 +249,7 @@ html_phase2_v5 = """
                         float finalAlpha = (vAlpha * 0.5 + scanWave * 0.5) * blink;
                         vec3 finalColor = mix(color, vec3(1.0), scanWave); // Turn white on scan
 
-                        gl_FragColor = vec4(finalColor, finalAlpha); 
+                        gl_FragColor = vec4(finalColor, finalAlpha);
                     }
                 `,
                 transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
@@ -273,7 +273,7 @@ html_phase2_v5 = """
             setTimeout(multiplyDots, 1000);
         }
         function multiplyDots() {
-            if (visibleCount >= PARTICLE_COUNT) { setTimeout(attractToMobius, 500); return; }
+            if (visibleCount >= PARTICLE_COUNT) { setTimeout(formSentinelRing, 500); return; }
             let growth = Math.ceil(visibleCount * 0.2) + 5;
             let nextLimit = Math.min(visibleCount + growth, PARTICLE_COUNT);
             for (let i = visibleCount; i < nextLimit; i++) alphas[i] = 1.0;
@@ -281,7 +281,7 @@ html_phase2_v5 = """
             geometry.attributes.alpha.needsUpdate = true;
             requestAnimationFrame(multiplyDots);
         }
-        function attractToMobius() {
+        function formSentinelRing() {
             const startPos = Float32Array.from(geometry.attributes.position.array);
             const obj = { t: 0 };
             anime({
@@ -305,7 +305,7 @@ html_phase2_v5 = """
             // Move Camera DOWN so model sits HIGH
             anime({ targets: camera.position, y: -7, z: 28, duration: 2000, easing: 'easeInOutQuad' });
             anime({ targets: particles.rotation, x: Math.PI / 3, duration: 2000, easing: 'easeInOutQuad' });
-            
+
             // FADE IN LOBBY
             anime({
                 targets: '.lobby-ui', opacity: [0, 1], translateY: [50, 0],
@@ -327,10 +327,10 @@ html_phase2_v5 = """
             anime({ targets: '.lobby-ui', opacity: 0, translateY: -50, duration: 500, easing: 'easeInExpo' });
 
             isProcessing = true;
-            material.uniforms.uScanActive.value = 1.0; 
-            
+            material.uniforms.uScanActive.value = 1.0;
+
             // 2. Center Model & Spin
-            anime({ targets: camera.position, y: 0, z: 24, duration: 1500, easing: 'easeInOutQuad' }); 
+            anime({ targets: camera.position, y: 0, z: 24, duration: 1500, easing: 'easeInOutQuad' });
             anime({ targets: particles.rotation, x: Math.PI/4, z: 0, duration: 1500, easing: 'easeInOutQuad' });
 
             // 3. Show Loading Text
@@ -345,7 +345,7 @@ html_phase2_v5 = """
         function finishProcessing() {
             isProcessing = false;
             material.uniforms.uScanActive.value = 0.0;
-            
+
             anime({ targets: '#processing', opacity: 0, duration: 300 });
             anime({ targets: camera.position, y: -6, z: 28, duration: 1500, easing: 'easeOutExpo' });
 
@@ -356,7 +356,7 @@ html_phase2_v5 = """
             crates.forEach((crate, i) => {
                 setTimeout(() => {
                     crate.classList.add('unlocked');
-                    crate.querySelector('.status-indicator').innerText = "NORMAL"; 
+                    crate.querySelector('.status-indicator').innerText = "NORMAL";
                     if(i === 6) {
                          crate.querySelector('.status-indicator').innerText = "NEGATIVE";
                          crate.querySelector('.status-indicator').style.color = "#00ff88";

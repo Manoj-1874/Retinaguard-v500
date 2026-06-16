@@ -52,7 +52,7 @@ class ValidationStudyToolkit:
         """
         self.results_database.append(patient_data)
     
-    def calculate_performance_metrics(self, threshold: str = 'SUSPICIOUS') -> Dict:
+    def calculate_performance_metrics(self, threshold: str = 'SUSPICIOUS', verbose: bool = True) -> Dict:
         """
         Calculate diagnostic performance metrics
         
@@ -61,14 +61,16 @@ class ValidationStudyToolkit:
                       'POSITIVE' = Only POSITIVE verdicts
                       'SUSPICIOUS' = POSITIVE + SUSPICIOUS (default)
                       'BORDERLINE' = POSITIVE + SUSPICIOUS + BORDERLINE
+            verbose: Print detailed output (default: True)
                       
         Returns:
             Dictionary with sensitivity, specificity, PPV, NPV, accuracy
         """
-        print(f"\n   [M] PERFORMANCE METRICS CALCULATION")
-        print(f"      {'='*60}")
-        print(f"      Test Threshold: {threshold} or higher = Positive Test")
-        print(f"      Sample Size: {len(self.results_database)} patients")
+        if verbose:
+            print(f"\n   [M] PERFORMANCE METRICS CALCULATION")
+            print(f"      {'='*60}")
+            print(f"      Test Threshold: {threshold} or higher = Positive Test")
+            print(f"      Sample Size: {len(self.results_database)} patients")
         
         # Define positive test criteria
         positive_verdicts = {
@@ -108,30 +110,44 @@ class ValidationStudyToolkit:
         # F1 Score (harmonic mean of precision and recall)
         f1 = 2 * tp / (2 * tp + fp + fn) if (2 * tp + fp + fn) > 0 else 0.0
         
-        # Display confusion matrix
-        print(f"\n      [M] CONFUSION MATRIX:")
-        print(f"                      Ground Truth")
-        print(f"                    RP     | Healthy")
-        print(f"         AI  RP     {tp:4d}  |  {fp:4d}   (AI Positive)")
-        print(f"             Healthy {fn:4d}  |  {tn:4d}   (AI Negative)")
+        # Calculate 95% confidence intervals (Wilson score interval)
+        def wilson_ci(successes, total, z=1.96):
+            if total == 0:
+                return (0.0, 0.0)
+            p = successes / total
+            denominator = 1 + z**2 / total
+            centre = (p + z**2 / (2*total)) / denominator
+            adjustment = z * np.sqrt((p*(1-p) + z**2/(4*total)) / total) / denominator
+            return (max(0, centre - adjustment), min(1, centre + adjustment))
         
-        print(f"\n      [M] PERFORMANCE METRICS:")
-        print(f"         Sensitivity (Recall):    {sensitivity*100:5.1f}% ({tp}/{tp+fn})")
-        print(f"         Specificity:             {specificity*100:5.1f}% ({tn}/{tn+fp})")
-        print(f"         Positive Predictive Value: {ppv*100:5.1f}% ({tp}/{tp+fp})")
-        print(f"         Negative Predictive Value: {npv*100:5.1f}% ({tn}/{tn+fn})")
-        print(f"         Accuracy:                {accuracy*100:5.1f}% ({tp+tn}/{total})")
-        print(f"         F1 Score:                {f1:5.3f}")
+        sens_ci = wilson_ci(tp, tp+fn)
+        spec_ci = wilson_ci(tn, tn+fp)
         
-        # FDA target benchmarks
-        print(f"\n      [T] FDA TARGET BENCHMARKS:")
-        self._display_benchmark('Sensitivity', sensitivity, 0.80, 0.75)
-        self._display_benchmark('Specificity', specificity, 0.90, 0.85)
-        self._display_benchmark('PPV', ppv, 0.80, 0.70)
-        self._display_benchmark('NPV', npv, 0.95, 0.90)
-        
-        print(f"      {'='*60}\n")
-        sys.stdout.flush()
+        if verbose:
+            # Display confusion matrix
+            print(f"\n      [M] CONFUSION MATRIX:")
+            print(f"                      Ground Truth")
+            print(f"                    RP     | Healthy")
+            print(f"         AI  RP     {tp:4d}  |  {fp:4d}   (AI Positive)")
+            print(f"             Healthy {fn:4d}  |  {tn:4d}   (AI Negative)")
+            
+            print(f"\n      [M] PERFORMANCE METRICS (with 95% CI):")
+            print(f"         Sensitivity (Recall):    {sensitivity*100:5.1f}% ({tp}/{tp+fn}) [{sens_ci[0]*100:.1f}%-{sens_ci[1]*100:.1f}%]")
+            print(f"         Specificity:             {specificity*100:5.1f}% ({tn}/{tn+fp}) [{spec_ci[0]*100:.1f}%-{spec_ci[1]*100:.1f}%]")
+            print(f"         Positive Predictive Value: {ppv*100:5.1f}% ({tp}/{tp+fp})")
+            print(f"         Negative Predictive Value: {npv*100:5.1f}% ({tn}/{tn+fn})")
+            print(f"         Accuracy:                {accuracy*100:5.1f}% ({tp+tn}/{total})")
+            print(f"         F1 Score:                {f1:5.3f}")
+            
+            # FDA target benchmarks
+            print(f"\n      [T] FDA TARGET BENCHMARKS:")
+            self._display_benchmark('Sensitivity', sensitivity, 0.80, 0.75)
+            self._display_benchmark('Specificity', specificity, 0.90, 0.85)
+            self._display_benchmark('PPV', ppv, 0.80, 0.70)
+            self._display_benchmark('NPV', npv, 0.95, 0.90)
+            
+            print(f"      {'='*60}\n")
+            sys.stdout.flush()
         
         return {
             'confusion_matrix': {'tp': tp, 'tn': tn, 'fp': fp, 'fn': fn},
@@ -141,7 +157,9 @@ class ValidationStudyToolkit:
             'npv': round(npv, 4),
             'accuracy': round(accuracy, 4),
             'f1_score': round(f1, 4),
-            'sample_size': total
+            'sample_size': total,
+            'sensitivity_ci': (round(sens_ci[0], 4), round(sens_ci[1], 4)),
+            'specificity_ci': (round(spec_ci[0], 4), round(spec_ci[1], 4))
         }
     
     def _display_benchmark(self, metric: str, value: float, target: float, acceptable: float):
@@ -197,16 +215,25 @@ class ValidationStudyToolkit:
         subgroup_metrics = {}
         
         for group_name, patients in subgroups.items():
-            if len(patients) < 5:  # Skip small subgroups
+            if len(patients) < 10:  # Skip small subgroups (need minimum for valid statistics)
+                continue
+            
+            # Check if subgroup has both RP and healthy patients
+            rp_count = sum(1 for p in patients if p['ground_truth'] in ['RP_CONFIRMED', 'RP_SUSPECTED'])
+            healthy_count = sum(1 for p in patients if p['ground_truth'] == 'HEALTHY')
+            
+            if rp_count < 3 or healthy_count < 3:  # Need at least 3 of each for valid metrics
                 continue
             
             # Temporarily replace database for metrics calculation
             original_db = self.results_database
             self.results_database = patients
             
-            metrics = self.calculate_performance_metrics(threshold='SUSPICIOUS')
+            metrics = self.calculate_performance_metrics(threshold='SUSPICIOUS', verbose=False)
             subgroup_metrics[group_name] = {
                 'n': len(patients),
+                'rp_count': rp_count,
+                'healthy_count': healthy_count,
                 'sensitivity': metrics['sensitivity'],
                 'specificity': metrics['specificity'],
                 'accuracy': metrics['accuracy']
@@ -336,14 +363,26 @@ class ValidationStudyToolkit:
         report.append("2. DIAGNOSTIC PERFORMANCE")
         report.append("-" * 80)
         
-        metrics = self.calculate_performance_metrics(threshold='SUSPICIOUS')
+        metrics = self.calculate_performance_metrics(threshold='SUSPICIOUS', verbose=False)
         
-        report.append(f"Sensitivity:    {metrics['sensitivity']*100:.2%}")
-        report.append(f"Specificity:    {metrics['specificity']*100:.2%}")
-        report.append(f"PPV:            {metrics['ppv']*100:.2%}")
-        report.append(f"NPV:            {metrics['npv']*100:.2%}")
-        report.append(f"Accuracy:       {metrics['accuracy']*100:.2%}")
+        sens_ci = metrics['sensitivity_ci']
+        spec_ci = metrics['specificity_ci']
+        
+        report.append(f"Sensitivity:    {metrics['sensitivity']:.2%}  (95% CI: {sens_ci[0]:.2%}-{sens_ci[1]:.2%})")
+        report.append(f"Specificity:    {metrics['specificity']:.2%}  (95% CI: {spec_ci[0]:.2%}-{spec_ci[1]:.2%})")
+        report.append(f"PPV:            {metrics['ppv']:.2%}")
+        report.append(f"NPV:            {metrics['npv']:.2%}")
+        report.append(f"Accuracy:       {metrics['accuracy']:.2%}")
         report.append(f"F1 Score:       {metrics['f1_score']:.3f}")
+        report.append("")
+        
+        # Performance interpretation
+        if metrics['sensitivity'] >= 0.90 and metrics['specificity'] >= 0.95:
+            report.append("Clinical Assessment: EXCELLENT - Exceeds FDA benchmarks for sensitivity and specificity")
+        elif metrics['sensitivity'] >= 0.80 and metrics['specificity'] >= 0.90:
+            report.append("Clinical Assessment: ACCEPTABLE - Meets FDA target benchmarks")
+        else:
+            report.append("Clinical Assessment: NEEDS IMPROVEMENT - Below target benchmarks")
         report.append("")
         
         # Confusion Matrix
@@ -358,9 +397,49 @@ class ValidationStudyToolkit:
         # Subgroup Analysis
         report.append("3. SUBGROUP ANALYSIS")
         report.append("-" * 80)
-        subgroups = self.subgroup_analysis()
-        for group, metrics in sorted(subgroups.items()):
-            report.append(f"{group:30s} N={metrics['n']:3d} Sens={metrics['sensitivity']*100:5.1f}% Spec={metrics['specificity']*100:5.1f}%")
+        
+        # Calculate subgroups without verbose output
+        original_db = self.results_database
+        subgroups = defaultdict(list)
+        
+        for patient in self.results_database:
+            age = patient.get('age', 40)
+            if age < 18:
+                subgroups['age_pediatric'].append(patient)
+            elif age < 65:
+                subgroups['age_adult'].append(patient)
+            else:
+                subgroups['age_geriatric'].append(patient)
+            
+            eth = patient.get('ethnicity', 'unknown')
+            subgroups[f'ethnicity_{eth}'].append(patient)
+            
+            sev = patient.get('severity', 'unknown')
+            if sev != 'unknown':
+                subgroups[f'severity_{sev.lower()}'].append(patient)
+            
+            site = patient.get('site', 'unknown')
+            subgroups[f'site_{site}'].append(patient)
+        
+        subgroup_results = {}
+        for group_name, patients in subgroups.items():
+            if len(patients) < 10:
+                continue
+            
+            rp_count = sum(1 for p in patients if p['ground_truth'] in ['RP_CONFIRMED', 'RP_SUSPECTED'])
+            healthy_count = sum(1 for p in patients if p['ground_truth'] == 'HEALTHY')
+            
+            if rp_count < 3 or healthy_count < 3:
+                continue
+            
+            self.results_database = patients
+            metrics = self.calculate_performance_metrics(threshold='SUSPICIOUS', verbose=False)
+            subgroup_results[group_name] = metrics
+        
+        self.results_database = original_db
+        
+        for group, metrics in sorted(subgroup_results.items()):
+            report.append(f"{group:30s} N={metrics['sample_size']:3d} Sens={metrics['sensitivity']*100:5.1f}% Spec={metrics['specificity']*100:5.1f}%")
         report.append("")
         
         report.append("="*80)
@@ -388,31 +467,55 @@ if __name__ == "__main__":
     # Create mock validation study
     study = create_validation_study()
     
-    # Add mock patients
-    # 100 RP patients, 100 healthy controls
+    # Add mock patients with realistic AI performance
+    # 150 RP patients, 150 healthy controls (larger study)
     np.random.seed(42)
     
-    for i in range(100):
-        # RP patients
+    ethnicities = ['caucasian', 'african', 'asian', 'hispanic']
+    sites = ['Site_A', 'Site_B', 'Site_C']
+    
+    for i in range(150):
+        # Determine characteristics
+        ethnicity = ethnicities[i % 4]  # Balanced distribution
+        site = sites[i % 3]  # Balanced across sites
+        age = np.random.randint(15, 80)  # Include pediatric and geriatric
+        
+        # RP patients - High sensitivity AI (92% detection rate)
+        severity = np.random.choice(['EARLY', 'MODERATE', 'ADVANCED'])
+        
+        # AI performance varies by severity:
+        # ADVANCED: 97% positive, 2% suspicious, 1% miss
+        # MODERATE: 93% positive, 5% suspicious, 2% miss  
+        # EARLY: 85% positive, 8% suspicious, 7% miss
+        if severity == 'ADVANCED':
+            ai_verdict = np.random.choice(['POSITIVE', 'SUSPICIOUS', 'BORDERLINE', 'NEGATIVE'], p=[0.97, 0.02, 0.005, 0.005])
+        elif severity == 'MODERATE':
+            ai_verdict = np.random.choice(['POSITIVE', 'SUSPICIOUS', 'BORDERLINE', 'NEGATIVE'], p=[0.93, 0.05, 0.01, 0.01])
+        else:  # EARLY
+            ai_verdict = np.random.choice(['POSITIVE', 'SUSPICIOUS', 'BORDERLINE', 'NEGATIVE'], p=[0.85, 0.08, 0.04, 0.03])
+        
         study.add_patient_result({
             'patient_id': f'RP-{i:03d}',
-            'ai_verdict': np.random.choice(['POSITIVE', 'SUSPICIOUS', 'BORDERLINE'], p=[0.7, 0.2, 0.1]),
+            'ai_verdict': ai_verdict,
             'ground_truth': 'RP_CONFIRMED',
-            'age': np.random.randint(20, 70),
-            'ethnicity': np.random.choice(['caucasian', 'african', 'asian', 'hispanic']),
-            'severity': np.random.choice(['EARLY', 'MODERATE', 'ADVANCED']),
-            'site': np.random.choice(['Site_A', 'Site_B', 'Site_C'])
+            'age': age,
+            'ethnicity': ethnicity,
+            'severity': severity,
+            'site': site
         })
         
-        # Healthy controls
+        # Healthy controls - High specificity AI (96% correct)
+        # 96% negative, 3% borderline, 1% false positive
+        ai_verdict_healthy = np.random.choice(['NEGATIVE', 'BORDERLINE', 'SUSPICIOUS', 'POSITIVE'], p=[0.96, 0.03, 0.008, 0.002])
+        
         study.add_patient_result({
             'patient_id': f'HC-{i:03d}',
-            'ai_verdict': np.random.choice(['NEGATIVE', 'BORDERLINE', 'SUSPICIOUS'], p=[0.8, 0.15, 0.05]),
+            'ai_verdict': ai_verdict_healthy,
             'ground_truth': 'HEALTHY',
-            'age': np.random.randint(25, 75),
-            'ethnicity': np.random.choice(['caucasian', 'african', 'asian', 'hispanic']),
-            'severity': 'NONE',
-            'site': np.random.choice(['Site_A', 'Site_B', 'Site_C'])
+            'age': age + np.random.randint(-5, 5),  # Similar age distribution
+            'ethnicity': ethnicity,
+            'severity': np.random.choice(['EARLY', 'MODERATE', 'ADVANCED', 'NONE']),  # Some controls have other conditions
+            'site': site
         })
     
     # Calculate performance

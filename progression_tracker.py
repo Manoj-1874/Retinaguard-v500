@@ -299,6 +299,11 @@ class ProgressionTracker:
         """
         Calculate overall progression rate from all parameters
         
+        Scoring calibration:
+        - Vessel loss: 15%/year = rapid (score 100), 8%/year = moderate (score 53), 3%/year = slow (score 20)
+        - Pigment accumulation: 10 clusters/year = rapid (100), 5/year = moderate (50), 2/year = slow (20)
+        - Spatial degradation: 0.2/year = rapid (100), 0.1/year = moderate (50), 0.05/year = slow (25)
+        
         Returns:
             Tuple of (rate_category, progression_score)
         """
@@ -306,22 +311,28 @@ class ProgressionTracker:
         scores = []
         
         # Vessel score (weight: 40%)
+        # Typical RP: 5-10% loss/year, Rapid: >15%/year
         vessel_rate = abs(vessel_change['change_per_year'])
-        vessel_score = min(vessel_rate * 200, 100) * 0.40
+        # Scale: 0.15 (15% loss) = 100 raw score -> multiplier = 667
+        vessel_score = min(vessel_rate * 667, 100) * 0.40
         scores.append(vessel_score)
         
         # Pigment score (weight: 30%)
+        # Typical RP: 3-7 clusters/year, Rapid: >10 clusters/year
         pigment_rate = pigment_change['change_per_year']
         if pigment_rate > 0:  # Only accumulation counts
-            pigment_score = min(pigment_rate * 5, 100) * 0.30
+            # Scale: 10 clusters/year = 100 raw score -> multiplier = 10
+            pigment_score = min(pigment_rate * 10, 100) * 0.30
         else:
             pigment_score = 0
         scores.append(pigment_score)
         
         # Spatial score (weight: 30%)
+        # Typical RP: 0.05-0.1/year, Rapid: >0.2/year
         spatial_rate = spatial_change['change_per_year']
         if spatial_rate > 0:  # Only degradation counts
-            spatial_score = min(spatial_rate * 100, 100) * 0.30
+            # Scale: 0.2/year = 100 raw score -> multiplier = 500
+            spatial_score = min(spatial_rate * 500, 100) * 0.30
         else:
             spatial_score = 0
         scores.append(spatial_score)
@@ -329,10 +340,10 @@ class ProgressionTracker:
         # Combined progression score
         progression_score = sum(scores)
         
-        # Categorize
-        if progression_score >= 60:
+        # Categorize (adjusted thresholds for realistic scoring)
+        if progression_score >= 50:  # Was 60, now 50 for better sensitivity
             rate_category = 'RAPID'
-        elif progression_score >= 30:
+        elif progression_score >= 25:  # Was 30, now 25
             rate_category = 'MODERATE'
         elif progression_score >= 10:
             rate_category = 'SLOW'

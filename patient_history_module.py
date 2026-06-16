@@ -204,11 +204,14 @@ class PatientHistoryModule:
         print(f"\n      [R] OVERALL RISK SCORE: {risk_score:.1f}/100")
         
         if risk_score >= 70:
-            print(f"         -> [HIGH] Strong clinical suspicion")
+            risk_level = "HIGH RISK"
+            print(f"         -> [HIGH] Strong clinical suspicion - Urgent evaluation recommended")
         elif risk_score >= 40:
-            print(f"         -> [MOD] Warrants investigation")
+            risk_level = "MODERATE RISK"
+            print(f"         -> [MODERATE] Warrants further investigation")
         else:
-            print(f"         -> [LOW] Routine screening")
+            risk_level = "LOW RISK"
+            print(f"         -> [LOW] Routine screening - No immediate concern")
         
         # GENERATE THRESHOLD ADJUSTMENTS
         threshold_adjustments = self._generate_threshold_adjustments(
@@ -231,11 +234,14 @@ class PatientHistoryModule:
         
         return {
             'risk_score': risk_score,
+            'risk_level': risk_level,
             'threshold_adjustments': threshold_adjustments,
             'clinical_flags': clinical_flags,
             'confidence_modifier': self._calculate_confidence_modifier(risk_score),
             'age_category': age_category,
             'ethnicity': ethnicity,
+            'gender': gender,
+            'age': age,
             'symptom_score': symptom_score
         }
     
@@ -472,24 +478,40 @@ if __name__ == "__main__":
     
     print("\n[TEST 1] High-Risk Patient:")
     result1 = analyze_patient_history(test_patient_1)
-    print(f"Risk Score: {result1['risk_score']:.1f}/100")
-    print(f"Flags: {len(result1['clinical_flags'])}")
+    print(f"Result: {result1['risk_level']} | Score: {result1['risk_score']:.1f}/100 | {result1['age_category'].title()}, {result1['age']} yrs | Flags: {len(result1['clinical_flags'])}")
     
-    # Test Case 2: Low-risk screening (Caucasian, no symptoms, no family history)
+    # Test Case 2: Moderate-risk patient (adult, moderate symptoms, family history)
     test_patient_2 = {
+        'age': 38,
+        'gender': 'male',
+        'ethnicity': 'caucasian',
+        'symptoms': {
+            'night_blindness': 5,
+            'tunnel_vision': 4,
+            'difficulty_dark_adaptation': 4
+        },
+        'family_history': True  # Changed from False - hereditary component
+    }
+    
+    print("\n[TEST 2] Moderate-Risk Patient:")
+    result2 = analyze_patient_history(test_patient_2)
+    print(f"Result: {result2['risk_level']} | Score: {result2['risk_score']:.1f}/100 | {result2['age_category'].title()}, {result2['age']} yrs | Flags: {len(result2['clinical_flags'])}")
+    
+    # Test Case 3: Low-risk screening (no symptoms)
+    test_patient_3 = {
         'age': 45,
         'gender': 'female',
-        'ethnicity': 'caucasian',
+        'ethnicity': 'hispanic',
         'symptoms': {},
         'family_history': False
     }
     
-    print("\n[TEST 2] Low-Risk Screening:")
-    result2 = analyze_patient_history(test_patient_2)
-    print(f"Risk Score: {result2['risk_score']:.1f}/100")
+    print("\n[TEST 3] Low-Risk Screening:")
+    result3 = analyze_patient_history(test_patient_3)
+    print(f"Result: {result3['risk_level']} | Score: {result3['risk_score']:.1f}/100 | {result3['age_category'].title()}, {result3['age']} yrs | Flags: {len(result3['clinical_flags'])}")
     
-    # Test Case 3: Pediatric patient (Asian, mild symptoms)
-    test_patient_3 = {
+    # Test Case 4: Pediatric patient (Asian, mild symptoms)
+    test_patient_4 = {
         'age': 12,
         'gender': 'female',
         'ethnicity': 'asian',
@@ -500,10 +522,25 @@ if __name__ == "__main__":
         'family_history': False
     }
     
-    print("\n[TEST 3] Pediatric Patient:")
-    result3 = analyze_patient_history(test_patient_3)
-    print(f"Age Category: {result3['age_category']}")
-    print(f"Risk Score: {result3['risk_score']:.1f}/100")
+    print("\n[TEST 4] Pediatric Patient:")
+    result4 = analyze_patient_history(test_patient_4)
+    print(f"Result: {result4['risk_level']} | Score: {result4['risk_score']:.1f}/100 | {result4['age_category'].title()}, {result4['age']} yrs | Flags: {len(result4['clinical_flags'])}")
+    
+    # Test Case 5: Geriatric patient (age-related changes)
+    test_patient_5 = {
+        'age': 72,
+        'gender': 'male',
+        'ethnicity': 'caucasian',
+        'symptoms': {
+            'night_blindness': 3,
+            'difficulty_dark_adaptation': 2
+        },
+        'family_history': False
+    }
+    
+    print("\n[TEST 5] Geriatric Patient:")
+    result5 = analyze_patient_history(test_patient_5)
+    print(f"Result: {result5['risk_level']} | Score: {result5['risk_score']:.1f}/100 | {result5['age_category'].title()}, {result5['age']} yrs | Flags: {len(result5['clinical_flags'])}")
     
     print("\n" + "="*80)
     print("TESTING COMPLETE")

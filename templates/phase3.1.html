@@ -5,7 +5,7 @@ html_phase3_final_clean = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RetinaGuard | Tactical V6</title>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
@@ -19,9 +19,9 @@ html_phase3_final_clean = """
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
-        
+
         body { margin: 0; overflow: hidden; background-color: #020205; font-family: 'Rajdhani', sans-serif; }
-        
+
         #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
 
         /* HUD OVERLAY */
@@ -48,7 +48,7 @@ html_phase3_final_clean = """
         }
         .brand { font-family: 'Orbitron'; font-weight: 900; font-size: 26px; color: white; letter-spacing: 4px; text-shadow: 0 0 20px rgba(0,243,255,0.5); }
         .brand span { color: #00f3ff; }
-        
+
         /* UI LAYER */
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -58,14 +58,14 @@ html_phase3_final_clean = """
         /* --- LOBBY --- */
         .lobby-ui {
             position: absolute; width: 100%; top: 55%; left: 0; transform: translateY(-50%);
-            display: flex; justify-content: center; gap: 40px; 
+            display: flex; justify-content: center; gap: 40px;
             opacity: 0; pointer-events: auto;
         }
         .action-card {
             width: 320px; height: 200px;
-            background: rgba(5, 12, 20, 0.7); 
+            background: rgba(5, 12, 20, 0.7);
             border: 1px solid rgba(0,243,255,0.1);
-            backdrop-filter: blur(10px); 
+            backdrop-filter: blur(10px);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             cursor: pointer; position: relative; overflow: hidden; transition: all 0.3s;
             clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
@@ -77,7 +77,7 @@ html_phase3_final_clean = """
         .action-card:hover::before { opacity: 1; }
         .action-card h2 { font-family: 'Orbitron'; font-size: 22px; color: white; margin-top: 15px; letter-spacing: 3px; }
         .card-icon { font-size: 45px; color: #00f3ff; margin-bottom: 5px; filter: drop-shadow(0 0 15px rgba(0,243,255,0.4)); }
-        
+
         .action-card.secondary:hover::before { background: #ff9900; }
         .action-card.secondary .card-icon { color: #ff9900; }
 
@@ -92,7 +92,7 @@ html_phase3_final_clean = """
             width: 85%; max-width: 1400px; pointer-events: auto;
         }
         .model-card {
-            background: rgba(10, 15, 20, 0.85); 
+            background: rgba(10, 15, 20, 0.85);
             border: 1px solid rgba(255,255,255,0.05);
             padding: 20px; position: relative;
             transition: all 0.3s; cursor: pointer;
@@ -107,11 +107,11 @@ html_phase3_final_clean = """
         .model-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .model-card h3 { font-family: 'Orbitron'; color: white; font-size: 16px; letter-spacing: 1px; }
         .tier-badge { background: #222; color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 2px; border: 1px solid #444; }
-        
+
         .tech-specs { display: flex; gap: 10px; font-size: 9px; color: #555; margin-bottom: 10px; font-family: monospace; }
         .role { color: #00f3ff; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold; }
         .model-card p { color: #888; font-size: 11px; line-height: 1.4; }
-        
+
         .stat-bar { width: 100%; height: 2px; background: #222; margin-top: 15px; position: relative; }
         .stat-fill { height: 100%; background: #00f3ff; width: 0%; position: absolute; box-shadow: 0 0 10px #00f3ff; }
 
@@ -152,7 +152,7 @@ html_phase3_final_clean = """
 <body>
 
     <div id="canvas-container"></div>
-    
+
     <div class="hud-overlay">
         <div class="corner-bracket top-left"></div>
         <div class="corner-bracket top-right"></div>
@@ -166,7 +166,7 @@ html_phase3_final_clean = """
     </div>
 
     <div id="ui-layer">
-        
+
         <div class="lobby-ui" id="lobby">
             <div class="action-card" onclick="document.getElementById('fileInput').click()">
                 <i class="fa-solid fa-cloud-arrow-up card-icon"></i>
@@ -254,12 +254,12 @@ html_phase3_final_clean = """
     </div>
 
     <script>
-        const PARTICLE_COUNT = 28000; 
+        const PARTICLE_COUNT = 28000;
         let scene, camera, renderer, composer, particles, geometry, material;
         let positions, targetPositions, alphas;
         let visibleCount = 0;
         let time = 0;
-        let isProcessing = false; 
+        let isProcessing = false;
 
         init(); animate(); startGenesis();
 
@@ -273,7 +273,7 @@ html_phase3_final_clean = """
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
             container.appendChild(renderer.domElement);
-            
+
             const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
             bloomPass.strength = 0.4; bloomPass.radius = 0.3; bloomPass.threshold = 0.1;
             composer = new THREE.EffectComposer(renderer);
@@ -314,20 +314,20 @@ html_phase3_final_clean = """
         }
 
         function startGenesis() { alphas[0] = 1.0; geometry.attributes.alpha.needsUpdate = true; visibleCount = 1; setTimeout(multiplyDots, 1000); }
-        function multiplyDots() { if (visibleCount >= PARTICLE_COUNT) { setTimeout(attractToMobius, 500); return; } let growth = Math.ceil(visibleCount * 0.2) + 5; let nextLimit = Math.min(visibleCount + growth, PARTICLE_COUNT); for (let i = visibleCount; i < nextLimit; i++) alphas[i] = 1.0; visibleCount = nextLimit; geometry.attributes.alpha.needsUpdate = true; requestAnimationFrame(multiplyDots); }
-        function attractToMobius() {
+        function multiplyDots() { if (visibleCount >= PARTICLE_COUNT) { setTimeout(formSentinelRing, 500); return; } let growth = Math.ceil(visibleCount * 0.2) + 5; let nextLimit = Math.min(visibleCount + growth, PARTICLE_COUNT); for (let i = visibleCount; i < nextLimit; i++) alphas[i] = 1.0; visibleCount = nextLimit; geometry.attributes.alpha.needsUpdate = true; requestAnimationFrame(multiplyDots); }
+        function formSentinelRing() {
             const startPos = Float32Array.from(geometry.attributes.position.array); const obj = { t: 0 };
             anime({ targets: obj, t: 1, duration: 4000, easing: 'easeInOutExpo', update: () => { const curr = geometry.attributes.position.array; for(let i=0; i<PARTICLE_COUNT; i++) { const idx = i*3; curr[idx] = startPos[idx] + (targetPositions[idx] - startPos[idx]) * obj.t; curr[idx+1] = startPos[idx+1] + (targetPositions[idx+1] - startPos[idx+1]) * obj.t; curr[idx+2] = startPos[idx+2] + (targetPositions[idx+2] - startPos[idx+2]) * obj.t; } geometry.attributes.position.needsUpdate = true; }, complete: () => { revealLobby(); } });
         }
 
         function revealLobby() { anime({ targets: camera.position, y: -7, z: 28, duration: 2000, easing: 'easeInOutQuad' }); anime({ targets: particles.rotation, x: Math.PI / 3, duration: 2000, easing: 'easeInOutQuad' }); anime({ targets: '.lobby-ui', opacity: [0, 1], translateY: [50, 0], duration: 1000, delay: 500, easing: 'easeOutExpo' }); }
-        
+
         function openLogs() { anime({ targets: '.lobby-ui', opacity: 0, translateY: 50, duration: 500, easing: 'easeInExpo' }); anime({ targets: camera.position, x: -15, y: 0, z: 20, duration: 1500, easing: 'easeInOutQuad' }); anime({ targets: particles.rotation, y: Math.PI / 2, duration: 1500, easing: 'easeInOutQuad' }); const logs = document.getElementById('logs'); logs.style.opacity = 1; logs.style.pointerEvents = 'auto'; logs.style.transform = 'scale(1)'; }
         function closeLogs() { const logs = document.getElementById('logs'); logs.style.opacity = 0; logs.style.pointerEvents = 'none'; logs.style.transform = 'scale(0.95)'; anime({ targets: camera.position, x: 0, y: -7, z: 28, duration: 1500, easing: 'easeInOutQuad' }); anime({ targets: '.lobby-ui', opacity: 1, translateY: 0, duration: 1000, delay: 500, easing: 'easeOutExpo' }); }
 
         function handleFileSelect(input) { if (input.files && input.files[0]) { anime({ targets: '.lobby-ui', opacity: 0, translateY: -50, duration: 500, easing: 'easeInExpo' }); isProcessing = true; material.uniforms.uScanActive.value = 1.0; anime({ targets: camera.position, y: 0, z: 24, duration: 1500, easing: 'easeInOutQuad' }); anime({ targets: particles.rotation, x: Math.PI/4, z: 0, duration: 1500, easing: 'easeInOutQuad' }); document.getElementById('processing').style.opacity = 1; anime({ targets: '#load-bar', width: '100%', duration: 3500, easing: 'linear', complete: () => { finishProcessing(); } }); } }
         function finishProcessing() { isProcessing = false; material.uniforms.uScanActive.value = 0.0; anime({ targets: '#processing', opacity: 0, duration: 300 }); anime({ targets: camera.position, y: -6, z: 28, duration: 1500, easing: 'easeOutExpo' }); const resultsUI = document.getElementById('results'); resultsUI.style.opacity = 1; resultsUI.style.pointerEvents = 'auto'; const crates = document.querySelectorAll('.crate-card'); crates.forEach((crate, i) => { setTimeout(() => { crate.classList.add('unlocked'); }, i * 200); }); }
-        
+
         function animate() { requestAnimationFrame(animate); time += 0.01; material.uniforms.uTime.value = time; if(particles) { if(isProcessing) particles.rotation.y += 0.08; else particles.rotation.y += 0.002; } composer.render(); }
     </script>
 </body>

@@ -290,7 +290,8 @@ def extract_vessel_features(img, fov_mask, is_angiography=False):
 def extract_pigment_features(img, fov_mask):
     """TRIAD #1: Bone Spicule Pigmentation Detection
     BUG FIX #2: Apply FOV mask so black borders aren't counted as pigment.
-    BUG FIX #13: ADAPTIVE threshold for different imaging modalities (autofluorescence, color shifts)."""
+    BUG FIX #13: ADAPTIVE threshold for different imaging modalities (autofluorescence, color shifts).
+    BUG FIX #15: Tightened thresholds to reduce false positives on noisy/low-quality images."""
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     l_channel = lab[:, :, 0]
     
@@ -302,20 +303,20 @@ def extract_pigment_features(img, fov_mask):
     
     # Adaptive approach for bright/color-shifted images
     if l_mean > 80:
-        # BRIGHT images (autofluorescence, color-shifted): Use 25th percentile + aggressive stats
-        dark_threshold = np.percentile(retinal_l, 25)
-        relative_threshold = max(l_mean - 2.0 * l_std, 30)  # More aggressive
-        # Lower by 15 for brightness compensation
-        brightness_comp = -15
+        # BRIGHT images (autofluorescence, color-shifted): More conservative to avoid false positives
+        dark_threshold = np.percentile(retinal_l, 18)  # Lower percentile (was 25) = more conservative
+        relative_threshold = max(l_mean - 2.2 * l_std, 35)  # Tighter statistical threshold
+        # Reduced brightness compensation for less aggressive detection
+        brightness_comp = -8  # Was -15, now less aggressive
     else:
-        # NORMAL images: Bottom 15%
-        dark_threshold = np.percentile(retinal_l, 15)
+        # NORMAL images: Bottom 12% (was 15%)
+        dark_threshold = np.percentile(retinal_l, 12)
         relative_threshold = max(l_mean - 1.5 * l_std, 30)
         brightness_comp = 0
     
     # Use the HIGHER of the two (more conservative, less noise)
     final_threshold = max(dark_threshold, relative_threshold) + brightness_comp
-    final_threshold = min(final_threshold, 70)  # Cap at 70 for very bright images
+    final_threshold = min(final_threshold, 65)  # Lower cap (was 70) for bright images
     
     # DIAGNOSTIC: Log adaptive thresholds
     print(f"   [PIGMENT] L-channel: mean={l_mean:.1f}, std={l_std:.1f}, percentile={dark_threshold:.1f}, statistical={relative_threshold:.1f}, brightness_comp={brightness_comp}, final_threshold={final_threshold:.1f}")
@@ -326,15 +327,17 @@ def extract_pigment_features(img, fov_mask):
     # APPLY FOV MASK to ignore the black background entirely
     dark_mask = cv2.bitwise_and(dark_mask, fov_mask)
     
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-    dark_mask = cv2.morphologyEx(dark_mask, cv2.MORPH_OPEN, kernel)
+    # Stronger noise removal for cleaner detection
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4, 4))  # Larger kernel (was 3x3)
+    dark_mask = cv2.morphologyEx(dark_mask, cv2.MORPH_OPEN, kernel, iterations=2)  # 2 iterations
     
     num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(dark_mask, connectivity=8)
     
     valid_clusters = 0
     for i in range(1, num_labels):
         area = stats[i, cv2.CC_STAT_AREA]
-        if 10 < area < 800:  # Filter out tiny noise AND massive shadows
+        # Tighter size range: 20-500 pixels (was 10-800) to filter noise and large shadows
+        if 20 < area < 500:
             valid_clusters += 1
     
     return {'num_clusters': valid_clusters, 'mask': dark_mask}
@@ -1269,9 +1272,10 @@ def analyze_retinal_scan():
         # Combine errors and warnings into issues list
         issues = quality_result.get('errors', []) + quality_result.get('warnings', [])
         
-        # FDA-compliant quality threshold (raised from 50 to 70)
-        if quality_result['quality_score'] < 70:
-            print(f"   [X] IMAGE REJECTED: Quality score {quality_result['quality_score']}/100 (threshold: 70)")
+        # FDA-compliant quality threshold (minimum 71 for analysis)
+        # Changed from < 70 to <= 70 to reject borderline images
+        if quality_result['quality_score'] <= 70:
+            print(f"   [X] IMAGE REJECTED: Quality score {quality_result['quality_score']}/100 (minimum: 71)")
             for issue in issues:
                 print(f"      - {issue}")
             sys.stdout.flush()
@@ -1281,7 +1285,7 @@ def analyze_retinal_scan():
                 "issues": issues,
                 "errors": quality_result.get('errors', []),
                 "warnings": quality_result.get('warnings', []),
-                "recommendation": "Please capture a clearer fundus image (well-focused, proper lighting, ≥512x512 resolution)",
+                "recommendation": "Please recapture with: Sharp focus (avoid blur), Good lighting (avoid over/underexposure), Resolution ≥1024×1024 pixels",
                 "critical_failure": quality_result.get('critical_failure', False)
             }), 400
         elif quality_result['quality_score'] < 85:

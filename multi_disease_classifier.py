@@ -78,23 +78,22 @@ class MultiDiseaseClassifier:
         'hypertensive_retinopathy': {
             'name': 'Hypertensive Retinopathy',
             'key_features': {
-                'av_nicking': 0.30,
-                'vessel_tortuosity': 0.25,
-                'cotton_wool_spots': 0.20,
-                'hemorrhages': 0.15,
-                'optic_disc_edema': 0.10
+                'vessel_tortuosity': 0.40,      # Increased from 0.25 - most reliable feature
+                'optic_disc_edema': 0.30,       # Increased from 0.10 - detectable
+                'exudates': 0.20,               # Cotton-wool spots proxy
+                'abnormal_texture': 0.10        # Retinal changes
             },
-            'exclusions': ['bone_spicules', 'drusen']
+            'exclusions': ['bone_spicules', 'drusen', 'macular_edema']
         },
         'choroideremia': {
             'name': 'Choroideremia',
             'key_features': {
-                'chorioretinal_atrophy': 0.40,
+                'chorioretinal_atrophy': 0.45,  # Key feature
                 'peripheral_loss': 0.30,
-                'vessel_attenuation': 0.20,
-                'macular_preservation': 0.10  # Central vision spared until late
+                'vessel_attenuation': 0.15,
+                'macular_preservation': 0.10
             },
-            'exclusions': ['bone_spicules', 'microaneurysms']
+            'exclusions': ['bone_spicules', 'microaneurysms', 'drusen', 'vessel_tortuosity']
         },
         'usher_syndrome': {
             'name': 'Usher Syndrome (RP variant)',
@@ -220,10 +219,12 @@ class MultiDiseaseClassifier:
         # DIABETIC RETINOPATHY features (simplified - needs dedicated detectors)
         # For now, use texture and bright lesions as proxies
         texture = expert_results.get('texture_result', {})
-        features['microaneurysms'] = 0.0  # Placeholder - needs dedicated detector
+        features['microaneurysms'] = 0.0  # Placeholder - needs dot-hemorrhage detector
         features['hemorrhages'] = 0.0     # Placeholder
-        features['exudates'] = min(texture.get('local_variation', 0) / 10.0, 1.0)
-        features['cotton_wool_spots'] = 0.0  # Placeholder
+        # Exudates are bright lesions (use local_variation as signal + fleck_count)
+        local_var = texture.get('local_variation', 0)
+        features['exudates'] = min(local_var / 6.0, 1.0)  # Improved sensitivity
+        features['cotton_wool_spots'] = features['exudates'] * 0.7  # Similar to exudates
         features['neovascularization'] = 0.0  # Placeholder
         
         # AMD features
@@ -244,9 +245,10 @@ class MultiDiseaseClassifier:
         # HYPERTENSIVE RETINOPATHY features
         tortuosity = expert_results.get('tortuosity_result', {})
         tortuous_vessels = tortuosity.get('tortuosity', 1.0)
-        features['vessel_tortuosity'] = max(0, (tortuous_vessels - 1.3) / 1.0)
-        features['av_nicking'] = 0.0  # Placeholder
-        features['optic_disc_edema'] = max(0, (170 - disc_brightness) / 30)  # Darker disc
+        # Normal: 1.0-1.3, Mild: 1.3-1.5, Moderate: 1.5-1.8, Severe: >1.8
+        features['vessel_tortuosity'] = max(0, min((tortuous_vessels - 1.3) / 0.7, 1.0))
+        features['av_nicking'] = 0.0  # Placeholder - requires arteriovenous crossing analysis
+        features['optic_disc_edema'] = max(0, min((170 - disc_brightness) / 40, 1.0))  # Darker = edema
         
         # CHOROIDEREMIA features
         features['chorioretinal_atrophy'] = features['peripheral_loss'] * 0.8

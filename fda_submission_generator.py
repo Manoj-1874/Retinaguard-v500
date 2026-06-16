@@ -277,6 +277,7 @@ class FDASubmissionGenerator:
                 'severity': 'MODERATE',
                 'probability': 'MEDIUM',
                 'detection': 'HIGH',
+                'risk_level': 'MODERATE',
                 'mitigation': 'Image quality validator rejects blurry/dark/low-resolution images before analysis.'
             },
             {
@@ -284,6 +285,7 @@ class FDASubmissionGenerator:
                 'severity': 'MODERATE',
                 'probability': 'LOW',
                 'detection': 'MEDIUM',
+                'risk_level': 'ACCEPTABLE',
                 'mitigation': 'Ethnicity-adjusted thresholds. Multi-ethnic validation study. Performance monitoring by subgroup.'
             },
             {
@@ -291,6 +293,7 @@ class FDASubmissionGenerator:
                 'severity': 'LOW',
                 'probability': 'LOW',
                 'detection': 'HIGH',
+                'risk_level': 'ACCEPTABLE',
                 'mitigation': 'Extensive unit testing. Error logging. Graceful failure modes. User notified of system errors.'
             },
             {
@@ -298,6 +301,7 @@ class FDASubmissionGenerator:
                 'severity': 'CRITICAL',
                 'probability': 'VERY LOW',
                 'detection': 'MEDIUM',
+                'risk_level': 'ACCEPTABLE',
                 'mitigation': 'Encrypted data transmission. No PHI stored without consent. HIPAA-compliant infrastructure. Regular security audits.'
             }
         ]

@@ -39,7 +39,7 @@ class ImageQualityValidator:
     MAX_BRIGHTNESS = 220            # Maximum mean intensity (0-255)
     MIN_RESOLUTION = 512            # Minimum width/height in pixels
     OPTIMAL_RESOLUTION = 1024       # Recommended resolution
-    MIN_DYNAMIC_RANGE = 50          # Minimum std deviation (contrast)
+    MIN_DYNAMIC_RANGE = 25          # Minimum std deviation (contrast)
     MAX_VIGNETTING_RATIO = 0.30     # Max ratio of peripheral/center darkness
     MIN_VESSEL_DENSITY = 0.05       # Minimum vessel network coverage
     

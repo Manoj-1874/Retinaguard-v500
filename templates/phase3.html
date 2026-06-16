@@ -5,7 +5,7 @@ html_phase3_armory = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RetinaGuard | V500 Armory</title>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
@@ -19,9 +19,9 @@ html_phase3_armory = """
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
-        
+
         body { margin: 0; overflow: hidden; background-color: #020205; font-family: 'Rajdhani', sans-serif; }
-        
+
         #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
 
         /* HEADER */
@@ -43,7 +43,7 @@ html_phase3_armory = """
         /* --- SCREEN 1: LOBBY --- */
         .lobby-ui {
             position: absolute; width: 100%; top: 55%; left: 0; transform: translateY(-50%);
-            display: flex; justify-content: center; gap: 40px; 
+            display: flex; justify-content: center; gap: 40px;
             opacity: 0; pointer-events: auto;
         }
         .action-card {
@@ -57,7 +57,7 @@ html_phase3_armory = """
         .action-card h2 { font-family: 'Orbitron'; font-size: 20px; color: white; margin-top: 15px; letter-spacing: 2px; }
         .action-card p { font-size: 12px; color: #88ccff; letter-spacing: 1px; margin-top: 5px; }
         .card-icon { font-size: 40px; color: #00f3ff; margin-bottom: 5px; filter: drop-shadow(0 0 10px rgba(0,243,255,0.6)); }
-        
+
         .action-card.secondary { border-color: rgba(255,150,0,0.2); }
         .action-card.secondary:hover { border-color: #ff9900; box-shadow: 0 0 40px rgba(255,150,0,0.2); }
         .action-card.secondary .card-icon { color: #ff9900; }
@@ -84,7 +84,7 @@ html_phase3_armory = """
         .model-card p { color: #888; font-size: 11px; line-height: 1.4; }
         .stat-bar { width: 100%; height: 3px; background: #222; margin-top: 15px; border-radius: 2px; overflow: hidden; }
         .stat-fill { height: 100%; background: #00f3ff; width: 0%; transition: width 1s ease-out; }
-        
+
         .back-btn {
             position: absolute; bottom: 50px; left: 50px; pointer-events: auto;
             color: #555; font-family: 'Orbitron'; font-size: 14px; cursor: pointer;
@@ -139,7 +139,7 @@ html_phase3_armory = """
     </div>
 
     <div id="ui-layer">
-        
+
         <div class="lobby-ui" id="lobby">
             <div class="action-card" onclick="document.getElementById('fileInput').click()">
                 <i class="fa-solid fa-cloud-arrow-up card-icon"></i>
@@ -224,12 +224,12 @@ html_phase3_armory = """
 
     <script>
         // --- 3D ENGINE ---
-        const PARTICLE_COUNT = 28000; 
+        const PARTICLE_COUNT = 28000;
         let scene, camera, renderer, composer, particles, geometry, material;
         let positions, targetPositions, alphas;
         let visibleCount = 0;
         let time = 0;
-        let isProcessing = false; 
+        let isProcessing = false;
 
         init();
         animate();
@@ -252,7 +252,7 @@ html_phase3_armory = """
             const renderScene = new THREE.RenderPass(scene, camera);
             const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
             bloomPass.strength = 0.4; bloomPass.radius = 0.3; bloomPass.threshold = 0.1;
-            
+
             composer = new THREE.EffectComposer(renderer);
             composer.addPass(renderScene);
             composer.addPass(bloomPass);
@@ -303,7 +303,7 @@ html_phase3_armory = """
             setTimeout(multiplyDots, 1000);
         }
         function multiplyDots() {
-            if (visibleCount >= PARTICLE_COUNT) { setTimeout(attractToMobius, 500); return; }
+            if (visibleCount >= PARTICLE_COUNT) { setTimeout(formSentinelRing, 500); return; }
             let growth = Math.ceil(visibleCount * 0.2) + 5;
             let nextLimit = Math.min(visibleCount + growth, PARTICLE_COUNT);
             for (let i = visibleCount; i < nextLimit; i++) alphas[i] = 1.0;
@@ -311,7 +311,7 @@ html_phase3_armory = """
             geometry.attributes.alpha.needsUpdate = true;
             requestAnimationFrame(multiplyDots);
         }
-        function attractToMobius() {
+        function formSentinelRing() {
             const startPos = Float32Array.from(geometry.attributes.position.array);
             const obj = { t: 0 };
             anime({
@@ -381,8 +381,8 @@ html_phase3_armory = """
                 // Hide Lobby
                 anime({ targets: '.lobby-ui', opacity: 0, translateY: -50, duration: 500, easing: 'easeInExpo' });
                 // Start Spin
-                isProcessing = true; material.uniforms.uScanActive.value = 1.0; 
-                anime({ targets: camera.position, y: 0, z: 24, duration: 1500, easing: 'easeInOutQuad' }); 
+                isProcessing = true; material.uniforms.uScanActive.value = 1.0;
+                anime({ targets: camera.position, y: 0, z: 24, duration: 1500, easing: 'easeInOutQuad' });
                 anime({ targets: particles.rotation, x: Math.PI/4, z: 0, duration: 1500, easing: 'easeInOutQuad' });
                 // Show Bar
                 document.getElementById('processing').style.opacity = 1;
@@ -405,7 +405,7 @@ html_phase3_armory = """
             crates.forEach((crate, i) => {
                 setTimeout(() => {
                     crate.classList.add('unlocked');
-                    crate.querySelector('.status-indicator').innerText = "NORMAL"; 
+                    crate.querySelector('.status-indicator').innerText = "NORMAL";
                     if(i === 6) {
                          crate.querySelector('.status-indicator').innerText = "NEGATIVE";
                          crate.querySelector('.status-indicator').style.color = "#00ff88";
@@ -418,7 +418,7 @@ html_phase3_armory = """
             requestAnimationFrame(animate);
             time += 0.01; material.uniforms.uTime.value = time;
             if(particles) {
-                if(isProcessing) particles.rotation.y += 0.08; 
+                if(isProcessing) particles.rotation.y += 0.08;
                 else particles.rotation.y += 0.002;
             }
             composer.render();
