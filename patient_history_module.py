@@ -137,8 +137,35 @@ class PatientHistoryModule:
         age = data.get('age', 40)
         gender = data.get('gender', 'unknown').lower()
         ethnicity = data.get('ethnicity', 'unknown').lower()
-        symptoms = data.get('symptoms', {})
-        family_history = data.get('family_history', False)
+        symptoms_raw = data.get('symptoms', {})
+        symptoms = {}
+        for k, v in symptoms_raw.items():
+            if isinstance(v, bool):
+                symptoms[k] = 10 if v else 0
+            elif isinstance(v, (int, float)):
+                symptoms[k] = v
+            elif isinstance(v, str):
+                v_lower = v.lower()
+                if v_lower in ['true', 'yes']:
+                    symptoms[k] = 10
+                elif v_lower in ['false', 'no']:
+                    symptoms[k] = 0
+                else:
+                    try:
+                        symptoms[k] = float(v)
+                    except ValueError:
+                        symptoms[k] = 0
+            else:
+                symptoms[k] = 0
+
+        family_history_raw = data.get('family_history', False)
+        if isinstance(family_history_raw, bool):
+            family_history = family_history_raw
+        elif str(family_history_raw).lower() in ['true', 'yes', '1']:
+            family_history = True
+        else:
+            family_history = False
+
         visual_field_data = data.get('visual_field_data', None)
         
         clinical_flags = []

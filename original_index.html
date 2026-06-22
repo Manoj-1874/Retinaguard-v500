@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetinaGuard | Command Center</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
+        
+        body { 
+            margin: 0; overflow: hidden; background-color: #020205; 
+            font-family: 'Rajdhani', sans-serif; 
+            user-select: none; -webkit-user-select: none;
+            cursor: default; 
+        }
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+        .hidden-audio { display: none; }
+
+        .cursor-pointer, .btn-hover, button, .action-card, .model-card, .crate-card, .modal-close { 
+            cursor: pointer !important; 
+        }
+
+        /* HUD OVERLAY */
+        .hud-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 2px;
+        }
+
+        /* HEADER */
+        .hud-header {
+            position: absolute; top: 0; left: 0; width: 100%; padding: 25px 40px;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            z-index: 20; pointer-events: none;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+        }
+        .brand { font-family: 'Orbitron'; font-weight: 900; font-size: 26px; color: white; letter-spacing: 4px; text-shadow: 0 0 20px rgba(0,243,255,0.5); }
+        .brand span { color: #00f3ff; }
+        .commander-stats { display: flex; gap: 20px; text-align: right; }
+        .stat-box { border: 1px solid rgba(0,243,255,0.3); padding: 5px 15px; background: rgba(0,243,255,0.05); border-radius: 4px; display: flex; flex-direction: column; }
+        .stat-box .label { color: #88ccff; font-size: 10px; letter-spacing: 1px; }
+        .stat-box .val { color: #00f3ff; font-family: 'Orbitron'; font-size: 14px; font-weight: bold; }
+
+        /* =========================================
+           SCREEN SECTIONS
+        ========================================= */
+        .screen-section {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            display: none; 
+            opacity: 0;
+            z-index: 10;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        /* --- 1. LOBBY (ANCHORED STRICTLY TO BOTTOM) --- */
+        #lobby { 
+            top: auto; 
+            bottom: 6vh; /* Pushes the 3 cards tightly to the bottom floor */
+            height: auto;
+            flex-direction: row; 
+            gap: 30px; 
+            justify-content: center; 
+        }
+        .action-card {
+            width: 280px; height: 180px; background: rgba(5, 12, 20, 0.8); border: 1px solid rgba(0,243,255,0.2);
+            backdrop-filter: blur(10px); display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: relative; transition: all 0.2s; pointer-events: auto;
+            clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+        }
+        .action-card:hover { transform: scale(1.05); background: rgba(5, 12, 20, 0.95); box-shadow: 0 0 40px rgba(0,243,255,0.2); border-color: #00f3ff; }
+        .action-card h2 { font-family: 'Orbitron'; font-size: 20px; color: white; margin-top: 15px; letter-spacing: 2px; }
+        .action-card p { font-size: 11px; color: #88ccff; letter-spacing: 1px; margin-top: 5px; }
+        .card-icon { font-size: 40px; color: #00f3ff; margin-bottom: 5px; filter: drop-shadow(0 0 15px rgba(0,243,255,0.4)); }
+        
+        .action-card.armory-btn { border-color: rgba(255,150,0,0.3); }
+        .action-card.armory-btn:hover { border-color: #ff9900; box-shadow: 0 0 40px rgba(255,150,0,0.2); }
+        .action-card.armory-btn .card-icon { color: #ff9900; filter: drop-shadow(0 0 15px rgba(255,150,0,0.4));}
+        
+        .action-card.archive-btn { border-color: rgba(0,255,136,0.3); }
+        .action-card.archive-btn:hover { border-color: #00ff88; box-shadow: 0 0 40px rgba(0,255,136,0.2); }
+        .action-card.archive-btn .card-icon { color: #00ff88; filter: drop-shadow(0 0 15px rgba(0,255,136,0.4));}
+
+        /* --- 2A. ARMORY --- */
+        .logs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; width: 85%; max-width: 1400px; pointer-events: auto; }
+        .model-card { background: rgba(10, 15, 20, 0.85); border: 1px solid rgba(255,255,255,0.05); padding: 20px; transition: all 0.3s; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%); border-left: 3px solid #ff9900; }
+        .model-card:hover { transform: translateY(-5px); background: rgba(20, 30, 40, 0.95); border-color: #ff9900; box-shadow: 0 5px 20px rgba(255,153,0,0.2); }
+        .model-card h3 { font-family: 'Orbitron'; color: white; font-size: 16px; margin-bottom: 5px; }
+        .model-card p { color: #888; font-size: 11px; margin-top: 10px; }
+
+        /* --- 2B. DATABASE ARCHIVE --- */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 3px;}
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #00ff88; border-radius: 3px; box-shadow: 0 0 10px #00ff88;}
+        #db-records-container { pointer-events: auto; }
+
+        /* --- 3. LIVE SCAN PROCESSING --- */
+        #processing { left: auto; right: 5%; width: 400px; transform: translateY(0); }
+        .scan-text { font-family: 'Orbitron'; color: #00f3ff; font-size: 16px; letter-spacing: 6px; margin-bottom: 15px; text-shadow: 0 0 20px #00f3ff; animation: pulseText 1s infinite; text-align: center;}
+        .live-preview-box { width: 400px; height: 300px; border: 1px solid #00f3ff; box-shadow: 0 0 30px rgba(0,243,255,0.2); position: relative; overflow: hidden; background: #000; border-radius: 4px; clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px); }
+        .live-image { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; filter: sepia(1) hue-rotate(180deg) saturate(200%) contrast(150%); } 
+        .scan-laser { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #fff; box-shadow: 0 0 20px 5px #00f3ff; animation: laserScan 2s linear infinite alternate; }
+        @keyframes laserScan { 0% { top: 0%; } 100% { top: 100%; } }
+        .target-box { position: absolute; border: 1px solid #ff0055; width: 50px; height: 50px; box-shadow: inset 0 0 10px rgba(255,0,85,0.5); opacity: 0; transform: scale(1.5); transition: all 0.2s; background: linear-gradient(to right, #ff0055 2px, transparent 2px) 0 0, linear-gradient(to right, #ff0055 2px, transparent 2px) 0 100%, linear-gradient(to left, #ff0055 2px, transparent 2px) 100% 0, linear-gradient(to left, #ff0055 2px, transparent 2px) 100% 100%, linear-gradient(to bottom, #ff0055 2px, transparent 2px) 0 0, linear-gradient(to bottom, #ff0055 2px, transparent 2px) 100% 0, linear-gradient(to top, #ff0055 2px, transparent 2px) 0 100%, linear-gradient(to top, #ff0055 2px, transparent 2px) 100% 100%; background-repeat: no-repeat; background-size: 10px 10px; }
+        
+        /* Loading Progress Bar */
+        .loading-progress { width: 100%; text-align: center; margin-bottom: 20px; }
+        .progress-bar { width: 100%; height: 8px; background: rgba(0,243,255,0.1); border: 1px solid rgba(0,243,255,0.3); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+        .progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #00f3ff, #00ff88); box-shadow: 0 0 10px #00f3ff; transition: width 0.3s ease-out; }
+        .progress-text { font-family: 'Orbitron'; color: #00f3ff; font-size: 28px; letter-spacing: 3px; text-shadow: 0 0 15px #00f3ff; }
+        .progress-stage { font-family: 'Rajdhani'; color: #88ccff; font-size: 13px; letter-spacing: 2px; margin-top: 5px; }
+
+        /* --- 4. RESULTS (ANCHORED STRICTLY TO BOTTOM) --- */
+        #results { 
+            top: auto; 
+            bottom: 4vh; /* Pushes crates and save button to the bottom floor */
+            height: auto;
+            flex-direction: column; 
+            justify-content: flex-end; 
+            align-items: center; 
+        } 
+        .crates-row { display: flex; gap: 12px; justify-content: center; align-items: flex-end; }
+        
+        .crate-card { 
+            width: 130px; height: 160px; 
+            background: linear-gradient(180deg, rgba(15,20,30,0.95) 0%, rgba(5,8,10,0.98) 100%); 
+            border: 1px solid #333; border-top: 2px solid #555; border-radius: 4px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
+            padding: 15px 10px; 
+            transition: all 0.2s; transform: translateY(100px); opacity: 0; pointer-events: auto; 
+            clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px); 
+        }
+        .crate-card.unlocked { border-top-color: #00f3ff; box-shadow: 0 -5px 25px rgba(0,243,255,0.15); transform: translateY(0) !important; opacity: 1; }
+        .crate-card:hover { transform: translateY(-10px) !important; border-color: #00f3ff; box-shadow: 0 0 30px rgba(0,243,255,0.4); background: rgba(20,30,45,1); }
+        .crate-header { font-size: 9px; color: #666; text-transform: uppercase; letter-spacing: 1px; width: 100%; text-align: left; padding-left: 5px;}
+        .crate-icon { font-size: 26px; color: #444; transition: color 0.5s; } 
+        .unlocked .crate-icon { color: #00f3ff; filter: drop-shadow(0 0 8px rgba(0,243,255,0.6)); }
+        .crate-label { font-family: 'Orbitron'; font-size: 12px; color: white; letter-spacing: 1px; }
+        .status-indicator { font-size: 9px; padding: 4px 8px; border-radius: 2px; background: #222; color: #555; width: 90%; text-align: center; font-weight: bold; }
+        .unlocked .status-indicator { background: rgba(0,243,255,0.1); color: #00f3ff; }
+
+        /* --- OVERALL DIAGNOSIS BANNER --- */
+        #overall-diagnosis {
+            opacity: 0;
+            margin-bottom: 30px;
+            padding: 20px 40px;
+            border: 2px solid rgba(0,243,255,0.3);
+            background: rgba(0,243,255,0.05);
+            clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+            text-align: center;
+            transition: opacity 0.5s;
+            pointer-events: auto;
+            min-width: 600px;
+        }
+        #overall-diagnosis.critical { border-color: rgba(255,0,85,0.8); background: rgba(255,0,85,0.08); }
+        #overall-diagnosis.moderate { border-color: rgba(255,153,0,0.8); background: rgba(255,153,0,0.08); }
+        #overall-diagnosis.mild { border-color: rgba(255,215,0,0.8); background: rgba(255,215,0,0.08); }
+        #overall-diagnosis.normal { border-color: rgba(0,243,255,0.8); background: rgba(0,243,255,0.08); }
+        .diagnosis-label { font-size: 11px; color: #88ccff; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+        .diagnosis-verdict { font-family: 'Orbitron'; font-size: 28px; color: #00f3ff; letter-spacing: 3px; text-shadow: 0 0 15px rgba(0,243,255,0.5); margin-bottom: 6px; }
+        #overall-diagnosis.critical .diagnosis-verdict { color: #ff0055; text-shadow: 0 0 15px rgba(255,0,85,0.5); }
+        #overall-diagnosis.moderate .diagnosis-verdict { color: #ff9900; text-shadow: 0 0 15px rgba(255,153,0,0.5); }
+        #overall-diagnosis.mild .diagnosis-verdict { color: #ffd700; text-shadow: 0 0 15px rgba(255,215,0,0.5); }
+        .diagnosis-confidence { font-size: 13px; color: #aaa; letter-spacing: 1px; }
+
+        #detail-report-btn:hover { background: #00f3ff; color: #000; box-shadow: 0 0 20px rgba(0,243,255,0.3); }
+
+        #report-action-container { margin-top: 15px; opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+        .save-btn { background: rgba(0,243,255,0.1); border: 1px solid #00f3ff; color: #00f3ff; font-family: 'Orbitron'; padding: 12px 40px; font-size: 16px; border-radius: 4px; transition: all 0.3s; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); letter-spacing: 2px; pointer-events: auto;}
+        .save-btn:hover { background: #00f3ff; color: #000; box-shadow: 0 0 30px rgba(0,243,255,0.4); }
+
+        .back-btn { position: absolute; bottom: 40px; left: 60px; color: #666; font-family: 'Orbitron'; font-size: 14px; padding: 10px 20px; border: 1px solid transparent; pointer-events: auto; z-index: 50;}
+        .back-btn:hover { color: white; border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); }
+
+        /* --- MODALS --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 100; opacity: 0; }
+        .modal-content { width: 600px; background: linear-gradient(135deg, #050a10, #0a1520); border: 1px solid #00f3ff; box-shadow: 0 0 50px rgba(0,243,255,0.2); padding: 40px; border-radius: 8px; position: relative; clip-path: polygon(30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%, 0 30px); pointer-events: auto;}
+        .modal-close { position: absolute; top: 20px; right: 20px; color: #00f3ff; font-size: 20px; transition: 0.2s; }
+        .modal-close:hover { color: white; transform: rotate(90deg); }
+        .modal-header-text { font-family: 'Orbitron'; font-size: 28px; color: white; letter-spacing: 2px; border-bottom: 1px solid rgba(0,243,255,0.3); padding-bottom: 10px; margin-bottom: 20px;}
+        .modal-body { display: flex; gap: 30px; }
+        .modal-icon-lg { font-size: 80px; color: #00f3ff; opacity: 0.8; filter: drop-shadow(0 0 20px #00f3ff); }
+        .modal-stats { flex: 1; }
+        .modal-stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;}
+        .modal-stat-row span:first-child { color: #88ccff; font-size: 12px; text-transform: uppercase;}
+        .modal-stat-row span:last-child { color: white; font-family: 'Orbitron'; font-weight: bold;}
+        .fake-graph { width: 100%; height: 60px; background: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,243,255,0.1) 10px, rgba(0,243,255,0.1) 20px); margin-top: 20px; border: 1px solid rgba(0,243,255,0.3); position: relative; overflow: hidden;}
+        .fake-graph-fill { position: absolute; bottom: 0; left: 0; height: 100%; width: 85%; background: linear-gradient(90deg, rgba(0,243,255,0.2), rgba(0,243,255,0.8)); opacity: 0.5;}
+
+        .tactical-input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid #00f3ff; color: #00f3ff; padding: 15px; font-family: 'Orbitron'; text-align: center; margin-bottom: 25px; outline: none; box-shadow: inset 0 0 10px rgba(0,243,255,0.1); font-size: 18px; letter-spacing: 2px; cursor: text;}
+        .tactical-input::placeholder { color: rgba(0,243,255,0.3); }
+        .tactical-input:focus { border-color: #fff; box-shadow: inset 0 0 20px rgba(0,243,255,0.3); color: #fff;}
+    </style>
+</head>
+<body>
+
+    <input type="file" id="fileInput" style="display: none;" accept="image/*" onchange="handleFileSelect(this)">
+
+    <audio id="sfx-hover" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" class="hidden-audio"></audio>
+    <audio id="sfx-click" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" class="hidden-audio"></audio>
+    <audio id="sfx-scan" src="https://assets.mixkit.co/active_storage/sfx/2574/2574-preview.mp3" class="hidden-audio" loop></audio>
+    <audio id="sfx-success" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" class="hidden-audio"></audio>
+    <audio id="sfx-unlock" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" class="hidden-audio"></audio>
+
+    <div id="canvas-container"></div>
+    <div class="hud-overlay"></div>
+
+    <div class="hud-header">
+        <div class="brand">RETINA<span>GUARD</span></div>
+        <div class="commander-stats">
+            <div class="stat-box"><span class="label">SCANS LOGGED</span><span class="val" id="total-scans-val">0</span></div>
+            <div class="stat-box" style="border-color:rgba(255,150,0,0.3); background:rgba(255,150,0,0.05);"><span class="label" style="color:#ffcc88">ANOMALIES</span><span class="val" style="color:#ff9900" id="anomalies-val">0</span></div>
+            <div class="stat-box"><span class="label">SERVER</span><span class="val"><i class="fa-solid fa-signal" style="font-size:10px;"></i> ONLINE</span></div>
+        </div>
+    </div>
+
+    <div class="screen-section" id="lobby">
+        <div class="action-card btn-hover" onclick="openPatientModal()">
+            <i class="fa-solid fa-cloud-arrow-up card-icon"></i>
+            <h2>UPLOAD SCAN</h2>
+            <p>INITIALIZE DIAGNOSIS</p>
+        </div>
+        <div class="action-card armory-btn btn-hover" onclick="navigate('armory-ui', -15, 0, 20, null, Math.PI/2)">
+            <i class="fa-solid fa-layer-group card-icon"></i>
+            <h2>V500 ARMORY</h2>
+            <p>VIEW AI MODELS</p>
+        </div>
+        <div class="action-card archive-btn btn-hover" onclick="openArchive()">
+            <i class="fa-solid fa-server card-icon"></i>
+            <h2>PATIENT ARCHIVE</h2>
+            <p>VIEW SAVED RECORDS</p>
+        </div>
+    </div>
+
+    <div class="screen-section" id="armory-ui">
+        <h2 style="font-family:'Orbitron'; color:#ff9900; font-size:24px; letter-spacing:4px; margin-bottom: 20px; text-shadow: 0 0 15px rgba(255,153,0,0.5);">V500 NEURAL ARMORY</h2>
+        <div class="logs-grid">
+            <div class="model-card btn-hover"><h3>VESSELS</h3><p>Vascular Analysis. Detects attenuation.</p></div>
+            <div class="model-card btn-hover"><h3>MACULA</h3><p>Foveal Targeting. Identifies edema.</p></div>
+            <div class="model-card btn-hover"><h3>DRUSEN</h3><p>Deposit Detection. Scans for AMD.</p></div>
+            <div class="model-card btn-hover"><h3>NERVES</h3><p>Optic Disc Integrity. Glaucoma indicators.</p></div>
+            <div class="model-card btn-hover" style="border-left-color:#ff0055"><h3>BLEEDS</h3><p>Hemorrhage Scan. Detects aneurysms.</p></div>
+            <div class="model-card btn-hover"><h3>SCAR</h3><p>Tissue History. Maps laser scars.</p></div>
+            <div class="model-card btn-hover" style="grid-column: span 2; border-left-color: #00f3ff;"><h3>VERDICT</h3><p>COMMAND NODE. Aggregates all sub-models.</p></div>
+        </div>
+        <div class="back-btn btn-hover" onclick="navigate('lobby', 0, -7, 28, Math.PI/3, 0)"><i class="fa-solid fa-arrow-left"></i> RETURN TO LOBBY</div>
+    </div>
+
+    <div class="screen-section" id="archive-ui">
+        <h2 style="font-family:'Orbitron'; color:#00ff88; font-size:24px; letter-spacing:4px; margin-bottom: 20px; text-shadow: 0 0 15px rgba(0,255,136,0.5);">DATABASE ARCHIVE</h2>
+        <div id="db-records-container" class="custom-scrollbar" style="display: flex; flex-direction: column; gap: 15px; max-height: 60vh; overflow-y: auto; padding-right: 15px; width: 60%; min-width: 600px;">
+            </div>
+        <div class="back-btn btn-hover" onclick="navigate('lobby', 0, -7, 28, Math.PI/3, 0)"><i class="fa-solid fa-arrow-left"></i> RETURN TO LOBBY</div>
+    </div>
+
+    <div class="screen-section" id="processing">
+        <div class="scan-text">ANALYZING RETINAL MATRIX</div>
+        <div class="loading-progress" id="loading-progress">
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+            <div class="progress-text" id="progress-text">0%</div>
+            <div class="progress-stage" id="progress-stage">Initializing...</div>
+        </div>
+        <div class="live-preview-box" id="preview-box">
+            <img id="live-img" class="live-image" src="" alt="Scan">
+            <div class="scan-laser"></div>
+        </div>
+    </div>
+
+    <div class="screen-section" id="results">
+        <div id="overall-diagnosis">
+            <div class="diagnosis-label">RETINAGUARD V500 CLINICAL ANALYSIS</div>
+            <div class="diagnosis-verdict" id="verdict-text">ANALYZING...</div>
+            <div class="diagnosis-confidence" id="confidence-text">Confidence: -- | Score: --</div>
+            <button class="btn-hover" onclick="showDetailedReport()" id="detail-report-btn" style="margin-top:10px; padding:8px 20px; background:rgba(0,243,255,0.1); border:1px solid #00f3ff; color:#00f3ff; font-family:'Orbitron'; font-size:12px; letter-spacing:1px; border-radius:4px; transition:all 0.3s; cursor:pointer; display:none;">
+                <i class="fa-solid fa-file-medical"></i> VIEW DETAILED CLINICAL REPORT
+            </button>
+        </div>
+        <div class="crates-row">
+             <div class="crate-card btn-hover" data-expert="ai_pattern"><div class="crate-header">AI CORE</div><i class="fa-solid fa-brain crate-icon"></i><div class="crate-label">AI PATTERN</div><div class="status-indicator">LOCKED</div></div>
+             <div class="crate-card btn-hover" data-expert="vessels"><div class="crate-header">TRIAD #2</div><i class="fa-solid fa-dna crate-icon"></i><div class="crate-label">VESSELS</div><div class="status-indicator">LOCKED</div></div>
+             <div class="crate-card btn-hover" data-expert="pigment"><div class="crate-header">TRIAD #1</div><i class="fa-solid fa-circle-dot crate-icon"></i><div class="crate-label">PIGMENT</div><div class="status-indicator">LOCKED</div></div>
+             <div class="crate-card btn-hover" data-expert="optic_disc"><div class="crate-header">TRIAD #3</div><i class="fa-solid fa-eye crate-icon"></i><div class="crate-label">OPTIC DISC</div><div class="status-indicator">LOCKED</div></div>
+             <div class="crate-card btn-hover" data-expert="tortuosity"><div class="crate-header">SUPPORT</div><i class="fa-solid fa-arrows-spin crate-icon"></i><div class="crate-label">TORTUOSITY</div><div class="status-indicator">LOCKED</div></div>
+             <div class="crate-card btn-hover" data-expert="texture"><div class="crate-header">SUPPORT</div><i class="fa-solid fa-grip crate-icon"></i><div class="crate-label">TEXTURE</div><div class="status-indicator">LOCKED</div></div>
+             <div class="crate-card btn-hover" data-expert="spatial"><div class="crate-header">SUPPORT</div><i class="fa-solid fa-map crate-icon"></i><div class="crate-label">SPATIAL</div><div class="status-indicator">LOCKED</div></div>
+        </div>
+        <div class="crates-row" style="margin-top: 8px;">
+             <div class="crate-card btn-hover" data-expert="bright_lesion"><div class="crate-header">VARIANT</div><i class="fa-solid fa-sun crate-icon"></i><div class="crate-label">RPA LESIONS</div><div class="status-indicator">LOCKED</div></div>
+             <div class="crate-card btn-hover" data-expert="macula"><div class="crate-header">COMPLICATION</div><i class="fa-solid fa-droplet crate-icon"></i><div class="crate-label">MACULA CME</div><div class="status-indicator">LOCKED</div></div>
+             <div class="crate-card btn-hover" data-expert="quadrant"><div class="crate-header">VARIANT</div><i class="fa-solid fa-chart-pie crate-icon"></i><div class="crate-label">SECTORAL</div><div class="status-indicator">LOCKED</div></div>
+        </div>
+        <div id="triad-status" style="margin-top: 20px; opacity: 0; font-family: 'Orbitron'; font-size: 14px; color: #00f3ff; letter-spacing: 2px; pointer-events: auto;">
+            <div style="border: 1px solid rgba(0,243,255,0.3); padding: 15px; background: rgba(0,243,255,0.05); clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);">
+                <div style="font-size: 12px; color: #88ccff; margin-bottom: 8px;">RP TRIAD STATUS:</div>
+                <div style="display: flex; gap: 20px; justify-content: center;">
+                    <div id="triad-1-status">❓ Bone Spicules</div>
+                    <div id="triad-2-status">❓ Vessel Attenuation</div>
+                    <div id="triad-3-status">❓ Optic Disc Pallor</div>
+                </div>
+            </div>
+        </div>
+        <div id="report-action-container">
+            <button class="save-btn btn-hover" id="save-btn-inner" onclick="saveReportToDB()">
+                <i class="fa-solid fa-database"></i> SAVE REPORT TO DATABASE
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="patient-modal">
+        <div class="modal-content" style="width: 450px; text-align: center;">
+            <i class="fa-solid fa-xmark modal-close btn-hover" onclick="closePatientModal()"></i>
+            <div class="modal-header-text" style="font-size: 22px; margin-bottom: 10px; border:none;">INITIALIZE SCAN</div>
+            <p style="color: #88ccff; font-size: 12px; margin-bottom: 25px; letter-spacing: 1px;">ENTER PATIENT IDENTIFIER TO BEGIN</p>
+            <input type="text" id="patient-id-input" class="tactical-input" placeholder="e.g. PT-1042">
+            <button class="save-btn btn-hover" onclick="confirmPatientId()" style="width: 100%;">
+                <i class="fa-solid fa-fingerprint"></i> AUTHENTICATE & UPLOAD
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="detail-modal">
+        <div class="modal-content" id="modal-box">
+            <i class="fa-solid fa-xmark modal-close btn-hover" onclick="closeModal()"></i>
+            <div class="modal-header-text" id="m-title">MODEL DATA</div>
+            <div class="modal-body">
+                <i class="fa-solid fa-microchip modal-icon-lg" id="m-icon"></i>
+                <div class="modal-stats">
+                    <div class="modal-stat-row"><span>Status</span><span id="m-status" style="color:#00ff88">NORMAL</span></div>
+                    <div class="modal-stat-row"><span>Confidence</span><span id="m-conf">99.9%</span></div>
+                    <div class="modal-stat-row"><span>Processing Time</span><span>12ms</span></div>
+                    <div class="modal-stat-row"><span>Sector Scan</span><span>Complete</span></div>
+                    <div class="fake-graph"><div class="fake-graph-fill" id="m-graph"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- AUDIO CONTROLLER ---
+        const sfxHover = document.getElementById('sfx-hover');
+        const sfxClick = document.getElementById('sfx-click');
+        const sfxScan = document.getElementById('sfx-scan');
+        const sfxSuccess = document.getElementById('sfx-success');
+        const sfxUnlock = document.getElementById('sfx-unlock');
+
+        document.querySelectorAll('.btn-hover').forEach(el => {
+            el.addEventListener('mouseenter', () => { sfxHover.currentTime = 0; sfxHover.play().catch(e=>{}); });
+            el.addEventListener('click', () => { sfxClick.currentTime = 0; sfxClick.play().catch(e=>{}); });
+        });
+
+        // --- GLOBAL STATE ---
+        let currentPatientName = "Unknown";
+        let currentImageBase64 = null;
+        let currentAnalysisResult = null;
+        let isAnimating = false; // System lock for transitions
+        let isProcessing = false;
+        const ALL_SCREENS = ['lobby', 'armory-ui', 'archive-ui', 'processing', 'results'];
+        
+        window.onload = () => { syncHeaderStats(); };
+
+        // --- 3D ENGINE ---
+        const PARTICLE_COUNT = 20000; 
+        let scene, camera, renderer, composer, particles, geometry, material;
+        let positions, targetPositions, alphas;
+        let visibleCount = 0; let time = 0;
+
+        init(); animate(); startGenesis();
+
+        function init() {
+            scene = new THREE.Scene(); scene.fog = new THREE.FogExp2(0x020205, 0.02);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 30; camera.position.y = 0;
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(window.devicePixelRatio);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+            
+            const renderScene = new THREE.RenderPass(scene, camera);
+            const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+            bloomPass.strength = 0.3; bloomPass.radius = 0.2; bloomPass.threshold = 0.1;
+            composer = new THREE.EffectComposer(renderer); composer.addPass(renderScene); composer.addPass(bloomPass);
+
+            geometry = new THREE.BufferGeometry();
+            positions = new Float32Array(PARTICLE_COUNT * 3); targetPositions = new Float32Array(PARTICLE_COUNT * 3); alphas = new Float32Array(PARTICLE_COUNT); const sizes = new Float32Array(PARTICLE_COUNT);
+            const radius = 9; const tubeWidth = 3.5;
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                positions[i*3] = (Math.random() - 0.5) * 200; positions[i*3+1] = (Math.random() - 0.5) * 200; positions[i*3+2] = (Math.random() - 0.5) * 200;
+                const u = Math.random() * Math.PI * 2; const v = (Math.random() * 2 - 1);
+                targetPositions[i*3] = (radius + v * tubeWidth * Math.cos(u/2)) * Math.cos(u); targetPositions[i*3+1] = (radius + v * tubeWidth * Math.cos(u/2)) * Math.sin(u); targetPositions[i*3+2] = v * tubeWidth * Math.sin(u/2);
+                alphas[i] = 0.0; sizes[i] = Math.random() * 0.8 + 0.2;
+            }
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3)); geometry.setAttribute('alpha', new THREE.BufferAttribute(alphas, 1)); geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+            material = new THREE.ShaderMaterial({ uniforms: { color: { value: new THREE.Color(0xaaccff) } }, vertexShader: `attribute float alpha; attribute float size; varying float vAlpha; void main() { vAlpha = alpha; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = size * (120.0 / -mv.z); gl_Position = projectionMatrix * mv; }`, fragmentShader: `uniform vec3 color; varying float vAlpha; void main() { float r = distance(gl_PointCoord, vec2(0.5)); if(r > 0.5) discard; gl_FragColor = vec4(color, vAlpha * 0.5); }`, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+            particles = new THREE.Points(geometry, material); particles.rotation.z = Math.PI / 6; particles.rotation.x = Math.PI / 4; scene.add(particles);
+        }
+
+        function startGenesis() { alphas[0] = 1.0; geometry.attributes.alpha.needsUpdate = true; visibleCount = 1; setTimeout(multiplyDots, 500); }
+        function multiplyDots() {
+            if (visibleCount >= PARTICLE_COUNT) { setTimeout(attractToMobius, 500); return; }
+            let growth = Math.ceil(visibleCount * 0.3) + 10; let nextLimit = Math.min(visibleCount + growth, PARTICLE_COUNT);
+            for (let i = visibleCount; i < nextLimit; i++) alphas[i] = 1.0;
+            visibleCount = nextLimit; geometry.attributes.alpha.needsUpdate = true; requestAnimationFrame(multiplyDots);
+        }
+        function attractToMobius() {
+            isAnimating = true;
+            const startPos = Float32Array.from(geometry.attributes.position.array); const obj = { t: 0 };
+            anime({ targets: obj, t: 1, duration: 3000, easing: 'easeInOutExpo', update: () => { const curr = geometry.attributes.position.array; for(let i=0; i<PARTICLE_COUNT; i++) { const idx = i*3; curr[idx] = startPos[idx] + (targetPositions[idx] - startPos[idx]) * obj.t; curr[idx+1] = startPos[idx+1] + (targetPositions[idx+1] - startPos[idx+1]) * obj.t; curr[idx+2] = startPos[idx+2] + (targetPositions[idx+2] - startPos[idx+2]) * obj.t; } geometry.attributes.position.needsUpdate = true; }, complete: () => { 
+                anime({ targets: camera.position, y: -7, z: 28, duration: 2000, easing: 'easeInOutQuad' }); 
+                anime({ targets: particles.rotation, x: Math.PI / 3, duration: 2000, easing: 'easeInOutQuad' }); 
+                
+                // Manually trigger first screen load
+                const lobby = document.getElementById('lobby');
+                lobby.style.display = 'flex';
+                anime({ targets: lobby, opacity: 1, duration: 1000, delay: 200, easing: 'easeOutExpo', complete: () => { isAnimating = false; } }); 
+            }});
+        }
+
+        // ==========================================
+        // BULLETPROOF SCREEN SWITCHER
+        // Physically removes screens to prevent overlap
+        // ==========================================
+        function navigate(targetScreenId, camX, camY, camZ, rotX, rotY) {
+            if (isAnimating) return; // Prevent double clicks
+            isAnimating = true;
+            sfxClick.play().catch(e=>{});
+
+            // 1. Move Camera
+            anime({ targets: camera.position, x: camX, y: camY, z: camZ, duration: 1500, easing: 'easeInOutQuad' });
+            if(rotX !== null) anime({ targets: particles.rotation, x: rotX, duration: 1500, easing: 'easeInOutQuad' });
+            if(rotY !== null) anime({ targets: particles.rotation, y: rotY, duration: 1500, easing: 'easeInOutQuad' });
+
+            // 2. Find currently visible screen and fade it out
+            let activeEl = null;
+            ALL_SCREENS.forEach(id => {
+                const el = document.getElementById(id);
+                if (el.style.display === 'flex') activeEl = el;
+            });
+
+            if (activeEl && activeEl.id !== targetScreenId) {
+                anime({
+                    targets: activeEl, opacity: 0, duration: 400, easing: 'easeInQuad',
+                    complete: () => {
+                        activeEl.style.display = 'none'; // REMOVE physically from layout
+                        fadeInTarget(targetScreenId);
+                    }
+                });
+            } else {
+                fadeInTarget(targetScreenId);
+            }
+
+            function fadeInTarget(id) {
+                const target = document.getElementById(id);
+                target.style.display = 'flex'; // ADD physically to layout
+                anime({
+                    targets: target, opacity: 1, duration: 600, easing: 'easeOutQuad',
+                    complete: () => { isAnimating = false; } // Unlock system
+                });
+            }
+        }
+
+        // --- DATABASE ARCHIVE FETCH ---
+        function openArchive() {
+            navigate('archive-ui', 15, 0, 20, null, Math.PI/2);
+            
+            const container = document.getElementById('db-records-container');
+            container.innerHTML = '<div style="text-align:center; color:#00ff88; font-family:\'Orbitron\'; padding:40px;"><i class="fa-solid fa-spinner fa-spin"></i> ACCESSING MAINFRAME...</div>';
+
+            setTimeout(async () => {
+                try {
+                    const response = await fetch('http://localhost:5000/api/reports');
+                    if (!response.ok) throw new Error("Fetch failed");
+                    const data = await response.json();
+                    
+                    if (data.length === 0) {
+                        container.innerHTML = '<div style="text-align:center; color:#666; font-family:\'Orbitron\'; border:1px dashed #333; padding:40px;">NO RECORDS FOUND IN ARCHIVE</div>';
+                    } else {
+                        container.innerHTML = data.map(record => {
+                            const date = new Date(record.date).toLocaleString();
+                            const isAnomaly = record.verdict.includes("POSITIVE");
+                            const sColor = isAnomaly ? "#ff9900" : "#00ff88";
+                            const iColor = isAnomaly ? "#ff0055" : "#00ff88";
+                            const iClass = isAnomaly ? "fa-triangle-exclamation" : "fa-check";
+                            return `<div style="background:rgba(10,15,25,0.8); border:1px solid rgba(255,255,255,0.05); border-left:4px solid ${iColor}; padding:20px 30px; display:flex; justify-content:space-between; align-items:center; border-radius:4px; margin-bottom:10px;">
+                                <div style="display:flex; align-items:center; gap:20px;">
+                                    <i class="fa-solid ${iClass}" style="color:${iColor}; font-size:24px;"></i>
+                                    <div><div style="font-family:'Orbitron'; font-size:20px; color:white;">${record.patientId || 'UNKNOWN'}</div><div style="color:#666; font-size:11px;">${date}</div></div>
+                                </div>
+                                <div style="text-align:right;"><div style="color:${sColor}; font-family:'Orbitron'; font-size:14px; font-weight:bold;">${record.verdict}</div><div style="color:#88ccff; font-size:11px;">CONFIDENCE: <span style="color:white">${record.confidence}</span></div></div>
+                            </div>`;
+                        }).join('');
+                    }
+                } catch (error) {
+                    container.innerHTML = '<div style="text-align:center; color:#ff0055; font-family:\'Orbitron\'; border:1px dashed #ff0055; padding:40px;"><i class="fa-solid fa-triangle-exclamation"></i> CONNECTION FAILED</div>';
+                }
+            }, 1000);
+        }
+
+        // --- UPLOAD FLOW ---
+        function openPatientModal() {
+            if(isAnimating) return;
+            sfxClick.play().catch(e=>{});
+            const pModal = document.getElementById('patient-modal');
+            const inputField = document.getElementById('patient-id-input');
+            inputField.value = "PT-" + Math.floor(Math.random() * 9000 + 1000);
+            
+            pModal.style.display = 'flex';
+            anime({ targets: pModal, opacity: 1, duration: 300 });
+            inputField.focus();
+        }
+
+        function closePatientModal() {
+            sfxHover.play().catch(e=>{});
+            const pModal = document.getElementById('patient-modal');
+            anime({ targets: pModal, opacity: 0, duration: 300, complete: () => { pModal.style.display = 'none'; } });
+        }
+
+        function confirmPatientId() {
+            sfxClick.play().catch(e=>{});
+            const inputField = document.getElementById('patient-id-input');
+            if (inputField.value.trim() === "") { inputField.style.borderColor = "red"; return; }
+            currentPatientName = inputField.value.trim();
+            closePatientModal();
+            document.getElementById('fileInput').click(); // Opens File browser safely
+        }
+
+        let targetInterval;
+        
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImageBase64 = e.target.result;
+                    document.getElementById('live-img').src = e.target.result;
+                    startProcessingSequence();
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        async function startProcessingSequence() {
+            sfxScan.play().catch(e=>{});
+            isProcessing = true;
+            
+            navigate('processing', 18, 0, 35, Math.PI/4, 0);
+
+            // Reset and start loading animation
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+            const progressStage = document.getElementById('progress-stage');
+            progressFill.style.width = '0%';
+            progressText.textContent = '0%';
+            progressStage.textContent = 'Initializing...';
+
+            const previewBox = document.getElementById('preview-box');
+            targetInterval = setInterval(() => {
+                const box = document.createElement('div');
+                box.className = 'target-box';
+                box.style.left = Math.random() * 80 + '%'; box.style.top = Math.random() * 80 + '%';
+                previewBox.appendChild(box);
+                anime({ targets: box, opacity: [0, 1, 0], scale: [1.5, 1, 0.8], duration: 600, easing: 'easeOutSine', complete: () => box.remove() });
+            }, 400);
+
+            // Animate loading stages
+            const stages = [
+                { pct: 15, text: 'Extracting Features...' },
+                { pct: 35, text: 'AI Pattern Analysis...' },
+                { pct: 55, text: 'Expert Consultation...' },
+                { pct: 75, text: 'Calculating Verdict...' },
+                { pct: 90, text: 'Finalizing Report...' }
+            ];
+            let stageIdx = 0;
+            const loadingInterval = setInterval(() => {
+                if (stageIdx < stages.length) {
+                    progressFill.style.width = stages[stageIdx].pct + '%';
+                    progressText.textContent = stages[stageIdx].pct + '%';
+                    progressStage.textContent = stages[stageIdx].text;
+                    stageIdx++;
+                }
+            }, 700);
+
+            // Call Flask API for real analysis
+            try {
+                const response = await fetch('http://localhost:5001/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image: currentImageBase64,
+                        patientId: currentPatientName
+                    })
+                });
+                
+                if (response.ok) {
+                    currentAnalysisResult = await response.json();
+                    console.log('✅ Flask API Response:', currentAnalysisResult);
+                } else {
+                    console.error('❌ Flask API Error:', response.status);
+                    currentAnalysisResult = null;
+                }
+            } catch (error) {
+                console.error('❌ Flask API Connection Failed:', error);
+                currentAnalysisResult = null;
+            }
+
+            // Complete the loading animation
+            clearInterval(loadingInterval);
+            progressFill.style.width = '100%';
+            progressText.textContent = '100%';
+            progressStage.textContent = 'Analysis Complete!';
+
+            setTimeout(finishProcessing, 1500);
+        }
+
+        function finishProcessing() {
+            isProcessing = false; clearInterval(targetInterval);
+            sfxScan.pause(); sfxScan.currentTime = 0; sfxSuccess.play().catch(e=>{});
+
+            // Reset crates to down position before showing them
+            document.querySelectorAll('.crate-card').forEach(c => { 
+                c.classList.remove('unlocked'); 
+                c.style.transform = "translateY(100px)"; 
+            });
+            document.getElementById('report-action-container').style.opacity = 0;
+            document.getElementById('report-action-container').style.pointerEvents = 'none';
+            document.getElementById('overall-diagnosis').style.opacity = 0;
+            document.getElementById('triad-status').style.opacity = 0;
+            document.getElementById('detail-report-btn').style.display = 'none';
+
+            // EXACT FIX: Uses the exact original camera coordinates so the 3D model stays completely static!
+            navigate('results', 0, -7, 28, Math.PI/3, 0); 
+
+            // Animate crates popping up after navigation finishes
+            setTimeout(() => {
+                if (!currentAnalysisResult) {
+                    alert('⚠️ Flask API connection failed. Please ensure Flask server is running on port 5001.');
+                    navigate('lobby', 0, -7, 28, Math.PI/3, 0);
+                    return;
+                }
+                
+                displayRealResults(currentAnalysisResult);
+            }, 1200);
+        }
+        
+        function displayRealResults(apiResult) {
+            // Map Flask API expert names to crate indices (10 experts)
+            const expertMap = {
+                'ai_pattern_recognition': 0,
+                'ai pattern recognition': 0,
+                'vessel_attenuation': 1,
+                'vessel attenuation (triad #2)': 1,
+                'vessels': 1,
+                'pigment_bone_spicules': 2,
+                'bone spicule pigmentation (triad #1)': 2,
+                'pigment': 2,
+                'optic_disc_pallor': 3,
+                'optic disc pallor (triad #3)': 3,
+                'optic_disc': 3,
+                'vessel_tortuosity': 4,
+                'vessel tortuosity': 4,
+                'tortuosity': 4,
+                'texture_degeneration': 5,
+                'texture degeneration': 5,
+                'texture': 5,
+                'spatial_pattern_analysis': 6,
+                'spatial pattern analysis': 6,
+                'spatial': 6,
+                // NEW: 3 variant/complication scanners
+                'bright_lesions': 7,
+                'bright lesions (rpa)': 7,
+                'bright_lesion': 7,
+                'rpa': 7,
+                'macula': 8,
+                'macula (cme)': 8,
+                'cme': 8,
+                'quadrant': 9,
+                'quadrant (sectoral)': 9,
+                'sectoral': 9
+            };
+            
+            const crates = document.querySelectorAll('.crate-card');
+            
+            console.log('📊 Displaying results for', apiResult.expert_opinions.length, 'experts');
+            
+            apiResult.expert_opinions.forEach((expert, idx) => {
+                // Try multiple matching strategies
+                const expertNameLower = expert.name.toLowerCase();
+                let crateIndex = expertMap[expertNameLower];
+                
+                // Fallback: Try without special characters
+                if (crateIndex === undefined) {
+                    const cleanName = expertNameLower.replace(/[^a-z\s]/g, '').replace(/\s+/g, '_');
+                    crateIndex = expertMap[cleanName];
+                }
+                
+                // Final fallback: Use sequential order
+                if (crateIndex === undefined) {
+                    crateIndex = idx;
+                    console.warn('⚠️ Expert name not mapped:', expert.name, '- using index', idx);
+                }
+                
+                const crate = crates[crateIndex];
+                
+                if (!crate) {
+                    console.error('❌ Crate not found at index:', crateIndex);
+                    return;
+                }
+                
+                console.log(`✅ Expert ${idx}: "${expert.name}" → Crate ${crateIndex} (${expert.status})`);
+                
+                setTimeout(() => {
+                    sfxUnlock.currentTime = 0; sfxUnlock.play().catch(e=>{});
+                    crate.classList.add('unlocked');
+                    const stat = crate.querySelector('.status-indicator');
+                    
+                    // Show actual status text from API, use severity for colors
+                    const displayStatus = expert.status === 'HEALTHY' ? 'NORMAL' : expert.status;
+                    stat.innerText = displayStatus;
+                    
+                    // Color coding based on SEVERITY (not status text)
+                    const sev = expert.severity;
+                    if (sev === 'CRITICAL') {
+                        stat.style.color = "#ff0055";
+                        stat.style.background = "rgba(255,0,85,0.1)";
+                        crate.style.borderColor = "rgba(255,0,85,0.6)";
+                    } else if (sev === 'MODERATE') {
+                        stat.style.color = "#ff9900";
+                        stat.style.background = "rgba(255,153,0,0.1)";
+                        crate.style.borderColor = "rgba(255,153,0,0.6)";
+                    } else if (sev === 'MILD') {
+                        stat.style.color = "#ffd700";
+                        stat.style.background = "rgba(255,215,0,0.1)";
+                        crate.style.borderColor = "rgba(255,215,0,0.4)";
+                    } else {
+                        stat.style.color = "#00ff88";
+                        stat.style.background = "rgba(0,255,136,0.1)";
+                        crate.style.borderColor = "rgba(0,243,255,0.2)";
+                    }
+                    
+                    if (idx === apiResult.expert_opinions.length - 1) {
+                        // Show overall diagnosis banner
+                        setTimeout(() => {
+                            const overallDiag = document.getElementById('overall-diagnosis');
+                            const verdictText = document.getElementById('verdict-text');
+                            const confidenceText = document.getElementById('confidence-text');
+                            const detailBtn = document.getElementById('detail-report-btn');
+                            
+                            // USE verdict_code to determine display (not broken text matching)
+                            let verdictDisplay, severityClass;
+                            switch(apiResult.verdict_code) {
+                                case 'CLASSIC_RP':
+                                    verdictDisplay = 'CLASSIC RETINITIS PIGMENTOSA';
+                                    severityClass = 'critical';
+                                    break;
+                                case 'RP_POSITIVE':
+                                    verdictDisplay = 'POSITIVE: RETINITIS PIGMENTOSA';
+                                    severityClass = 'critical';
+                                    break;
+                                case 'RP_SINE_PIGMENTO':
+                                    verdictDisplay = 'RP SINE PIGMENTO VARIANT';
+                                    severityClass = 'critical';
+                                    break;
+                                case 'RP_RPA':
+                                    verdictDisplay = 'RETINITIS PUNCTATA ALBESCENS';
+                                    severityClass = 'critical';
+                                    break;
+                                case 'RP_SECTORAL':
+                                    verdictDisplay = 'SECTORAL RETINITIS PIGMENTOSA';
+                                    severityClass = 'critical';
+                                    break;
+                                case 'SUSPICIOUS':
+                                    verdictDisplay = 'SUSPICIOUS - REVIEW REQUIRED';
+                                    severityClass = 'moderate';
+                                    break;
+                                case 'HEALTHY':
+                                    verdictDisplay = 'HEALTHY - NO RP DETECTED';
+                                    severityClass = 'normal';
+                                    break;
+                                default:
+                                    verdictDisplay = 'UNCERTAIN - FURTHER TESTING';
+                                    severityClass = 'mild';
+                            }
+                            const confidencePercent = (apiResult.composite_score * 100).toFixed(1);
+                            
+                            verdictText.textContent = verdictDisplay;
+                            confidenceText.textContent = `Confidence: ${apiResult.confidence} | Score: ${confidencePercent}%`;
+                            overallDiag.className = severityClass;
+                            overallDiag.style.opacity = 1;
+                            detailBtn.style.display = 'inline-block';
+                            
+                            // Update RP Triad Status
+                            const triad = apiResult.triad_status;
+                            document.getElementById('triad-1-status').innerHTML = 
+                                `${triad.bone_spicules ? '✅' : '❌'} Bone Spicules`;
+                            document.getElementById('triad-2-status').innerHTML = 
+                                `${triad.vessel_attenuation ? '✅' : '❌'} Vessel Attenuation`;
+                            document.getElementById('triad-3-status').innerHTML = 
+                                `${triad.optic_disc_pallor ? '✅' : '❌'} Optic Disc Pallor`;
+                            document.getElementById('triad-status').style.opacity = 1;
+                        }, 300);
+                        
+                        setTimeout(() => {
+                            const dbBtn = document.getElementById('report-action-container');
+                            dbBtn.style.opacity = 1; dbBtn.style.pointerEvents = 'auto';
+                        }, 500);
+                    }
+                }, idx * 300);
+            });
+        }
+        
+        // Add click handler to show detailed clinical report
+        function showDetailedReport() {
+            if (!currentAnalysisResult) return;
+            
+            const modal = document.getElementById('detail-modal');
+            const content = document.querySelector('#detail-modal .modal-body');
+            
+            let html = `<div style="width:100%; font-family:'Rajdhani'; color:white;">`;
+            html += `<h3 style="font-family:'Orbitron'; color:#00f3ff; margin-bottom:20px; text-align:center;">
+                🔬 CLINICAL ANALYSIS REPORT
+            </h3>`;
+            
+            // RP Triad Status
+            html += `<div style="background:rgba(0,243,255,0.05); border:1px solid rgba(0,243,255,0.3); padding:15px; margin-bottom:15px;">`;
+            html += `<div style="color:#88ccff; font-size:12px; margin-bottom:10px;">RP TRIAD STATUS:</div>`;
+            const triad = currentAnalysisResult.triad_status;
+            html += `<div style="font-size:13px;">`;
+            html += `${triad.bone_spicules ? '✅' : '❌'} Bone Spicule Pigmentation: ${triad.bone_spicules ? 'POSITIVE' : 'NEGATIVE'}<br>`;
+            html += `${triad.vessel_attenuation ? '✅' : '❌'} Arteriolar Attenuation: ${triad.vessel_attenuation ? 'POSITIVE' : 'NEGATIVE'}<br>`;
+            html += `${triad.optic_disc_pallor ? '✅' : '❌'} Optic Disc Pallor: ${triad.optic_disc_pallor ? 'POSITIVE' : 'NEGATIVE'}`;
+            html += `</div></div>`;
+            
+            // Expert Opinions
+            html += `<div style="margin-bottom:15px;">`;
+            html += `<div style="color:#88ccff; font-size:12px; margin-bottom:10px;">👨‍⚕️ EXPERT PANEL CONSULTATION:</div>`;
+            currentAnalysisResult.expert_opinions.forEach(expert => {
+                const sevColors = {
+                    'CRITICAL': { icon: '🚨', border: '#ff0055' },
+                    'MODERATE': { icon: '⚠️', border: '#ff9900' },
+                    'MILD':     { icon: '⚠️', border: '#ffd700' },
+                    'NORMAL':   { icon: '✅', border: '#00ff88' }
+                };
+                const s = sevColors[expert.severity] || sevColors['NORMAL'];
+                html += `<div style="background:rgba(0,0,0,0.3); padding:8px; margin-bottom:5px; font-size:12px; border-left:2px solid ${s.border};">`;
+                html += `${s.icon} <strong>${expert.name}</strong> &rarr; ${expert.status} (${expert.confidence.toFixed(1)}%)<br>`;
+                html += `<span style="color:#888; font-size:11px;">Vote: ${expert.vote.toFixed(4)} | ${expert.severity}</span>`;
+                html += `</div>`;
+            });
+            html += `</div>`;
+            
+            // Critical Findings
+            if (currentAnalysisResult.critical_findings && currentAnalysisResult.critical_findings.length > 0) {
+                html += `<div style="background:rgba(255,153,0,0.05); border:1px solid rgba(255,153,0,0.3); padding:15px;">`;
+                html += `<div style="color:#ff9900; font-size:12px; margin-bottom:10px;">🚨 KEY FINDINGS:</div>`;
+                currentAnalysisResult.critical_findings.forEach(finding => {
+                    html += `<div style="font-size:12px; margin-bottom:5px;">• ${finding}</div>`;
+                });
+                html += `</div>`;
+            }
+            
+            html += `</div>`;
+            
+            content.innerHTML = html;
+            modal.style.display = 'flex';
+            anime({ targets: modal, opacity: 1, duration: 300 });
+        }
+
+        // --- DATABASE SAVE ---
+        async function saveReportToDB() {
+            if(isAnimating) return;
+            isAnimating = true;
+            sfxClick.play().catch(e=>{});
+            
+            const btn = document.getElementById('save-btn-inner');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ENCRYPTING TO DB...';
+
+            if (!currentAnalysisResult) {
+                alert('No analysis result available');
+                isAnimating = false;
+                return;
+            }
+            
+            // Use verdict_code for reliable classification  
+            let verdict;
+            switch(currentAnalysisResult.verdict_code) {
+                case 'CLASSIC_RP': verdict = 'POSITIVE: CLASSIC RETINITIS PIGMENTOSA'; break;
+                case 'RP_POSITIVE': verdict = 'POSITIVE: RETINITIS PIGMENTOSA'; break;
+                case 'SUSPICIOUS': verdict = 'SUSPICIOUS - CLINICAL REVIEW REQUIRED'; break;
+                case 'HEALTHY': verdict = 'NEGATIVE: NO RP DETECTED'; break;
+                default: verdict = 'UNCERTAIN - FURTHER TESTING RECOMMENDED';
+            }
+            const confidencePercent = (currentAnalysisResult.composite_score * 100).toFixed(1) + '%';
+            
+            // Build expert results object
+            const expertResults = {};
+            currentAnalysisResult.expert_opinions.forEach(expert => {
+                const key = expert.name.toLowerCase().replace(/\s+/g, '_');
+                expertResults[key] = `${expert.status} (${expert.confidence.toFixed(1)}%)`;
+            });
+            
+            const reportData = {
+                patientId: currentPatientName,
+                results: expertResults,
+                verdict: verdict,
+                confidence: confidencePercent,
+                compositeScore: currentAnalysisResult.composite_score,
+                triadStatus: currentAnalysisResult.triad_status,
+                criticalFindings: currentAnalysisResult.critical_findings
+            };
+
+            try {
+                const response = await fetch('http://localhost:5000/api/reports', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(reportData)
+                });
+                if (response.ok) {
+                    sfxSuccess.play().catch(e=>{});
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> REPORT SECURELY SAVED';
+                    btn.style.background = 'rgba(0, 255, 136, 0.2)'; btn.style.color = '#00ff88'; btn.style.borderColor = '#00ff88';
+                    syncHeaderStats();
+                    setTimeout(() => { 
+                        isAnimating = false; 
+                        btn.innerHTML = '<i class="fa-solid fa-database"></i> SAVE REPORT TO DATABASE';
+                        btn.style.background = 'rgba(0,243,255,0.1)'; btn.style.color = '#00f3ff'; btn.style.borderColor = '#00f3ff';
+                        document.getElementById('fileInput').value = ""; // Reset file
+                        navigate('lobby', 0, -7, 28, Math.PI/3, 0); 
+                    }, 2000);
+                } else {
+                    alert("Database Error."); btn.innerHTML = 'SAVE REPORT TO DATABASE'; isAnimating = false;
+                }
+            } catch (error) {
+                alert("Server Error."); btn.innerHTML = 'SAVE REPORT TO DATABASE'; isAnimating = false;
+            }
+        }
+
+        async function syncHeaderStats() {
+            try {
+                const res = await fetch('http://localhost:5000/api/reports');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('total-scans-val').innerText = data.length;
+                    document.getElementById('anomalies-val').innerText = data.filter(r => r.verdict.includes("POSITIVE") || r.verdict.includes("SUSPICIOUS")).length;
+                }
+            } catch (e) {}
+        }
+
+        // --- DETAILS MODAL ---
+        function openModal(title, iconClass, conf, status, color = "#00f3ff") {
+            if(isAnimating) return; 
+            sfxClick.play().catch(e=>{});
+            const modal = document.getElementById('detail-modal');
+            const box = document.getElementById('modal-box');
+            document.getElementById('m-title').innerText = title + " REPORT";
+            document.getElementById('m-icon').className = `fa-solid ${iconClass} modal-icon-lg`;
+            document.getElementById('m-icon').style.color = color;
+            document.getElementById('m-conf').innerText = conf;
+            document.getElementById('m-status').innerText = status;
+            document.getElementById('m-status').style.color = color;
+            document.getElementById('m-graph').style.width = conf; 
+            
+            modal.style.display = 'flex';
+            anime({ targets: modal, opacity: 1, duration: 300 });
+            anime({ targets: box, scale: [0.9, 1], opacity: [0, 1], duration: 400, easing: 'easeOutBack' });
+        }
+
+        function closeModal() {
+            sfxHover.play().catch(e=>{});
+            const modal = document.getElementById('detail-modal');
+            const box = document.getElementById('modal-box');
+            anime({ targets: box, scale: 0.9, opacity: 0, duration: 300, easing: 'easeInBack' });
+            anime({ targets: modal, opacity: 0, duration: 300, complete: () => { modal.style.display = 'none'; } });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if(particles) { particles.rotation.y += isProcessing ? 0.05 : 0.002; }
+            composer.render();
+        }
+    </script>
+</body>
+</html>

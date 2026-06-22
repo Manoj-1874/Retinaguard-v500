@@ -145,6 +145,17 @@ class MultiDiseaseClassifier:
         for disease_id, pattern in self.DISEASE_PATTERNS.items():
             score = self._calculate_disease_score(features, pattern)
             disease_scores[disease_id] = score
+
+        # Boost Retinitis Pigmentosa score if clinical features indicate Sine Pigmento variant
+        # (i.e. high vessel attenuation or high AI probability, but low bone spicules)
+        ai_prob = features.get('ai_rp_probability', 0.0)
+        vessel_att = features.get('vessel_attenuation', 0.0)
+        bone_spic = features.get('bone_spicules', 0.0)
+        if (vessel_att > 0.4 or ai_prob > 0.5) and bone_spic < 0.3:
+            # Recalculate RP score without bone spicules requirement
+            sine_pigmento_score = vessel_att * 0.45 + features.get('optic_disc_pallor', 0.0) * 0.25 + features.get('peripheral_loss', 0.0) * 0.10 + ai_prob * 0.20
+            if sine_pigmento_score > disease_scores['retinitis_pigmentosa']:
+                disease_scores['retinitis_pigmentosa'] = sine_pigmento_score
         
         # Sort diseases by confidence (descending)
         sorted_diseases = sorted(disease_scores.items(), key=lambda x: x[1], reverse=True)
@@ -201,24 +212,28 @@ class MultiDiseaseClassifier:
         """
         features = {}
         
+        # AI Pattern Recognition probability
+        ai_pattern = expert_results.get('ai_pattern_result') or expert_results.get('ai_pattern') or {}
+        features['ai_rp_probability'] = ai_pattern.get('confidence', 0.0) / 100.0
+        
         # RETINITIS PIGMENTOSA features
-        pigment = expert_results.get('pigment_result', {})
+        pigment = expert_results.get('pigment_result') or expert_results.get('pigment') or {}
         features['bone_spicules'] = min(pigment.get('cluster_count', 0) / 30.0, 1.0)
         
-        vessel = expert_results.get('vessel_result', {})
+        vessel = expert_results.get('vessel_result') or expert_results.get('vessels') or {}
         vessel_density = vessel.get('density', 0.30)
         features['vessel_attenuation'] = max(0, (0.30 - vessel_density) / 0.30)  # Lower = more attenuation
         
-        disc = expert_results.get('optic_disc_result', {})
+        disc = expert_results.get('optic_disc_result') or expert_results.get('optic_disc') or {}
         disc_brightness = disc.get('brightness', 160)
         features['optic_disc_pallor'] = max(0, (disc_brightness - 180) / 50)  # >180 = pallor
         
-        spatial = expert_results.get('spatial_result', {})
+        spatial = expert_results.get('spatial_result') or expert_results.get('spatial') or {}
         features['peripheral_loss'] = spatial.get('degradation_score', 0.0)
         
         # DIABETIC RETINOPATHY features (simplified - needs dedicated detectors)
         # For now, use texture and bright lesions as proxies
-        texture = expert_results.get('texture_result', {})
+        texture = expert_results.get('texture_result') or expert_results.get('texture') or {}
         features['microaneurysms'] = 0.0  # Placeholder - needs dot-hemorrhage detector
         features['hemorrhages'] = 0.0     # Placeholder
         # Exudates are bright lesions (use local_variation as signal + fleck_count)
@@ -228,10 +243,10 @@ class MultiDiseaseClassifier:
         features['neovascularization'] = 0.0  # Placeholder
         
         # AMD features
-        bright_lesion = expert_results.get('bright_lesion_result', {})
+        bright_lesion = expert_results.get('bright_lesion_result') or expert_results.get('bright_lesion') or {}
         features['drusen'] = min(bright_lesion.get('fleck_count', 0) / 20.0, 1.0)
         
-        macula = expert_results.get('macula_result', {})
+        macula = expert_results.get('macula_result') or expert_results.get('macula') or {}
         features['macular_edema'] = macula.get('cme_score', 0.0)
         features['abnormal_texture'] = min(texture.get('entropy', 5.0) / 7.0, 1.0)
         features['geographic_atrophy'] = 0.0  # Placeholder
@@ -243,7 +258,7 @@ class MultiDiseaseClassifier:
         features['peripapillary_atrophy'] = 0.0  # Placeholder
         
         # HYPERTENSIVE RETINOPATHY features
-        tortuosity = expert_results.get('tortuosity_result', {})
+        tortuosity = expert_results.get('tortuosity_result') or expert_results.get('tortuosity') or {}
         tortuous_vessels = tortuosity.get('tortuosity', 1.0)
         # Normal: 1.0-1.3, Mild: 1.3-1.5, Moderate: 1.5-1.8, Severe: >1.8
         features['vessel_tortuosity'] = max(0, min((tortuous_vessels - 1.3) / 0.7, 1.0))

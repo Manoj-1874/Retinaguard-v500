@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RetinaGuard | Command Center</title>
-    <meta name="description" content="RetinaGuard Command Center: Advanced diagnostic analytics platform for Retinitis Pigmentosa powered by the V500 multi-agent AI system.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>👁️</text></svg>">
-
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
@@ -20,18 +19,18 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
-
-        body {
-            margin: 0; overflow: hidden; background-color: #020205;
-            font-family: 'Rajdhani', sans-serif;
+        
+        body { 
+            margin: 0; overflow: hidden; background-color: #020205; 
+            font-family: 'Rajdhani', sans-serif; 
             user-select: none; -webkit-user-select: none;
-            cursor: default;
+            cursor: default; 
         }
         #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
         .hidden-audio { display: none; }
 
-        .cursor-pointer, .btn-hover, button, .action-card, .model-card, .crate-card, .modal-close {
-            cursor: pointer !important;
+        .cursor-pointer, .btn-hover, button, .action-card, .model-card, .crate-card, .modal-close { 
+            cursor: pointer !important; 
         }
 
         /* HUD OVERLAY */
@@ -59,55 +58,42 @@
         ========================================= */
         .screen-section {
             position: absolute; width: 100%; height: 100%; top: 0; left: 0;
-            display: none;
+            display: none; 
             opacity: 0;
             z-index: 10;
             flex-direction: column; align-items: center; justify-content: center;
         }
 
         /* --- 1. LOBBY (ANCHORED STRICTLY TO BOTTOM) --- */
-        #lobby {
-            top: auto;
+        #lobby { 
+            top: auto; 
             bottom: 6vh; /* Pushes the 3 cards tightly to the bottom floor */
             height: auto;
-            flex-direction: row;
-            gap: 30px;
-            justify-content: center;
-            flex-wrap: wrap;
-            max-width: 95vw;
+            flex-direction: row; 
+            gap: 30px; 
+            justify-content: center; 
         }
         .action-card {
             width: 280px; height: 180px; background: rgba(5, 12, 20, 0.8); border: 1px solid rgba(0,243,255,0.2);
             backdrop-filter: blur(10px); display: flex; flex-direction: column; justify-content: center; align-items: center;
             position: relative; transition: all 0.2s; pointer-events: auto;
             clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
-            flex-shrink: 0;
         }
         .action-card:hover { transform: scale(1.05); background: rgba(5, 12, 20, 0.95); box-shadow: 0 0 40px rgba(0,243,255,0.2); border-color: #00f3ff; }
         .action-card h2 { font-family: 'Orbitron'; font-size: 20px; color: white; margin-top: 15px; letter-spacing: 2px; }
         .action-card p { font-size: 11px; color: #88ccff; letter-spacing: 1px; margin-top: 5px; }
         .card-icon { font-size: 40px; color: #00f3ff; margin-bottom: 5px; filter: drop-shadow(0 0 15px rgba(0,243,255,0.4)); }
-
+        
         .action-card.armory-btn { border-color: rgba(255,150,0,0.3); }
         .action-card.armory-btn:hover { border-color: #ff9900; box-shadow: 0 0 40px rgba(255,150,0,0.2); }
         .action-card.armory-btn .card-icon { color: #ff9900; filter: drop-shadow(0 0 15px rgba(255,150,0,0.4));}
-
+        
         .action-card.archive-btn { border-color: rgba(0,255,136,0.3); }
         .action-card.archive-btn:hover { border-color: #00ff88; box-shadow: 0 0 40px rgba(0,255,136,0.2); }
         .action-card.archive-btn .card-icon { color: #00ff88; filter: drop-shadow(0 0 15px rgba(0,255,136,0.4));}
 
         /* --- 2A. ARMORY --- */
-        .logs-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            width: 85%;
-            max-width: 1400px;
-            pointer-events: auto;
-            max-height: 70vh;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
+        .logs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; width: 85%; max-width: 1400px; pointer-events: auto; }
         .model-card { background: rgba(10, 15, 20, 0.85); border: 1px solid rgba(255,255,255,0.05); padding: 20px; transition: all 0.3s; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%); border-left: 3px solid #ff9900; }
         .model-card:hover { transform: translateY(-5px); background: rgba(20, 30, 40, 0.95); border-color: #ff9900; box-shadow: 0 5px 20px rgba(255,153,0,0.2); }
         .model-card h3 { font-family: 'Orbitron'; color: white; font-size: 16px; margin-bottom: 5px; }
@@ -123,12 +109,12 @@
         #processing { left: auto; right: 5%; width: 400px; transform: translateY(0); }
         .scan-text { font-family: 'Orbitron'; color: #00f3ff; font-size: 16px; letter-spacing: 6px; margin-bottom: 15px; text-shadow: 0 0 20px #00f3ff; animation: pulseText 1s infinite; text-align: center;}
         .live-preview-box { width: 400px; height: 300px; border: 1px solid #00f3ff; box-shadow: 0 0 30px rgba(0,243,255,0.2); position: relative; overflow: hidden; background: #000; border-radius: 4px; clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px); }
-        .live-image { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; filter: sepia(1) hue-rotate(180deg) saturate(200%) contrast(150%); }
+        .live-image { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; filter: sepia(1) hue-rotate(180deg) saturate(200%) contrast(150%); } 
         .scan-laser { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #fff; box-shadow: 0 0 20px 5px #00f3ff; animation: laserScan 2s linear infinite alternate; }
         @keyframes laserScan { 0% { top: 0%; } 100% { top: 100%; } }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
         .target-box { position: absolute; border: 1px solid #ff0055; width: 50px; height: 50px; box-shadow: inset 0 0 10px rgba(255,0,85,0.5); opacity: 0; transform: scale(1.5); transition: all 0.2s; background: linear-gradient(to right, #ff0055 2px, transparent 2px) 0 0, linear-gradient(to right, #ff0055 2px, transparent 2px) 0 100%, linear-gradient(to left, #ff0055 2px, transparent 2px) 100% 0, linear-gradient(to left, #ff0055 2px, transparent 2px) 100% 100%, linear-gradient(to bottom, #ff0055 2px, transparent 2px) 0 0, linear-gradient(to bottom, #ff0055 2px, transparent 2px) 100% 0, linear-gradient(to top, #ff0055 2px, transparent 2px) 0 100%, linear-gradient(to top, #ff0055 2px, transparent 2px) 100% 100%; background-repeat: no-repeat; background-size: 10px 10px; }
-
+        
         /* Loading Progress Bar */
         .loading-progress { width: 100%; text-align: center; margin-bottom: 20px; }
         .progress-bar { width: 100%; height: 8px; background: rgba(0,243,255,0.1); border: 1px solid rgba(0,243,255,0.3); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
@@ -137,53 +123,29 @@
         .progress-stage { font-family: 'Rajdhani'; color: #88ccff; font-size: 13px; letter-spacing: 2px; margin-top: 5px; }
 
         /* --- 4. RESULTS (ANCHORED STRICTLY TO BOTTOM) --- */
-        #results {
-            top: auto;
+        #results { 
+            top: auto; 
             bottom: 4vh; /* Pushes crates and save button to the bottom floor */
             height: auto;
-            max-height: 85vh;
-            overflow-y: auto;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            padding-top: 20px;
-            padding-bottom: 20px;
-        }
-        #results::-webkit-scrollbar {
-            width: 6px;
-        }
-        #results::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.05);
-            border-radius: 3px;
-        }
-        #results::-webkit-scrollbar-thumb {
-            background: #00f3ff;
-            border-radius: 3px;
-            box-shadow: 0 0 10px #00f3ff;
-        }
-        .crates-row {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            align-items: flex-end;
-            flex-wrap: wrap;
-            max-width: 95vw;
-        }
-
-        .crate-card {
-            width: 130px; height: 160px;
-            background: linear-gradient(180deg, rgba(15,20,30,0.95) 0%, rgba(5,8,10,0.98) 100%);
-            border: 1px solid #333; border-top: 2px solid #555; border-radius: 4px;
-            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            padding: 15px 10px;
-            transition: all 0.2s; transform: translateY(100px); opacity: 0; pointer-events: auto;
-            clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px);
-            flex-shrink: 0;
+            flex-direction: column; 
+            justify-content: flex-end; 
+            align-items: center; 
+        } 
+        .crates-row { display: flex; gap: 12px; justify-content: center; align-items: flex-end; }
+        
+        .crate-card { 
+            width: 130px; height: 160px; 
+            background: linear-gradient(180deg, rgba(15,20,30,0.95) 0%, rgba(5,8,10,0.98) 100%); 
+            border: 1px solid #333; border-top: 2px solid #555; border-radius: 4px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
+            padding: 15px 10px; 
+            transition: all 0.2s; transform: translateY(100px); opacity: 0; pointer-events: auto; 
+            clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px); 
         }
         .crate-card.unlocked { border-top-color: #00f3ff; box-shadow: 0 -5px 25px rgba(0,243,255,0.15); transform: translateY(0) !important; opacity: 1; }
         .crate-card:hover { transform: translateY(-10px) !important; border-color: #00f3ff; box-shadow: 0 0 30px rgba(0,243,255,0.4); background: rgba(20,30,45,1); }
         .crate-header { font-size: 9px; color: #666; text-transform: uppercase; letter-spacing: 1px; width: 100%; text-align: left; padding-left: 5px;}
-        .crate-icon { font-size: 26px; color: #444; transition: color 0.5s; }
+        .crate-icon { font-size: 26px; color: #444; transition: color 0.5s; } 
         .unlocked .crate-icon { color: #00f3ff; filter: drop-shadow(0 0 8px rgba(0,243,255,0.6)); }
         .crate-label { font-family: 'Orbitron'; font-size: 12px; color: white; letter-spacing: 1px; }
         .status-indicator { font-size: 9px; padding: 4px 8px; border-radius: 2px; background: #222; color: #555; width: 90%; text-align: center; font-weight: bold; }
@@ -193,42 +155,19 @@
         #overall-diagnosis {
             opacity: 0;
             margin-bottom: 30px;
-            padding: 22px 40px;
+            padding: 20px 40px;
             border: 2px solid rgba(0,243,255,0.3);
-            background: rgba(10, 16, 26, 0.88);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,243,255,0.1);
+            background: rgba(0,243,255,0.05);
             clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
             text-align: center;
             transition: opacity 0.5s;
             pointer-events: auto;
-            width: 600px;
-            min-width: 320px;
-            max-width: 90vw;
-            box-sizing: border-box;
-            z-index: 10;
+            min-width: 600px;
         }
-        #overall-diagnosis.critical { 
-            border-color: rgba(255,0,85,0.85); 
-            background: rgba(20, 5, 12, 0.92); 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.9), inset 0 0 20px rgba(255,0,85,0.15), 0 0 30px rgba(255,0,85,0.25); 
-        }
-        #overall-diagnosis.moderate { 
-            border-color: rgba(255,153,0,0.85); 
-            background: rgba(20, 12, 5, 0.92); 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.9), inset 0 0 20px rgba(255,153,0,0.15), 0 0 30px rgba(255,153,0,0.25); 
-        }
-        #overall-diagnosis.mild { 
-            border-color: rgba(255,215,0,0.85); 
-            background: rgba(20, 18, 5, 0.92); 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.9), inset 0 0 20px rgba(255,215,0,0.15), 0 0 30px rgba(255,215,0,0.25); 
-        }
-        #overall-diagnosis.normal { 
-            border-color: rgba(0,243,255,0.85); 
-            background: rgba(5, 15, 25, 0.92); 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,243,255,0.15), 0 0 30px rgba(0,243,255,0.25); 
-        }
+        #overall-diagnosis.critical { border-color: rgba(255,0,85,0.8); background: rgba(255,0,85,0.08); }
+        #overall-diagnosis.moderate { border-color: rgba(255,153,0,0.8); background: rgba(255,153,0,0.08); }
+        #overall-diagnosis.mild { border-color: rgba(255,215,0,0.8); background: rgba(255,215,0,0.08); }
+        #overall-diagnosis.normal { border-color: rgba(0,243,255,0.8); background: rgba(0,243,255,0.08); }
         .diagnosis-label { font-size: 11px; color: #88ccff; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
         .diagnosis-verdict { font-family: 'Orbitron'; font-size: 28px; color: #00f3ff; letter-spacing: 3px; text-shadow: 0 0 15px rgba(0,243,255,0.5); margin-bottom: 6px; }
         #overall-diagnosis.critical .diagnosis-verdict { color: #ff0055; text-shadow: 0 0 15px rgba(255,0,85,0.5); }
@@ -308,16 +247,12 @@
     <div class="screen-section" id="armory-ui">
         <h2 style="font-family:'Orbitron'; color:#ff9900; font-size:24px; letter-spacing:4px; margin-bottom: 20px; text-shadow: 0 0 15px rgba(255,153,0,0.5);">V500 NEURAL ARMORY</h2>
         <div class="logs-grid">
-            <div class="model-card btn-hover"><h3>AI PATTERN</h3><p>Neural network overall RP probability pattern.</p></div>
-            <div class="model-card btn-hover"><h3>VESSELS</h3><p>Arteriolar narrowing. Detects attenuation.</p></div>
-            <div class="model-card btn-hover"><h3>PIGMENT</h3><p>Bone spicule pigmentation. Triad component.</p></div>
-            <div class="model-card btn-hover"><h3>OPTIC DISC</h3><p>Optic disc pallor. Waxy disc detection.</p></div>
-            <div class="model-card btn-hover" style="border-left-color:#ff0055"><h3>TORTUOSITY</h3><p>Vessel twisting and curvature.</p></div>
-            <div class="model-card btn-hover"><h3>TEXTURE</h3><p>Photoreceptor loss and atrophy.</p></div>
-            <div class="model-card btn-hover"><h3>SPATIAL</h3><p>Peripheral vs Central degradation.</p></div>
-            <div class="model-card btn-hover" style="border-left-color:#ff9900"><h3>RPA LESIONS</h3><p>Bright white/yellow flecks. RPA variant.</p></div>
-            <div class="model-card btn-hover"><h3>MACULA CME</h3><p>Cystoid Macular Edema detection.</p></div>
-            <div class="model-card btn-hover" style="border-left-color:#00ff88"><h3>SECTORAL</h3><p>Quadrant asymmetry. Sectoral RP.</p></div>
+            <div class="model-card btn-hover"><h3>VESSELS</h3><p>Vascular Analysis. Detects attenuation.</p></div>
+            <div class="model-card btn-hover"><h3>MACULA</h3><p>Foveal Targeting. Identifies edema.</p></div>
+            <div class="model-card btn-hover"><h3>DRUSEN</h3><p>Deposit Detection. Scans for AMD.</p></div>
+            <div class="model-card btn-hover"><h3>NERVES</h3><p>Optic Disc Integrity. Glaucoma indicators.</p></div>
+            <div class="model-card btn-hover" style="border-left-color:#ff0055"><h3>BLEEDS</h3><p>Hemorrhage Scan. Detects aneurysms.</p></div>
+            <div class="model-card btn-hover"><h3>SCAR</h3><p>Tissue History. Maps laser scars.</p></div>
             <div class="model-card btn-hover" style="grid-column: span 2; border-left-color: #00f3ff;"><h3>VERDICT</h3><p>COMMAND NODE. Aggregates all sub-models.</p></div>
         </div>
         <div class="back-btn btn-hover" onclick="navigate('lobby', 0, -7, 28, Math.PI/3, 0)"><i class="fa-solid fa-arrow-left"></i> RETURN TO LOBBY</div>
@@ -325,7 +260,7 @@
 
     <div class="screen-section" id="archive-ui">
         <h2 style="font-family:'Orbitron'; color:#00ff88; font-size:24px; letter-spacing:4px; margin-bottom: 20px; text-shadow: 0 0 15px rgba(0,255,136,0.5);">DATABASE ARCHIVE</h2>
-        <div id="db-records-container" class="custom-scrollbar" style="display: flex; flex-direction: column; gap: 15px; max-height: 60vh; overflow-y: auto; padding-right: 15px; width: 90%; max-width: 800px;">
+        <div id="db-records-container" class="custom-scrollbar" style="display: flex; flex-direction: column; gap: 15px; max-height: 60vh; overflow-y: auto; padding-right: 15px; width: 60%; min-width: 600px;">
             </div>
         <div class="back-btn btn-hover" onclick="navigate('lobby', 0, -7, 28, Math.PI/3, 0)"><i class="fa-solid fa-arrow-left"></i> RETURN TO LOBBY</div>
     </div>
@@ -345,7 +280,7 @@
 
     <div class="screen-section" id="results">
         <!-- Angiography Warning Banner -->
-        <div id="angio-warning" style="display: none; margin-bottom: 20px; padding: 15px 20px; background: rgba(25, 15, 5, 0.92); border: 1px solid rgba(255,165,0,0.5); border-left: 4px solid #ffa500; border-radius: 4px; font-family: 'Orbitron'; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: pulse 2s infinite;">
+        <div id="angio-warning" style="display: none; margin-bottom: 20px; padding: 15px 20px; background: rgba(255,165,0,0.1); border: 1px solid rgba(255,165,0,0.5); border-left: 4px solid #ffa500; border-radius: 4px; font-family: 'Orbitron'; animation: pulse 2s infinite;">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <i class="fa-solid fa-triangle-exclamation" style="color: #ffa500; font-size: 20px;"></i>
                 <div>
@@ -354,7 +289,7 @@
                 </div>
             </div>
         </div>
-
+        
         <div id="overall-diagnosis">
             <div class="diagnosis-label">RETINAGUARD V500 CLINICAL ANALYSIS</div>
             <div class="diagnosis-verdict" id="verdict-text">ANALYZING...</div>
@@ -371,12 +306,14 @@
              <div class="crate-card btn-hover" data-expert="tortuosity"><div class="crate-header">SUPPORT</div><i class="fa-solid fa-arrows-spin crate-icon"></i><div class="crate-label">TORTUOSITY</div><div class="status-indicator">LOCKED</div></div>
              <div class="crate-card btn-hover" data-expert="texture"><div class="crate-header">SUPPORT</div><i class="fa-solid fa-grip crate-icon"></i><div class="crate-label">TEXTURE</div><div class="status-indicator">LOCKED</div></div>
              <div class="crate-card btn-hover" data-expert="spatial"><div class="crate-header">SUPPORT</div><i class="fa-solid fa-map crate-icon"></i><div class="crate-label">SPATIAL</div><div class="status-indicator">LOCKED</div></div>
+        </div>
+        <div class="crates-row" style="margin-top: 8px;">
              <div class="crate-card btn-hover" data-expert="bright_lesion"><div class="crate-header">VARIANT</div><i class="fa-solid fa-sun crate-icon"></i><div class="crate-label">RPA LESIONS</div><div class="status-indicator">LOCKED</div></div>
              <div class="crate-card btn-hover" data-expert="macula"><div class="crate-header">COMPLICATION</div><i class="fa-solid fa-droplet crate-icon"></i><div class="crate-label">MACULA CME</div><div class="status-indicator">LOCKED</div></div>
              <div class="crate-card btn-hover" data-expert="quadrant"><div class="crate-header">VARIANT</div><i class="fa-solid fa-chart-pie crate-icon"></i><div class="crate-label">SECTORAL</div><div class="status-indicator">LOCKED</div></div>
         </div>
         <div id="triad-status" style="margin-top: 20px; opacity: 0; font-family: 'Orbitron'; font-size: 14px; color: #00f3ff; letter-spacing: 2px; pointer-events: auto;">
-            <div style="border: 1px solid rgba(0,243,255,0.3); padding: 15px; background: rgba(5, 10, 18, 0.88); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.6); clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);">
+            <div style="border: 1px solid rgba(0,243,255,0.3); padding: 15px; background: rgba(0,243,255,0.05); clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);">
                 <div style="font-size: 12px; color: #88ccff; margin-bottom: 8px;">RP TRIAD STATUS:</div>
                 <div style="display: flex; gap: 20px; justify-content: center;">
                     <div id="triad-1-status">❓ Bone Spicules</div>
@@ -397,9 +334,10 @@
             <i class="fa-solid fa-xmark modal-close btn-hover" onclick="closePatientModal()"></i>
             <div class="modal-header-text" style="font-size: 22px; margin-bottom: 10px; border:none;">INITIALIZE SCAN</div>
             <p style="color: #88ccff; font-size: 12px; margin-bottom: 25px; letter-spacing: 1px;">ENTER PATIENT INFORMATION TO BEGIN</p>
+            
             <!-- Patient ID -->
             <input type="text" id="patient-id-input" class="tactical-input" placeholder="Patient ID (e.g. PT-1042)" style="margin-bottom: 15px;">
-
+            
             <!-- NEW: Patient Demographics -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                 <div>
@@ -419,7 +357,7 @@
                     </select>
                 </div>
             </div>
-
+            
             <!-- NEW: Camera Type -->
             <div style="margin-bottom: 15px;">
                 <label style="color: #88ccff; font-size: 11px; display: block; margin-bottom: 5px; text-align: left;">FUNDUS CAMERA TYPE</label>
@@ -432,7 +370,7 @@
                     <option value="Smartphone">Smartphone Adapter</option>
                 </select>
             </div>
-
+            
             <!-- NEW: Clinical Symptoms -->
             <div style="margin-bottom: 15px; text-align: left; background: rgba(0,243,255,0.05); padding: 15px; border: 1px solid rgba(0,243,255,0.2); border-radius: 4px;">
                 <label style="color: #00f3ff; font-size: 12px; font-weight: bold; display: block; margin-bottom: 10px;">CLINICAL SYMPTOMS (Check all that apply)</label>
@@ -457,11 +395,11 @@
                     </label>
                 </div>
                 <label style="color: #ccc; font-size: 11px; cursor: pointer; display: flex; align-items: center; margin-top: 10px;">
-                    <input type="checkbox" id="family-history-rp" style="margin-right: 8px; cursor: pointer;">
+                    <input type="checkbox" id="family-history-rp" style="margin-right: 8px; cursor: pointer;"> 
                     <strong style="color: #ff9900;">Family History of RP</strong>
                 </label>
             </div>
-
+            
             <button class="save-btn btn-hover" onclick="confirmPatientId()" style="width: 100%;">
                 <i class="fa-solid fa-fingerprint"></i> AUTHENTICATE & UPLOAD
             </button>
@@ -469,7 +407,7 @@
     </div>
 
     <div class="modal-overlay" id="detail-modal">
-        <div class="modal-content" id="modal-box" style="max-height: 90vh; overflow-y: auto; max-width: 95vw;">
+        <div class="modal-content" id="modal-box">
             <i class="fa-solid fa-xmark modal-close btn-hover" onclick="closeModal()"></i>
             <div class="modal-header-text" id="m-title">MODEL DATA</div>
             <div class="modal-body">
@@ -540,28 +478,14 @@
         let isAnimating = false; // System lock for transitions
         let isProcessing = false;
         const ALL_SCREENS = ['lobby', 'armory-ui', 'archive-ui', 'processing', 'results'];
-
+        
         window.onload = () => { syncHeaderStats(); };
 
         // --- 3D ENGINE ---
-        const PARTICLE_COUNT = 20000;
+        const PARTICLE_COUNT = 20000; 
         let scene, camera, renderer, composer, particles, geometry, material;
-        let positions, targetPositions, alphas, particleTypes;
+        let positions, targetPositions, alphas;
         let visibleCount = 0; let time = 0;
-        const sentinelColors = [
-            new THREE.Color(0x00f3ff), // Cyan
-            new THREE.Color(0x00d4ff), // Light Blue
-            new THREE.Color(0x0099ff), // Sky Blue
-            new THREE.Color(0x0066ff), // Blue
-            new THREE.Color(0x3366ff), // Blue-Purple
-            new THREE.Color(0x6633ff), // Purple-Blue
-            new THREE.Color(0x9933ff), // Purple
-            new THREE.Color(0xcc33ff), // Magenta-Purple
-            new THREE.Color(0xff33cc), // Magenta
-            new THREE.Color(0xff3399)  // Pink-Magenta
-        ];
-        const coreColor = new THREE.Color(0xffcc00); // Gold
-        const connectionColor = new THREE.Color(0x4488aa); // Dim blue
 
         init(); animate(); startGenesis();
 
@@ -572,172 +496,45 @@
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(window.devicePixelRatio);
             document.getElementById('canvas-container').appendChild(renderer.domElement);
-
+            
             const renderScene = new THREE.RenderPass(scene, camera);
             const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
             bloomPass.strength = 0.3; bloomPass.radius = 0.2; bloomPass.threshold = 0.1;
             composer = new THREE.EffectComposer(renderer); composer.addPass(renderScene); composer.addPass(bloomPass);
 
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                composer.setSize(window.innerWidth, window.innerHeight);
-            });
-
             geometry = new THREE.BufferGeometry();
             positions = new Float32Array(PARTICLE_COUNT * 3); targetPositions = new Float32Array(PARTICLE_COUNT * 3); alphas = new Float32Array(PARTICLE_COUNT); const sizes = new Float32Array(PARTICLE_COUNT);
-            particleTypes = new Float32Array(PARTICLE_COUNT);
-            const colors = new Float32Array(PARTICLE_COUNT * 3);
-            const ringRadius = 12; const nodeRadius = 2.2; const coreRadius = 3.5;
+            const radius = 9; const tubeWidth = 3.5;
             for (let i = 0; i < PARTICLE_COUNT; i++) {
                 positions[i*3] = (Math.random() - 0.5) * 200; positions[i*3+1] = (Math.random() - 0.5) * 200; positions[i*3+2] = (Math.random() - 0.5) * 200;
-
-                const type = Math.random();
-                if (type < 0.55) {
-                    const sentinelIndex = Math.floor(Math.random() * 10);
-                    particleTypes[i] = sentinelIndex;
-                    const angle = (sentinelIndex / 10) * Math.PI * 2;
-                    const theta = Math.random() * Math.PI * 2;
-                    const phi = Math.acos(2 * Math.random() - 1);
-                    const r = Math.pow(Math.random(), 0.7) * nodeRadius;
-                    const localX = r * Math.sin(phi) * Math.cos(theta);
-                    const localY = r * Math.sin(phi) * Math.sin(theta);
-                    const localZ = r * Math.cos(phi);
-                    targetPositions[i*3] = ringRadius * Math.cos(angle) + localX;
-                    targetPositions[i*3+1] = ringRadius * Math.sin(angle) + localY;
-                    targetPositions[i*3+2] = localZ;
-                    const col = sentinelColors[sentinelIndex];
-                    colors[i*3] = col.r; colors[i*3+1] = col.g; colors[i*3+2] = col.b;
-                } else if (type < 0.75) {
-                    particleTypes[i] = -1;
-                    const theta = Math.random() * Math.PI * 2;
-                    const phi = Math.acos(2 * Math.random() - 1);
-                    const r = Math.pow(Math.random(), 0.6) * coreRadius;
-                    targetPositions[i*3] = r * Math.sin(phi) * Math.cos(theta);
-                    targetPositions[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-                    targetPositions[i*3+2] = r * Math.cos(phi);
-                    colors[i*3] = coreColor.r; colors[i*3+1] = coreColor.g; colors[i*3+2] = coreColor.b;
-                } else {
-                    particleTypes[i] = -2;
-                    const sentinelAngle = (Math.floor(Math.random() * 10) / 10) * Math.PI * 2;
-                    const lineT = Math.random();
-                    targetPositions[i*3] = ringRadius * Math.cos(sentinelAngle) * (1 - lineT);
-                    targetPositions[i*3+1] = ringRadius * Math.sin(sentinelAngle) * (1 - lineT);
-                    targetPositions[i*3+2] = (Math.random() - 0.5) * 1.5 * (1 - lineT);
-                    colors[i*3] = connectionColor.r; colors[i*3+1] = connectionColor.g; colors[i*3+2] = connectionColor.b;
-                }
-                alphas[i] = 0.0; sizes[i] = Math.random() * 1.0 + 0.3;
+                const u = Math.random() * Math.PI * 2; const v = (Math.random() * 2 - 1);
+                targetPositions[i*3] = (radius + v * tubeWidth * Math.cos(u/2)) * Math.cos(u); targetPositions[i*3+1] = (radius + v * tubeWidth * Math.cos(u/2)) * Math.sin(u); targetPositions[i*3+2] = v * tubeWidth * Math.sin(u/2);
+                alphas[i] = 0.0; sizes[i] = Math.random() * 0.8 + 0.2;
             }
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3)); geometry.setAttribute('alpha', new THREE.BufferAttribute(alphas, 1)); geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-            material = new THREE.ShaderMaterial({
-                uniforms: { time: { value: 0.0 }, uScanActive: { value: 0.0 } },
-                vertexShader: `
-                    attribute float alpha;
-                    attribute float size;
-                    attribute vec3 color;
-                    varying float vAlpha;
-                    varying vec3 vColor;
-                    varying float vY;
-                    void main() {
-                        vAlpha = alpha;
-                        vColor = color;
-                        vY = position.y;
-                        vec4 mv = modelViewMatrix * vec4(position, 1.0);
-                        gl_PointSize = size * (120.0 / -mv.z);
-                        gl_Position = projectionMatrix * mv;
-                    }
-                `,
-                fragmentShader: `
-                    uniform float time;
-                    uniform float uScanActive;
-                    varying float vAlpha;
-                    varying vec3 vColor;
-                    varying float vY;
-                    void main() {
-                        float r = distance(gl_PointCoord, vec2(0.5));
-                        if(r > 0.5) discard;
-                        float scanWave = 0.0;
-                        if(uScanActive > 0.5) {
-                            float wave = sin(vY * 0.8 - time * 8.0);
-                            scanWave = step(0.9, wave);
-                        }
-                        float blink = 1.0;
-                        if(uScanActive > 0.5) {
-                            blink = 0.8 + 0.2 * sin(time * 20.0);
-                        }
-                        float finalAlpha = (vAlpha * 0.5 + scanWave * 0.5) * blink;
-                        vec3 finalColor = mix(vColor, vec3(1.0), scanWave);
-                        gl_FragColor = vec4(finalColor, finalAlpha);
-                    }
-                `,
-                transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
-            });
+            material = new THREE.ShaderMaterial({ uniforms: { color: { value: new THREE.Color(0xaaccff) } }, vertexShader: `attribute float alpha; attribute float size; varying float vAlpha; void main() { vAlpha = alpha; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = size * (120.0 / -mv.z); gl_Position = projectionMatrix * mv; }`, fragmentShader: `uniform vec3 color; varying float vAlpha; void main() { float r = distance(gl_PointCoord, vec2(0.5)); if(r > 0.5) discard; gl_FragColor = vec4(color, vAlpha * 0.5); }`, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
             particles = new THREE.Points(geometry, material); particles.rotation.z = Math.PI / 6; particles.rotation.x = Math.PI / 4; scene.add(particles);
         }
 
         function startGenesis() { alphas[0] = 1.0; geometry.attributes.alpha.needsUpdate = true; visibleCount = 1; setTimeout(multiplyDots, 500); }
         function multiplyDots() {
-            if (visibleCount >= PARTICLE_COUNT) { setTimeout(formSentinelRing, 500); return; }
+            if (visibleCount >= PARTICLE_COUNT) { setTimeout(attractToMobius, 500); return; }
             let growth = Math.ceil(visibleCount * 0.3) + 10; let nextLimit = Math.min(visibleCount + growth, PARTICLE_COUNT);
             for (let i = visibleCount; i < nextLimit; i++) alphas[i] = 1.0;
             visibleCount = nextLimit; geometry.attributes.alpha.needsUpdate = true; requestAnimationFrame(multiplyDots);
         }
-        function formSentinelRing() {
+        function attractToMobius() {
             isAnimating = true;
             const startPos = Float32Array.from(geometry.attributes.position.array); const obj = { t: 0 };
-            anime({ targets: obj, t: 1, duration: 3000, easing: 'easeInOutExpo', update: () => { const curr = geometry.attributes.position.array; for(let i=0; i<PARTICLE_COUNT; i++) { const idx = i*3; curr[idx] = startPos[idx] + (targetPositions[idx] - startPos[idx]) * obj.t; curr[idx+1] = startPos[idx+1] + (targetPositions[idx+1] - startPos[idx+1]) * obj.t; curr[idx+2] = startPos[idx+2] + (targetPositions[idx+2] - startPos[idx+2]) * obj.t; } geometry.attributes.position.needsUpdate = true; }, complete: () => {
-                anime({ targets: camera.position, y: -7, z: 28, duration: 2000, easing: 'easeInOutQuad' });
-                anime({ targets: particles.rotation, x: Math.PI / 3, duration: 2000, easing: 'easeInOutQuad' });
-                startPulsingAnimation();
-
+            anime({ targets: obj, t: 1, duration: 3000, easing: 'easeInOutExpo', update: () => { const curr = geometry.attributes.position.array; for(let i=0; i<PARTICLE_COUNT; i++) { const idx = i*3; curr[idx] = startPos[idx] + (targetPositions[idx] - startPos[idx]) * obj.t; curr[idx+1] = startPos[idx+1] + (targetPositions[idx+1] - startPos[idx+1]) * obj.t; curr[idx+2] = startPos[idx+2] + (targetPositions[idx+2] - startPos[idx+2]) * obj.t; } geometry.attributes.position.needsUpdate = true; }, complete: () => { 
+                anime({ targets: camera.position, y: -7, z: 28, duration: 2000, easing: 'easeInOutQuad' }); 
+                anime({ targets: particles.rotation, x: Math.PI / 3, duration: 2000, easing: 'easeInOutQuad' }); 
+                
                 // Manually trigger first screen load
                 const lobby = document.getElementById('lobby');
                 lobby.style.display = 'flex';
-                anime({ targets: lobby, opacity: 1, duration: 1000, delay: 200, easing: 'easeOutExpo', complete: () => { isAnimating = false; } });
+                anime({ targets: lobby, opacity: 1, duration: 1000, delay: 200, easing: 'easeOutExpo', complete: () => { isAnimating = false; } }); 
             }});
-        }
-
-        function startPulsingAnimation() {
-            const pulseObj = { scale: 1.0 };
-            anime({
-                targets: pulseObj,
-                scale: [1.0, 1.08, 1.0],
-                duration: 3000,
-                easing: 'easeInOutSine',
-                loop: true,
-                update: () => {
-                    const sizes = geometry.attributes.size.array;
-                    for (let i = 0; i < PARTICLE_COUNT; i++) {
-                        const type = particleTypes[i];
-                        if (type >= 0 && type <= 9) {
-                            const baseSize = 0.3 + Math.random() * 1.0;
-                            sizes[i] = baseSize * pulseObj.scale;
-                        }
-                    }
-                    geometry.attributes.size.needsUpdate = true;
-                }
-            });
-
-            const flowObj = { offset: 0 };
-            anime({
-                targets: flowObj,
-                offset: [0, Math.PI * 2],
-                duration: 8000,
-                easing: 'linear',
-                loop: true,
-                update: () => {
-                    const alphasArr = geometry.attributes.alpha.array;
-                    for (let i = 0; i < PARTICLE_COUNT; i++) {
-                        if (particleTypes[i] === -2) {
-                            const wave = Math.sin(flowObj.offset + i * 0.001) * 0.3 + 0.7;
-                            alphasArr[i] = Math.min(1.0, wave);
-                        }
-                    }
-                    geometry.attributes.alpha.needsUpdate = true;
-                }
-            });
         }
 
         // ==========================================
@@ -786,7 +583,7 @@
         // --- DATABASE ARCHIVE FETCH ---
         function openArchive() {
             navigate('archive-ui', 15, 0, 20, null, Math.PI/2);
-
+            
             const container = document.getElementById('db-records-container');
             container.innerHTML = '<div style="text-align:center; color:#00ff88; font-family:\'Orbitron\'; padding:40px;"><i class="fa-solid fa-spinner fa-spin"></i> ACCESSING MAINFRAME...</div>';
 
@@ -795,7 +592,7 @@
                     const response = await fetch('http://localhost:5000/api/reports');
                     if (!response.ok) throw new Error("Fetch failed");
                     const data = await response.json();
-
+                    
                     if (data.length === 0) {
                         container.innerHTML = '<div style="text-align:center; color:#666; font-family:\'Orbitron\'; border:1px dashed #333; padding:40px;">NO RECORDS FOUND IN ARCHIVE</div>';
                     } else {
@@ -827,7 +624,7 @@
             const pModal = document.getElementById('patient-modal');
             const inputField = document.getElementById('patient-id-input');
             inputField.value = "PT-" + Math.floor(Math.random() * 9000 + 1000);
-
+            
             pModal.style.display = 'flex';
             anime({ targets: pModal, opacity: 1, duration: 300 });
             inputField.focus();
@@ -844,10 +641,10 @@
             const messageEl = document.getElementById('error-message');
             const issuesEl = document.getElementById('error-issues');
             const recommendationEl = document.getElementById('error-recommendation');
-
+            
             // Set main error message
             messageEl.textContent = errorData.error || 'Image quality too low for reliable analysis';
-
+            
             // Display quality issues
             if (errorData.errors && errorData.errors.length > 0) {
                 issuesEl.innerHTML = '<div style="font-family: Orbitron; color: #ff4444; margin-bottom: 10px; font-size: 12px; letter-spacing: 1px;">CRITICAL ISSUES:</div>' +
@@ -860,7 +657,7 @@
             } else {
                 issuesEl.style.display = 'none';
             }
-
+            
             // Display recommendation
             if (errorData.recommendation) {
                 recommendationEl.innerHTML = '<div style="font-family: Orbitron; color: #00f3ff; margin-bottom: 8px; font-size: 11px; letter-spacing: 1px;">RECOMMENDATION:</div>' +
@@ -869,7 +666,7 @@
             } else {
                 recommendationEl.style.display = 'none';
             }
-
+            
             // Show modal
             modal.style.display = 'flex';
             anime({ targets: modal, opacity: 1, duration: 300, easing: 'easeOutQuad' });
@@ -878,7 +675,7 @@
         function closeErrorModal() {
             const modal = document.getElementById('error-modal');
             anime({ targets: modal, opacity: 0, duration: 200, easing: 'linear',
-                complete: () => {
+                complete: () => { 
                     modal.style.display = 'none';
                     // Navigate back to lobby after closing modal
                     navigate('lobby', 0, -7, 28, Math.PI/3, 0);
@@ -891,22 +688,22 @@
             sfxClick.play().catch(e=>{});
             const modal = document.getElementById('report-detail-modal');
             const content = document.getElementById('report-detail-content');
-
+            
             // Show loading state
             content.innerHTML = '<div style="text-align:center; padding:60px; color:#00f3ff;"><i class="fa-solid fa-spinner fa-spin" style="font-size:40px;"></i><div style="margin-top:20px; font-family:Orbitron; letter-spacing:2px;">LOADING REPORT...</div></div>';
             modal.style.display = 'flex';
             anime({ targets: modal, opacity: 1, duration: 300, easing: 'easeOutQuad' });
-
+            
             try {
                 const response = await fetch(`http://localhost:5000/api/reports/${reportId}`);
                 if (!response.ok) throw new Error('Failed to fetch report');
                 const report = await response.json();
-
+                
                 console.log('📄 LOADING PATIENT REPORT:', report.patientId);
                 console.log('📦 Full Report Data:', report);
                 console.log('🔬 Expert Opinions Count:', report.expert_opinions?.length || 0);
                 console.log('🎯 Verdict:', report.verdict);
-
+                
                 displayReportDetail(report);
             } catch (error) {
                 console.error('❌ Failed to load report:', error);
@@ -919,7 +716,7 @@
             const date = new Date(report.date).toLocaleString();
             const isAnomaly = report.verdict.includes('POSITIVE');
             const verdictColor = isAnomaly ? '#ff4444' : report.verdict.includes('SUSPICIOUS') ? '#ff9900' : report.verdict.includes('BORDERLINE') ? '#ffcc00' : '#00ff88';
-
+            
             let html = `
                 <!-- Header Section -->
                 <div style="background: rgba(0,243,255,0.05); border: 1px solid rgba(0,243,255,0.2); padding: 20px; border-radius: 4px; margin-bottom: 20px;">
@@ -935,7 +732,7 @@
                         </div>
                     </div>
                 </div>
-
+                
                 <!-- Overall Analysis Summary -->
                 <div style="background: linear-gradient(135deg, rgba(0,243,255,0.1), rgba(0,243,255,0.05)); border: 2px solid ${verdictColor}; padding: 20px; border-radius: 6px; margin-bottom: 25px; box-shadow: 0 0 20px ${verdictColor}40;">
                     <div style="font-family: Orbitron; color: ${verdictColor}; font-size: 16px; margin-bottom: 12px; letter-spacing: 2px; text-align: center;">
@@ -949,7 +746,7 @@
                     </div>
                 </div>
             `;
-
+            
             // Patient History Section
             if (report.patient_history && Object.keys(report.patient_history).length > 0) {
                 const ph = report.patient_history;
@@ -965,13 +762,13 @@
                             ${ph.risk_score !== undefined ? `<div><span style="color: #88ccff; font-size: 11px;">RISK SCORE:</span><br><span style="color: ${ph.risk_score > 50 ? '#ff9900' : '#00ff88'}; font-family: Orbitron;">${ph.risk_score}/100</span></div>` : ''}
                         </div>
                 `;
-
+                
                 // Symptoms
                 if (ph.symptoms && Object.keys(ph.symptoms).length > 0) {
                     const symptomsList = Object.entries(ph.symptoms)
                         .filter(([key, value]) => value === true)
                         .map(([key]) => key.replace(/_/g, ' ').toUpperCase());
-
+                    
                     if (symptomsList.length > 0) {
                         html += `
                             <div style="margin-top: 10px; padding: 10px; background: rgba(255,153,0,0.05); border: 1px solid rgba(255,153,0,0.2); border-radius: 4px;">
@@ -981,10 +778,10 @@
                         `;
                     }
                 }
-
+                
                 html += `</div>`;
             }
-
+            
             // Image Quality Section
             html += `
                 <div style="margin-bottom: 20px;">
@@ -998,7 +795,7 @@
                     </div>
                 </div>
             `;
-
+            
             // RP Triad Status with 3-state display
             if (report.triadStatus) {
                 const triad = report.triadStatus;
@@ -1019,7 +816,7 @@
                         </div>
                     `;
                 };
-
+                
                 html += `
                     <div style="margin-bottom: 20px;">
                         <div style="font-family: Orbitron; color: #00f3ff; margin-bottom: 10px; font-size: 14px; letter-spacing: 1px; border-bottom: 1px solid rgba(0,243,255,0.2); padding-bottom: 5px;">
@@ -1037,19 +834,19 @@
                     </div>
                 `;
             }
-
+            
             // Expert Opinions - ENHANCED DISPLAY
             if (report.expert_opinions && report.expert_opinions.length > 0) {
                 const positiveCount = report.expert_opinions.filter(e => e.status === 'POSITIVE').length;
                 const suspiciousCount = report.expert_opinions.filter(e => e.status === 'SUSPICIOUS').length;
                 const normalCount = report.expert_opinions.filter(e => e.status === 'NORMAL' || e.status === 'NEGATIVE').length;
-
+                
                 html += `
                     <div style="margin-bottom: 25px;">
                         <div style="font-family: Orbitron; color: #00f3ff; margin-bottom: 12px; font-size: 14px; letter-spacing: 1px; border-bottom: 1px solid rgba(0,243,255,0.2); padding-bottom: 5px;">
                             <i class="fa-solid fa-microscope"></i> EXPERT SCANNER RESULTS (${report.expert_opinions.length} MODULES)
                         </div>
-
+                        
                         <!-- Scanner Summary Stats -->
                         <div style="display: flex; gap: 10px; margin-bottom: 15px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 4px;">
                             <div style="flex: 1; text-align: center; padding: 8px; border-radius: 3px; background: rgba(255,68,68,0.1);">
@@ -1065,7 +862,7 @@
                                 <div style="color: #88ffcc; font-size: 10px;">NORMAL</div>
                             </div>
                         </div>
-
+                        
                         <!-- Individual Scanner Cards -->
                         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;">
                             ${report.expert_opinions.map((expert, index) => {
@@ -1083,7 +880,7 @@
                                     'Atrophy Scanner': 'fa-circle-radiation'
                                 };
                                 const icon = iconMap[expert.name] || 'fa-microscope';
-
+                                
                                 return `
                                     <div style="background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.2)); border-left: 4px solid ${statusColor}; padding: 14px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
                                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
@@ -1110,7 +907,7 @@
                     </div>
                 `;
             }
-
+            
             // Critical Findings
             if (report.criticalFindings && report.criticalFindings.length > 0) {
                 html += `
@@ -1126,7 +923,7 @@
                     </div>
                 `;
             }
-
+            
             // Differential Diagnosis
             const diffDiseases = report.differential_diagnosis || [];
             if (diffDiseases.length > 0) {
@@ -1137,7 +934,7 @@
                         </div>
                         <div style="background: rgba(0,243,255,0.05); border: 1px solid rgba(0,243,255,0.2); padding: 15px; border-radius: 4px;">
                             ${diffDiseases.slice(0, 5).map((dx, index) => {
-                                const confidence = dx.confidence !== undefined ? dx.confidence :
+                                const confidence = dx.confidence !== undefined ? dx.confidence : 
                                                   (dx.confidence_pct !== undefined ? dx.confidence_pct : 0);
                                 return `
                                 <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: ${index < 4 ? '1px solid rgba(255,255,255,0.05)' : 'none'};">
@@ -1149,14 +946,14 @@
                     </div>
                 `;
             }
-
+            
             content.innerHTML = html;
         }
 
         function closeReportDetailModal() {
             const modal = document.getElementById('report-detail-modal');
             anime({ targets: modal, opacity: 0, duration: 200, easing: 'linear',
-                complete: () => {
+                complete: () => { 
                     modal.style.display = 'none';
                 }
             });
@@ -1167,7 +964,7 @@
             const inputField = document.getElementById('patient-id-input');
             if (inputField.value.trim() === "") { inputField.style.borderColor = "red"; return; }
             currentPatientName = inputField.value.trim();
-
+            
             // NEW: Collect patient history data
             const ageInput = document.getElementById('patient-age-input').value;
             currentPatientData = {
@@ -1184,18 +981,18 @@
                 family_history: document.getElementById('family-history-rp').checked,
                 visual_field_data: null // Can be added later via API
             };
-
+            
             currentCameraType = document.getElementById('camera-type-input').value;
-
+            
             console.log('✅ Patient data collected:', currentPatientData);
             console.log('📷 Camera type:', currentCameraType);
-
+            
             closePatientModal();
             document.getElementById('fileInput').click(); // Opens File browser safely
         }
 
         let targetInterval;
-
+        
         function handleFileSelect(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -1211,10 +1008,7 @@
         async function startProcessingSequence() {
             sfxScan.play().catch(e=>{});
             isProcessing = true;
-            if (material && material.uniforms.uScanActive) {
-                material.uniforms.uScanActive.value = 1.0;
-            }
-
+            
             navigate('processing', 18, 0, 35, Math.PI/4, 0);
 
             // Reset and start loading animation
@@ -1255,7 +1049,7 @@
             // Call Flask API for real analysis (with 60-second timeout)
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 60000);
-
+            
             try {
                 const response = await fetch('http://localhost:5001/api/analyze', {
                     method: 'POST',
@@ -1269,18 +1063,18 @@
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);
-
+                
                 if (response.ok) {
                     currentAnalysisResult = await response.json();
                     console.log('✅ Flask API Response received');
                     console.log('📦 Full Response Object:', currentAnalysisResult);
-
+                    
                     try {
                         // Check for angiography warning
                         if (currentAnalysisResult.is_angiography) {
                             console.warn('⚠️ ANGIOGRAPHY DETECTED:', currentAnalysisResult.warning);
                         }
-
+                        
                         // Detailed console report
                         console.log('\n========== RETINAGUARD ANALYSIS REPORT ==========');
                         console.log('🎯 VERDICT:', currentAnalysisResult.verdict_code);
@@ -1307,49 +1101,43 @@
                     console.error('[X] Flask API Error:', response.status);
                     console.error('[X] Error details:', JSON.stringify(errorData, null, 2));
                     console.error('[X] Raw error object:', errorData);
-
+                    
                     currentAnalysisResult = null;
-
+                    
                     // Stop processing animation
                     clearInterval(loadingInterval);
                     isProcessing = false;
                     clearInterval(targetInterval);
                     sfxScan.pause();
                     sfxScan.currentTime = 0;
-                    if (material && material.uniforms.uScanActive) {
-                        material.uniforms.uScanActive.value = 0.0;
-                    }
-
+                    
                     // Reset progress bar to 0%
                     progressFill.style.width = '0%';
                     progressText.textContent = '0%';
                     progressStage.textContent = 'Analysis Rejected';
-
+                    
                     // Show error modal with quality issues
                     showErrorModal(errorData);
-
+                    
                     return; // Exit early, don't call finishProcessing
                 }
             } catch (error) {
                 clearTimeout(timeoutId);
-
+                
                 currentAnalysisResult = null;
-
+                
                 // Stop processing animation
                 clearInterval(loadingInterval);
                 isProcessing = false;
                 clearInterval(targetInterval);
                 sfxScan.pause();
                 sfxScan.currentTime = 0;
-                if (material && material.uniforms.uScanActive) {
-                    material.uniforms.uScanActive.value = 0.0;
-                }
-
+                
                 // Reset progress bar
                 progressFill.style.width = '0%';
                 progressText.textContent = '0%';
                 progressStage.textContent = 'Connection Error';
-
+                
                 if (error.name === 'AbortError') {
                     console.error('[X] Flask API Timeout - Analysis took too long (>60s)');
                     showErrorModal({
@@ -1365,7 +1153,7 @@
                         recommendation: 'Please ensure the Flask server is running and accessible. Check terminal for server status.'
                     });
                 }
-
+                
                 return; // Exit early, don't call finishProcessing
             }
 
@@ -1380,15 +1168,12 @@
 
         function finishProcessing() {
             isProcessing = false; clearInterval(targetInterval);
-            if (material && material.uniforms.uScanActive) {
-                material.uniforms.uScanActive.value = 0.0;
-            }
             sfxScan.pause(); sfxScan.currentTime = 0; sfxSuccess.play().catch(e=>{});
 
             // Reset crates to down position before showing them
-            document.querySelectorAll('.crate-card').forEach(c => {
-                c.classList.remove('unlocked');
-                c.style.transform = "translateY(100px)";
+            document.querySelectorAll('.crate-card').forEach(c => { 
+                c.classList.remove('unlocked'); 
+                c.style.transform = "translateY(100px)"; 
             });
             document.getElementById('report-action-container').style.opacity = 0;
             document.getElementById('report-action-container').style.pointerEvents = 'none';
@@ -1397,7 +1182,7 @@
             document.getElementById('detail-report-btn').style.display = 'none';
 
             // EXACT FIX: Uses the exact original camera coordinates so the 3D model stays completely static!
-            navigate('results', 0, -7, 28, Math.PI/3, 0);
+            navigate('results', 0, -7, 28, Math.PI/3, 0); 
 
             // Animate crates popping up after navigation finishes
             setTimeout(() => {
@@ -1407,7 +1192,7 @@
                     navigate('lobby', 0, -7, 28, Math.PI/3, 0);
                     return;
                 }
-
+                
                 try {
                     console.log('🎬 Starting result display...');
                     console.log('🎬 currentAnalysisResult:', currentAnalysisResult);
@@ -1420,21 +1205,21 @@
                 }
             }, 1200);
         }
-
+        
         function displayRealResults(apiResult) {
             console.log('🎯 displayRealResults called');
             console.log('🎯 apiResult parameter:', apiResult);
             console.log('🎯 apiResult.expert_opinions:', apiResult?.expert_opinions);
             console.log('🎯 apiResult.verdict_code:', apiResult?.verdict_code);
-
+            
             if (!apiResult || !apiResult.expert_opinions) {
                 console.error('❌ Invalid API result structure:', apiResult);
                 alert('⚠️ Invalid analysis result structure. Please try again.');
                 return;
             }
-
+            
             console.log('✓ Validation passed, proceeding with display...');
-
+            
             // Map Flask API expert names to crate indices (10 experts)
             const expertMap = {
                 'ai_pattern_recognition': 0,
@@ -1469,83 +1254,66 @@
                 'quadrant (sectoral)': 9,
                 'sectoral': 9
             };
-
+            
             const crates = document.querySelectorAll('.crate-card');
-
+            
             console.log('📊 Displaying results for', apiResult.expert_opinions.length, 'experts');
-
+            
             apiResult.expert_opinions.forEach((expert, idx) => {
                 // Try multiple matching strategies
                 const expertNameLower = expert.name.toLowerCase();
                 let crateIndex = expertMap[expertNameLower];
-
+                
                 // Fallback: Try without special characters
                 if (crateIndex === undefined) {
                     const cleanName = expertNameLower.replace(/[^a-z\s]/g, '').replace(/\s+/g, '_');
                     crateIndex = expertMap[cleanName];
                 }
-
+                
                 // Final fallback: Use sequential order
                 if (crateIndex === undefined) {
                     crateIndex = idx;
                     console.warn('⚠️ Expert name not mapped:', expert.name, '- using index', idx);
                 }
-
+                
                 const crate = crates[crateIndex];
-
+                
                 if (!crate) {
                     console.error('❌ Crate not found at index:', crateIndex);
                     return;
                 }
-
+                
                 console.log(`✅ Expert ${idx}: "${expert.name}" → Crate ${crateIndex} (${expert.status})`);
-
+                
                 setTimeout(() => {
                     sfxUnlock.currentTime = 0; sfxUnlock.play().catch(e=>{});
                     crate.classList.add('unlocked');
                     const stat = crate.querySelector('.status-indicator');
-
+                    
                     // Show actual status text from API, use severity for colors
                     const displayStatus = expert.status === 'HEALTHY' ? 'NORMAL' : expert.status;
                     stat.innerText = displayStatus;
-
+                    
                     // Color coding based on SEVERITY (not status text)
                     const sev = expert.severity;
-                    let activeColor = '#00ff88';
                     if (sev === 'CRITICAL') {
                         stat.style.color = "#ff0055";
                         stat.style.background = "rgba(255,0,85,0.1)";
                         crate.style.borderColor = "rgba(255,0,85,0.6)";
-                        activeColor = '#ff0055';
                     } else if (sev === 'MODERATE') {
                         stat.style.color = "#ff9900";
                         stat.style.background = "rgba(255,153,0,0.1)";
                         crate.style.borderColor = "rgba(255,153,0,0.6)";
-                        activeColor = '#ff9900';
                     } else if (sev === 'MILD') {
                         stat.style.color = "#ffd700";
                         stat.style.background = "rgba(255,215,0,0.1)";
                         crate.style.borderColor = "rgba(255,215,0,0.4)";
-                        activeColor = '#ffd700';
                     } else {
                         stat.style.color = "#00ff88";
                         stat.style.background = "rgba(0,255,136,0.1)";
                         crate.style.borderColor = "rgba(0,243,255,0.2)";
-                        activeColor = '#00ff88';
                     }
-
-                    const iconEl = crate.querySelector('.crate-icon');
-                    const iconName = iconEl ? Array.from(iconEl.classList).find(c => c.startsWith('fa-')) : 'fa-microchip';
-                    crate.onclick = () => {
-                        openModal(
-                            expert.name.toUpperCase(),
-                            iconName || 'fa-microchip',
-                            expert.confidence.toFixed(1) + '%',
-                            expert.status + (expert.detail ? ` (${expert.detail})` : ''),
-                            activeColor
-                        );
-                    };
-
+                    
                     if (idx === apiResult.expert_opinions.length - 1) {
                         // Show overall diagnosis banner
                         setTimeout(() => {
@@ -1553,7 +1321,7 @@
                             const verdictText = document.getElementById('verdict-text');
                             const confidenceText = document.getElementById('confidence-text');
                             const detailBtn = document.getElementById('detail-report-btn');
-
+                            
                             // Show angiography warning if detected
                             if (apiResult.is_angiography) {
                                 const angioWarning = document.getElementById('angio-warning');
@@ -1561,7 +1329,7 @@
                                 angioWarning.style.display = 'block';
                                 angioWarningText.textContent = `Analysis results may be less reliable. This system is optimized for color fundus photography. (Confidence: ${apiResult.angiography_confidence}%)`;
                             }
-
+                            
                             // USE verdict_code to determine display (not broken text matching)
                             let verdictDisplay, severityClass;
                             switch(apiResult.verdict_code) {
@@ -1604,25 +1372,18 @@
                                 default:
                                     // Fallback: use the verdict text from backend
                                     verdictDisplay = apiResult.verdict || 'UNCERTAIN - FURTHER TESTING';
-                                    severityClass = apiResult.severity === 'CRITICAL' ? 'critical' :
-                                                   apiResult.severity === 'MODERATE' ? 'moderate' :
+                                    severityClass = apiResult.severity === 'CRITICAL' ? 'critical' : 
+                                                   apiResult.severity === 'MODERATE' ? 'moderate' : 
                                                    apiResult.severity === 'MILD' ? 'mild' : 'normal';
                             }
                             const confidencePercent = (apiResult.composite_score * 100).toFixed(1);
-
-                            verdictText.textContent = verdictDisplay;
                             
-                            // Display the clinical stage in the diagnosis card for explainable AI
-                            if (apiResult.rp_stage && apiResult.rp_stage !== 'N/A') {
-                                confidenceText.innerHTML = `Confidence: ${apiResult.confidence} | Score: ${confidencePercent}%<br><span style="font-size: 13px; font-weight: bold; color: ${apiResult.verdict_code === 'HEALTHY' ? '#00ff88' : '#ffa500'}; margin-top: 6px; display: inline-block; letter-spacing: 1px; text-transform: uppercase;">Clinical Stage: ${apiResult.rp_stage}</span>`;
-                            } else {
-                                confidenceText.textContent = `Confidence: ${apiResult.confidence} | Score: ${confidencePercent}%`;
-                            }
-
+                            verdictText.textContent = verdictDisplay;
+                            confidenceText.textContent = `Confidence: ${apiResult.confidence} | Score: ${confidencePercent}%`;
                             overallDiag.className = severityClass;
                             overallDiag.style.opacity = 1;
                             detailBtn.style.display = 'inline-block';
-
+                            
                             // Update RP Triad Status with 3-state display
                             const triad = apiResult.triad_status;
                             const getTriadIcon = (severity) => {
@@ -1630,13 +1391,13 @@
                                 if (severity === 'MILD') return '<span style="color:#ff9900">⚠</span>';
                                 return '<span style="color:#666">✗</span>';
                             };
-                            document.getElementById('triad-1-status').innerHTML =
+                            document.getElementById('triad-1-status').innerHTML = 
                                 `${getTriadIcon(triad.bone_spicules)} Bone Spicules`;
-                            document.getElementById('triad-2-status').innerHTML =
+                            document.getElementById('triad-2-status').innerHTML = 
                                 `${getTriadIcon(triad.vessel_attenuation)} Vessel Attenuation`;
-                            document.getElementById('triad-3-status').innerHTML =
+                            document.getElementById('triad-3-status').innerHTML = 
                                 `${getTriadIcon(triad.optic_disc_pallor)} Optic Disc Pallor`;
-
+                            
                             // Add note if triad incomplete but RP positive
                             const verdictPositive = apiResult.verdict_code.includes('RP');
                             const triadIncomplete = apiResult.triad_partial || !apiResult.triad_complete;
@@ -1648,7 +1409,7 @@
                             }
                             document.getElementById('triad-status').style.opacity = 1;
                         }, 300);
-
+                        
                         setTimeout(() => {
                             const dbBtn = document.getElementById('report-action-container');
                             dbBtn.style.opacity = 1; dbBtn.style.pointerEvents = 'auto';
@@ -1657,33 +1418,29 @@
                 }, idx * 300);
             });
         }
-
+        
         // Add click handler to show detailed clinical report
         function showDetailedReport() {
             if (!currentAnalysisResult) return;
-
+            
             const modal = document.getElementById('detail-modal');
-            const box = document.getElementById('modal-box');
-            const mTitle = document.getElementById('m-title');
-            if (mTitle) mTitle.innerText = "CLINICAL ANALYSIS REPORT";
-
             const content = document.querySelector('#detail-modal .modal-body');
-
-            let html = `<div style="width:100%; font-family:'Rajdhani'; color:white; padding-top:10px;">`;
-
+            
+            let html = `<div style="width:100%; font-family:'Rajdhani'; color:white;">`;
+            html += `<h3 style="font-family:'Orbitron'; color:#00f3ff; margin-bottom:20px; text-align:center;">
+                🔬 CLINICAL ANALYSIS REPORT
+            </h3>`;
+            
             // RP Triad Status
             html += `<div style="background:rgba(0,243,255,0.05); border:1px solid rgba(0,243,255,0.3); padding:15px; margin-bottom:15px;">`;
             html += `<div style="color:#88ccff; font-size:12px; margin-bottom:10px;">RP TRIAD STATUS:</div>`;
             const triad = currentAnalysisResult.triad_status;
-            const isBoneSpiculesPresent = triad.bone_spicules && triad.bone_spicules !== 'NORMAL';
-            const isVesselsPresent = triad.vessel_attenuation && triad.vessel_attenuation !== 'NORMAL';
-            const isOpticDiscPresent = triad.optic_disc_pallor && triad.optic_disc_pallor !== 'NORMAL';
             html += `<div style="font-size:13px;">`;
-            html += `${isBoneSpiculesPresent ? '✅' : '❌'} Bone Spicule Pigmentation: ${isBoneSpiculesPresent ? 'PRESENT' : 'ABSENT'} (${triad.bone_spicules || 'NORMAL'})<br>`;
-            html += `${isVesselsPresent ? '✅' : '❌'} Arteriolar Attenuation: ${isVesselsPresent ? 'PRESENT' : 'ABSENT'} (${triad.vessel_attenuation || 'NORMAL'})<br>`;
-            html += `${isOpticDiscPresent ? '✅' : '❌'} Optic Disc Pallor: ${isOpticDiscPresent ? 'PRESENT' : 'ABSENT'} (${triad.optic_disc_pallor || 'NORMAL'})`;
+            html += `${triad.bone_spicules ? '✅' : '❌'} Bone Spicule Pigmentation: ${triad.bone_spicules ? 'POSITIVE' : 'NEGATIVE'}<br>`;
+            html += `${triad.vessel_attenuation ? '✅' : '❌'} Arteriolar Attenuation: ${triad.vessel_attenuation ? 'POSITIVE' : 'NEGATIVE'}<br>`;
+            html += `${triad.optic_disc_pallor ? '✅' : '❌'} Optic Disc Pallor: ${triad.optic_disc_pallor ? 'POSITIVE' : 'NEGATIVE'}`;
             html += `</div></div>`;
-
+            
             // Expert Opinions
             html += `<div style="margin-bottom:15px;">`;
             html += `<div style="color:#88ccff; font-size:12px; margin-bottom:10px;">👨‍⚕️ EXPERT PANEL CONSULTATION:</div>`;
@@ -1701,7 +1458,7 @@
                 html += `</div>`;
             });
             html += `</div>`;
-
+            
             // NEW: Image Quality Report
             if (currentAnalysisResult.image_quality) {
                 const quality = currentAnalysisResult.image_quality;
@@ -1717,7 +1474,7 @@
                 }
                 html += `</div>`;
             }
-
+            
             // NEW: Differential Diagnosis
             if (currentAnalysisResult.differential_diagnosis) {
                 const diff = currentAnalysisResult.differential_diagnosis;
@@ -1736,7 +1493,7 @@
                     html += `</div>`;
                 }
             }
-
+            
             // NEW: Patient Risk Profile
             if (currentAnalysisResult.patient_risk_profile) {
                 const profile = currentAnalysisResult.patient_risk_profile;
@@ -1750,7 +1507,7 @@
                 html += `Symptom Score: ${profile.symptom_score.toFixed(1)}/10`;
                 html += `</div></div>`;
             }
-
+            
             // Critical Findings
             if (currentAnalysisResult.critical_findings && currentAnalysisResult.critical_findings.length > 0) {
                 html += `<div style="background:rgba(255,153,0,0.05); border:1px solid rgba(255,153,0,0.3); padding:15px;">`;
@@ -1760,13 +1517,12 @@
                 });
                 html += `</div>`;
             }
-
+            
             html += `</div>`;
-
+            
             content.innerHTML = html;
             modal.style.display = 'flex';
             anime({ targets: modal, opacity: 1, duration: 300 });
-            anime({ targets: box, scale: [0.9, 1], opacity: [0, 1], duration: 400, easing: 'easeOutBack' });
         }
 
         // --- DATABASE SAVE ---
@@ -1774,7 +1530,7 @@
             if(isAnimating) return;
             isAnimating = true;
             sfxClick.play().catch(e=>{});
-
+            
             const btn = document.getElementById('save-btn-inner');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ENCRYPTING TO DB...';
 
@@ -1783,8 +1539,8 @@
                 isAnimating = false;
                 return;
             }
-
-            // Use verdict_code for reliable classification
+            
+            // Use verdict_code for reliable classification  
             let verdict;
             switch(currentAnalysisResult.verdict_code) {
                 case 'CLASSIC_RP': verdict = 'POSITIVE: CLASSIC RETINITIS PIGMENTOSA'; break;
@@ -1795,36 +1551,36 @@
                 default: verdict = 'UNCERTAIN - FURTHER TESTING RECOMMENDED';
             }
             const confidencePercent = (currentAnalysisResult.composite_score * 100).toFixed(1) + '%';
-
+            
             // Build expert results object
             const expertResults = {};
             currentAnalysisResult.expert_opinions.forEach(expert => {
                 const key = expert.name.toLowerCase().replace(/\s+/g, '_');
                 expertResults[key] = `${expert.status} (${expert.confidence.toFixed(1)}%)`;
             });
-
+            
             const reportData = {
                 patientId: currentPatientName,
-
+                
                 // Patient history
                 patient_history: currentPatientData || {},
-
+                
                 // Image metadata
                 camera_type: currentCameraType || 'Unknown',
                 quality_score: currentAnalysisResult.quality_score || (currentAnalysisResult.image_quality ? currentAnalysisResult.image_quality.quality_score : null),
                 is_angiography: currentAnalysisResult.is_angiography || false,
                 angiography_warning: currentAnalysisResult.angiography_warning || currentAnalysisResult.warning || null,
-
+                
                 // Expert results
                 results: expertResults,
                 expert_opinions: currentAnalysisResult.expert_opinions,
-
+                
                 // Diagnosis
                 verdict: verdict,
                 verdict_code: currentAnalysisResult.verdict_code,
                 confidence: confidencePercent,
                 compositeScore: currentAnalysisResult.composite_score,
-
+                
                 // Clinical details
                 triadStatus: currentAnalysisResult.triad_status,
                 criticalFindings: currentAnalysisResult.critical_findings || [],
@@ -1841,12 +1597,12 @@
                     btn.innerHTML = '<i class="fa-solid fa-check"></i> REPORT SECURELY SAVED';
                     btn.style.background = 'rgba(0, 255, 136, 0.2)'; btn.style.color = '#00ff88'; btn.style.borderColor = '#00ff88';
                     syncHeaderStats();
-                    setTimeout(() => {
-                        isAnimating = false;
+                    setTimeout(() => { 
+                        isAnimating = false; 
                         btn.innerHTML = '<i class="fa-solid fa-database"></i> SAVE REPORT TO DATABASE';
                         btn.style.background = 'rgba(0,243,255,0.1)'; btn.style.color = '#00f3ff'; btn.style.borderColor = '#00f3ff';
                         document.getElementById('fileInput').value = ""; // Reset file
-                        navigate('lobby', 0, -7, 28, Math.PI/3, 0);
+                        navigate('lobby', 0, -7, 28, Math.PI/3, 0); 
                     }, 2000);
                 } else {
                     alert("Database Error."); btn.innerHTML = 'SAVE REPORT TO DATABASE'; isAnimating = false;
@@ -1869,7 +1625,7 @@
 
         // --- DETAILS MODAL ---
         function openModal(title, iconClass, conf, status, color = "#00f3ff") {
-            if(isAnimating) return;
+            if(isAnimating) return; 
             sfxClick.play().catch(e=>{});
             const modal = document.getElementById('detail-modal');
             const box = document.getElementById('modal-box');
@@ -1879,8 +1635,8 @@
             document.getElementById('m-conf').innerText = conf;
             document.getElementById('m-status').innerText = status;
             document.getElementById('m-status').style.color = color;
-            document.getElementById('m-graph').style.width = conf;
-
+            document.getElementById('m-graph').style.width = conf; 
+            
             modal.style.display = 'flex';
             anime({ targets: modal, opacity: 1, duration: 300 });
             anime({ targets: box, scale: [0.9, 1], opacity: [0, 1], duration: 400, easing: 'easeOutBack' });
@@ -1896,12 +1652,7 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            time += 0.01;
-            if(material) material.uniforms.time.value = time;
-            if(particles) {
-                particles.rotation.y += isProcessing ? 0.08 : 0.002;
-                particles.rotation.z += 0.0005;
-            }
+            if(particles) { particles.rotation.y += isProcessing ? 0.05 : 0.002; }
             composer.render();
         }
     </script>
