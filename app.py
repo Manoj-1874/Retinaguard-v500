@@ -381,6 +381,24 @@ def extract_pigment_features(img, fov_mask, is_angiography=False):
     # APPLY FOV MASK to ignore the black background entirely
     dark_mask = cv2.bitwise_and(dark_mask, fov_mask)
     
+    # NEW FIX: Filter out Diabetic Hemorrhages!
+    # Blood is dark, but it is RED. True pigment is black (low across all channels).
+    # If the Red channel is significantly brighter than Blue/Green, it's blood, not a bone spicule!
+    b_channel = img[:, :, 0]
+    g_channel = img[:, :, 1]
+    r_channel = img[:, :, 2]
+    
+    # Convert arrays to int16 to prevent overflow when subtracting
+    r_int = r_channel.astype(np.int16)
+    g_int = g_channel.astype(np.int16)
+    b_int = b_channel.astype(np.int16)
+    
+    # Create mask where Red is dominant (Blood)
+    blood_mask = ((r_int > g_int + 15) & (r_int > b_int + 15)).astype(np.uint8) * 255
+    
+    # Remove the blood from the dark_mask so it doesn't get counted as pigment
+    dark_mask = cv2.bitwise_and(dark_mask, cv2.bitwise_not(blood_mask))
+    
     # Stronger noise removal for cleaner detection
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4, 4))  # Larger kernel (was 3x3)
     dark_mask = cv2.morphologyEx(dark_mask, cv2.MORPH_OPEN, kernel, iterations=2)  # 2 iterations
