@@ -420,6 +420,10 @@ class ProgressionTracker:
         print(f"         Baseline features: {len(kp1)}")
         print(f"         Current features: {len(kp2)}")
         
+        if des1 is None or des2 is None:
+            print(f"         [!] WARNING: No descriptors found in one or both images")
+            return baseline_image, current_image
+            
         # Match features
         bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=False)
         matches = bf.knnMatch(des1, des2, k=2)

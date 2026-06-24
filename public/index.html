@@ -368,7 +368,7 @@
              <div class="crate-card btn-hover" data-expert="vessels"><div class="crate-header">TRIAD #2</div><i class="fa-solid fa-dna crate-icon"></i><div class="crate-label">VESSELS</div><div class="status-indicator">LOCKED</div></div>
              <div class="crate-card btn-hover" data-expert="pigment"><div class="crate-header">TRIAD #1</div><i class="fa-solid fa-circle-dot crate-icon"></i><div class="crate-label">PIGMENT</div><div class="status-indicator">LOCKED</div></div>
              <div class="crate-card btn-hover" data-expert="optic_disc"><div class="crate-header">TRIAD #3</div><i class="fa-solid fa-eye crate-icon"></i><div class="crate-label">OPTIC DISC</div><div class="status-indicator">LOCKED</div></div>
-             <div class="crate-card btn-hover" data-expert="tortuosity"><div class="crate-header">SUPPORT</div><i class="fa-solid fa-arrows-spin crate-icon"></i><div class="crate-label">TORTUOSITY</div><div class="status-indicator">LOCKED</div></div>
+             <div class="crate-card btn-hover" data-expert="tortuosity"><div class="crate-header">SUPPORT</div><i class="fa-solid fa-wave-square crate-icon"></i><div class="crate-label">TORTUOSITY</div><div class="status-indicator">LOCKED</div></div>
              <div class="crate-card btn-hover" data-expert="texture"><div class="crate-header">SUPPORT</div><i class="fa-solid fa-grip crate-icon"></i><div class="crate-label">TEXTURE</div><div class="status-indicator">LOCKED</div></div>
              <div class="crate-card btn-hover" data-expert="spatial"><div class="crate-header">SUPPORT</div><i class="fa-solid fa-map crate-icon"></i><div class="crate-label">SPATIAL</div><div class="status-indicator">LOCKED</div></div>
              <div class="crate-card btn-hover" data-expert="bright_lesion"><div class="crate-header">VARIANT</div><i class="fa-solid fa-sun crate-icon"></i><div class="crate-label">RPA LESIONS</div><div class="status-indicator">LOCKED</div></div>
@@ -543,29 +543,66 @@
 
         window.onload = () => { syncHeaderStats(); };
 
-        // --- 3D ENGINE ---
+        // --- 3D / 2D ENGINE FALLBACK SYSTEM ---
         const PARTICLE_COUNT = 20000;
         let scene, camera, renderer, composer, particles, geometry, material;
         let positions, targetPositions, alphas, particleTypes;
         let visibleCount = 0; let time = 0;
-        const sentinelColors = [
-            new THREE.Color(0x00f3ff), // Cyan
-            new THREE.Color(0x00d4ff), // Light Blue
-            new THREE.Color(0x0099ff), // Sky Blue
-            new THREE.Color(0x0066ff), // Blue
-            new THREE.Color(0x3366ff), // Blue-Purple
-            new THREE.Color(0x6633ff), // Purple-Blue
-            new THREE.Color(0x9933ff), // Purple
-            new THREE.Color(0xcc33ff), // Magenta-Purple
-            new THREE.Color(0xff33cc), // Magenta
-            new THREE.Color(0xff3399)  // Pink-Magenta
-        ];
-        const coreColor = new THREE.Color(0xffcc00); // Gold
-        const connectionColor = new THREE.Color(0x4488aa); // Dim blue
+        
+        let sentinelColors = [];
+        let coreColor, connectionColor;
 
-        init(); animate(); startGenesis();
+        // 2D fallback variables
+        let use3D = true;
+        const canvas2D = document.createElement('canvas');
+        canvas2D.id = 'canvas-2d';
+        canvas2D.style.position = 'absolute';
+        canvas2D.style.top = '0';
+        canvas2D.style.left = '0';
+        canvas2D.style.width = '100%';
+        canvas2D.style.height = '100%';
+        canvas2D.style.zIndex = '0';
+        canvas2D.style.pointerEvents = 'none';
+        let ctx2D = null;
+        let points2D = [];
+        let canvas2DParams = {
+            offsetX: 0,
+            offsetY: 0,
+            zoom: 1.0,
+            rotationSpeed: 1.0,
+            pulse: 1.0,
+            intensity: 1.0,
+            scanlineY: 0,
+            gridAlpha: 0.0,
+            reticleAlpha: 0.0
+        };
+
+        function isWebGLAvailable() {
+            try {
+                if (typeof THREE === 'undefined') return false;
+                const canvas = document.createElement('canvas');
+                return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+            } catch (e) {
+                return false;
+            }
+        }
 
         function init() {
+            sentinelColors = [
+                new THREE.Color(0x00f3ff), // Cyan
+                new THREE.Color(0x00d4ff), // Light Blue
+                new THREE.Color(0x0099ff), // Sky Blue
+                new THREE.Color(0x0066ff), // Blue
+                new THREE.Color(0x3366ff), // Blue-Purple
+                new THREE.Color(0x6633ff), // Purple-Blue
+                new THREE.Color(0x9933ff), // Purple
+                new THREE.Color(0xcc33ff), // Magenta-Purple
+                new THREE.Color(0xff33cc), // Magenta
+                new THREE.Color(0xff3399)  // Pink-Magenta
+            ];
+            coreColor = new THREE.Color(0xffcc00); // Gold
+            connectionColor = new THREE.Color(0x4488aa); // Dim blue
+
             scene = new THREE.Scene(); scene.fog = new THREE.FogExp2(0x020205, 0.02);
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.z = 30; camera.position.y = 0;
@@ -677,13 +714,245 @@
             particles = new THREE.Points(geometry, material); particles.rotation.z = Math.PI / 6; particles.rotation.x = Math.PI / 4; scene.add(particles);
         }
 
-        function startGenesis() { alphas[0] = 1.0; geometry.attributes.alpha.needsUpdate = true; visibleCount = 1; setTimeout(multiplyDots, 500); }
+        // --- 2D ENGINE METHODS ---
+        function init2D() {
+            const container = document.getElementById('canvas-container');
+            container.appendChild(canvas2D);
+            ctx2D = canvas2D.getContext('2d');
+            resize2DCanvas();
+            window.addEventListener('resize', resize2DCanvas);
+            generateGridPoints();
+        }
+
+        function resize2DCanvas() {
+            canvas2D.width = window.innerWidth;
+            canvas2D.height = window.innerHeight;
+        }
+
+        function generateGridPoints() {
+            points2D = [];
+            for (let i = 0; i < 150; i++) {
+                points2D.push({
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight,
+                    size: Math.random() * 1.5 + 0.5,
+                    alpha: Math.random() * 0.5 + 0.1,
+                    speedX: (Math.random() - 0.5) * 0.2,
+                    speedY: (Math.random() - 0.5) * 0.2
+                });
+            }
+        }
+
+        function draw2DScene() {
+            if (!ctx2D) return;
+            
+            // Clear canvas with a very dark blue/black background that has a radial glow
+            ctx2D.fillStyle = '#020205';
+            ctx2D.fillRect(0, 0, canvas2D.width, canvas2D.height);
+            
+            // Draw radial glow in the center
+            const grad = ctx2D.createRadialGradient(
+                canvas2D.width / 2 + canvas2DParams.offsetX,
+                canvas2D.height / 2 + canvas2DParams.offsetY,
+                10,
+                canvas2D.width / 2 + canvas2DParams.offsetX,
+                canvas2D.height / 2 + canvas2DParams.offsetY,
+                Math.max(canvas2D.width, canvas2D.height) * 0.6
+            );
+            grad.addColorStop(0, 'rgba(0, 40, 80, 0.2)');
+            grad.addColorStop(0.5, 'rgba(2, 2, 5, 0.9)');
+            grad.addColorStop(1, '#020205');
+            ctx2D.fillStyle = grad;
+            ctx2D.fillRect(0, 0, canvas2D.width, canvas2D.height);
+            
+            // Draw floating 2D points (the constellation particles!)
+            points2D.forEach(p => {
+                p.x += p.speedX * (isProcessing ? 3.0 : 1.0);
+                p.y += p.speedY * (isProcessing ? 3.0 : 1.0);
+                
+                if (p.x < 0) p.x = canvas2D.width;
+                if (p.x > canvas2D.width) p.x = 0;
+                if (p.y < 0) p.y = canvas2D.height;
+                if (p.y > canvas2D.height) p.y = 0;
+                
+                ctx2D.beginPath();
+                ctx2D.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx2D.fillStyle = `rgba(0, 210, 255, ${p.alpha * canvas2DParams.gridAlpha * 3.5})`;
+                ctx2D.fill();
+            });
+            
+            // Draw futuristic grid lines
+            ctx2D.strokeStyle = 'rgba(0, 243, 255, 0.03)';
+            ctx2D.lineWidth = 1;
+            const gridSize = 80;
+            const startX = (canvas2DParams.offsetX * 0.2) % gridSize;
+            const startY = (canvas2DParams.offsetY * 0.2) % gridSize;
+            
+            ctx2D.beginPath();
+            for (let x = startX; x < canvas2D.width; x += gridSize) {
+                ctx2D.moveTo(x, 0);
+                ctx2D.lineTo(x, canvas2D.height);
+            }
+            for (let y = startY; y < canvas2D.height; y += gridSize) {
+                ctx2D.moveTo(0, y);
+                ctx2D.lineTo(canvas2D.width, y);
+            }
+            ctx2D.stroke();
+            
+            // Central scanner reticle
+            if (canvas2DParams.reticleAlpha > 0.01) {
+                const centerX = canvas2D.width / 2 + canvas2DParams.offsetX;
+                const centerY = canvas2D.height / 2 + canvas2DParams.offsetY;
+                
+                ctx2D.save();
+                ctx2D.translate(centerX, centerY);
+                
+                const speedMult = isProcessing ? 5.0 : 1.0;
+                const rot = time * 0.15 * canvas2DParams.rotationSpeed * speedMult;
+                ctx2D.rotate(rot);
+                
+                const pulse = 1.0 + 0.03 * Math.sin(time * 3 * speedMult);
+                const baseRadius = 130 * pulse * canvas2DParams.zoom;
+                
+                // Ring 1: outer dashed
+                ctx2D.strokeStyle = `rgba(0, 243, 255, ${0.12 * canvas2DParams.reticleAlpha})`;
+                ctx2D.lineWidth = 2;
+                ctx2D.setLineDash([5, 15]);
+                ctx2D.beginPath();
+                ctx2D.arc(0, 0, baseRadius + 30, 0, Math.PI * 2);
+                ctx2D.stroke();
+                
+                // Ring 2: solid thin with notches
+                ctx2D.strokeStyle = `rgba(0, 243, 255, ${0.2 * canvas2DParams.reticleAlpha})`;
+                ctx2D.lineWidth = 1;
+                ctx2D.setLineDash([]);
+                ctx2D.beginPath();
+                ctx2D.arc(0, 0, baseRadius, 0, Math.PI * 2);
+                ctx2D.stroke();
+                
+                // Draw 4 tick marks / notches
+                ctx2D.fillStyle = `rgba(0, 243, 255, ${0.4 * canvas2DParams.reticleAlpha})`;
+                for (let i = 0; i < 4; i++) {
+                    ctx2D.save();
+                    ctx2D.rotate((i * Math.PI) / 2);
+                    ctx2D.fillRect(-2, -baseRadius - 10, 4, 20);
+                    ctx2D.restore();
+                }
+                
+                // Ring 3: inner cyan glowing ring with gap
+                ctx2D.strokeStyle = `rgba(0, 243, 255, ${0.35 * canvas2DParams.reticleAlpha})`;
+                ctx2D.lineWidth = 3;
+                ctx2D.setLineDash([120, 60]);
+                ctx2D.beginPath();
+                ctx2D.arc(0, 0, baseRadius - 20, 0, Math.PI * 2);
+                ctx2D.stroke();
+                
+                // Inner rotating details
+                ctx2D.rotate(-rot * 2); // Rotate opposite direction
+                ctx2D.strokeStyle = `rgba(255, 153, 0, ${0.25 * canvas2DParams.reticleAlpha})`; // secondary amber color
+                ctx2D.lineWidth = 1;
+                ctx2D.setLineDash([8, 12]);
+                ctx2D.beginPath();
+                ctx2D.arc(0, 0, baseRadius - 40, 0, Math.PI * 2);
+                ctx2D.stroke();
+                
+                ctx2D.restore();
+                
+                // Draw HUD indicators that stay aligned with screen, not rotating
+                ctx2D.fillStyle = `rgba(0, 243, 255, ${0.4 * canvas2DParams.reticleAlpha})`;
+                ctx2D.font = "9px 'Orbitron'";
+                ctx2D.fillText("SYS STATUS: ACTIVE", centerX - baseRadius - 90, centerY - baseRadius - 20);
+                ctx2D.fillText("SCANNER RATIO: 1.00", centerX - baseRadius - 90, centerY - baseRadius - 8);
+                
+                ctx2D.fillText("LATENCY: 12ms", centerX + baseRadius + 10, centerY + baseRadius + 10);
+                ctx2D.fillText("2D FALLBACK MODE", centerX + baseRadius + 10, centerY + baseRadius + 22);
+                
+                // Draw a targeting indicator corner box
+                ctx2D.strokeStyle = `rgba(0, 243, 255, ${0.25 * canvas2DParams.reticleAlpha})`;
+                ctx2D.lineWidth = 1;
+                const cs = 15; // corner size
+                const pad = baseRadius + 45;
+                
+                // Top-Left corner
+                ctx2D.beginPath();
+                ctx2D.moveTo(centerX - pad, centerY - pad + cs);
+                ctx2D.lineTo(centerX - pad, centerY - pad);
+                ctx2D.lineTo(centerX - pad + cs, centerY - pad);
+                ctx2D.stroke();
+                
+                // Top-Right corner
+                ctx2D.beginPath();
+                ctx2D.moveTo(centerX + pad, centerY - pad + cs);
+                ctx2D.lineTo(centerX + pad, centerY - pad);
+                ctx2D.lineTo(centerX + pad - cs, centerY - pad);
+                ctx2D.stroke();
+                
+                // Bottom-Left corner
+                ctx2D.beginPath();
+                ctx2D.moveTo(centerX - pad, centerY + pad - cs);
+                ctx2D.lineTo(centerX - pad, centerY + pad);
+                ctx2D.lineTo(centerX - pad + cs, centerY + pad);
+                ctx2D.stroke();
+                
+                // Bottom-Right corner
+                ctx2D.beginPath();
+                ctx2D.moveTo(centerX + pad, centerY + pad - cs);
+                ctx2D.lineTo(centerX + pad, centerY + pad);
+                ctx2D.lineTo(centerX + pad - cs, centerY + pad);
+                ctx2D.stroke();
+                
+                // Sweeping scanner wave inside reticle if processing
+                if (isProcessing) {
+                    const waveY = (time * 150) % (baseRadius * 2) - baseRadius;
+                    const halfWidth = Math.sqrt(Math.max(0, baseRadius * baseRadius - waveY * waveY));
+                    
+                    const sweepGrad = ctx2D.createLinearGradient(0, waveY - 20, 0, waveY);
+                    sweepGrad.addColorStop(0, 'rgba(0, 243, 255, 0.0)');
+                    sweepGrad.addColorStop(1, 'rgba(0, 243, 255, 0.25)');
+                    
+                    ctx2D.fillStyle = sweepGrad;
+                    ctx2D.beginPath();
+                    ctx2D.rect(centerX - halfWidth, centerY + waveY - 20, halfWidth * 2, 20);
+                    ctx2D.fill();
+                    
+                    ctx2D.strokeStyle = 'rgba(0, 243, 255, 0.6)';
+                    ctx2D.lineWidth = 1.5;
+                    ctx2D.beginPath();
+                    ctx2D.moveTo(centerX - halfWidth, centerY + waveY);
+                    ctx2D.lineTo(centerX + halfWidth, centerY + waveY);
+                    ctx2D.stroke();
+                }
+            }
+        }
+
+        function startGenesis() { 
+            if (use3D) {
+                alphas[0] = 1.0; geometry.attributes.alpha.needsUpdate = true; visibleCount = 1; setTimeout(multiplyDots, 500); 
+            } else {
+                // 2D genesis transition: fade in background grid and central scan reticle
+                anime({
+                    targets: canvas2DParams,
+                    gridAlpha: 0.3,
+                    reticleAlpha: 0.8,
+                    duration: 2000,
+                    easing: 'easeOutQuad',
+                    complete: () => {
+                        const lobby = document.getElementById('lobby');
+                        lobby.style.display = 'flex';
+                        anime({ targets: lobby, opacity: 1, duration: 1000, delay: 200, easing: 'easeOutExpo', complete: () => { isAnimating = false; } });
+                    }
+                });
+            }
+        }
+
         function multiplyDots() {
+            if (!use3D) return;
             if (visibleCount >= PARTICLE_COUNT) { setTimeout(formSentinelRing, 500); return; }
             let growth = Math.ceil(visibleCount * 0.3) + 10; let nextLimit = Math.min(visibleCount + growth, PARTICLE_COUNT);
             for (let i = visibleCount; i < nextLimit; i++) alphas[i] = 1.0;
             visibleCount = nextLimit; geometry.attributes.alpha.needsUpdate = true; requestAnimationFrame(multiplyDots);
         }
+
         function formSentinelRing() {
             isAnimating = true;
             const startPos = Float32Array.from(geometry.attributes.position.array); const obj = { t: 0 };
@@ -749,10 +1018,23 @@
             isAnimating = true;
             sfxClick.play().catch(e=>{});
 
-            // 1. Move Camera
-            anime({ targets: camera.position, x: camX, y: camY, z: camZ, duration: 1500, easing: 'easeInOutQuad' });
-            if(rotX !== null) anime({ targets: particles.rotation, x: rotX, duration: 1500, easing: 'easeInOutQuad' });
-            if(rotY !== null) anime({ targets: particles.rotation, y: rotY, duration: 1500, easing: 'easeInOutQuad' });
+            // 1. Move Camera / 2D coordinates
+            if (use3D) {
+                anime({ targets: camera.position, x: camX, y: camY, z: camZ, duration: 1500, easing: 'easeInOutQuad' });
+                if(rotX !== null) anime({ targets: particles.rotation, x: rotX, duration: 1500, easing: 'easeInOutQuad' });
+                if(rotY !== null) anime({ targets: particles.rotation, y: rotY, duration: 1500, easing: 'easeInOutQuad' });
+            } else {
+                // Map camera shifts to 2D parallax and zoom
+                anime({
+                    targets: canvas2DParams,
+                    offsetX: camX * 15,
+                    offsetY: camY * 15,
+                    zoom: camZ ? (30 / camZ) : 1.0,
+                    rotationSpeed: camZ ? (28 / camZ) : 1.0,
+                    duration: 1500,
+                    easing: 'easeInOutQuad'
+                });
+            }
 
             // 2. Find currently visible screen and fade it out
             let activeEl = null;
@@ -1535,7 +1817,7 @@
                     }
 
                     const iconEl = crate.querySelector('.crate-icon');
-                    const iconName = iconEl ? Array.from(iconEl.classList).find(c => c.startsWith('fa-')) : 'fa-microchip';
+                    const iconName = iconEl ? Array.from(iconEl.classList).find(c => c.startsWith('fa-') && c !== 'fa-solid' && c !== 'fa-regular' && c !== 'fa-brands') : 'fa-microchip';
                     crate.onclick = () => {
                         openModal(
                             expert.name.toUpperCase(),
@@ -1897,12 +2179,40 @@
         function animate() {
             requestAnimationFrame(animate);
             time += 0.01;
-            if(material) material.uniforms.time.value = time;
-            if(particles) {
-                particles.rotation.y += isProcessing ? 0.08 : 0.002;
-                particles.rotation.z += 0.0005;
+            
+            if (use3D) {
+                if(material) material.uniforms.time.value = time;
+                if(particles) {
+                    particles.rotation.y += isProcessing ? 0.08 : 0.002;
+                    particles.rotation.z += 0.0005;
+                }
+                if(composer) composer.render();
+            } else {
+                draw2DScene();
             }
-            composer.render();
+        }
+        
+        // Detect WebGL availability and URL parameter override
+        use3D = true;
+        if (window.location.search.includes('no3d=true') || !isWebGLAvailable()) {
+            use3D = false;
+        }
+
+        if (use3D) {
+            try {
+                init();
+                animate();
+                startGenesis();
+            } catch (threeErr) {
+                console.error("Three.js/WebGL initialization failed, falling back to 2D:", threeErr);
+                use3D = false;
+            }
+        }
+        
+        if (!use3D) {
+            init2D();
+            animate();
+            startGenesis();
         }
     </script>
 </body>

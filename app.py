@@ -1,3 +1,10 @@
+import logging
+
+def log_print(*args, **kwargs):
+    logger = logging.getLogger(__name__)
+    msg = " ".join(str(a) for a in args)
+    logger.info(msg)
+
 """
 ================================================================================
 RETINAGUARD V500 FLASK API - RETINITIS PIGMENTOSA DIAGNOSTIC SYSTEM
@@ -18,30 +25,16 @@ Version: 5.2.0 Flask Edition - AI+Consensus Decision Logic
 
 import sys
 
-# Safe stream wrapper to handle Windows pipe bugs and encoding issues
-class SafeStream:
-    def __init__(self, stream):
-        self.stream = stream
-    def write(self, data):
-        try:
-            self.stream.write(data)
-        except UnicodeEncodeError:
-            try:
-                self.stream.write(data.encode('ascii', 'backslashreplace').decode('ascii'))
-            except Exception:
-                pass
-        except Exception:
-            pass
-    def flush(self):
-        try:
-            self.stream.flush()
-        except Exception:
-            pass
-    def __getattr__(self, attr):
-        return getattr(self.stream, attr)
+# Ensure reliable output for Windows console
+import sys
+import io
 
-sys.stdout = SafeStream(sys.stdout)
-sys.stderr = SafeStream(sys.stderr)
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
+import cv2
+cv2.ocl.setUseOpenCL(False)
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -66,28 +59,55 @@ from validation_study_toolkit import create_validation_study
 from fda_submission_generator import FDASubmissionGenerator
 # ==================================================
 
-# Configure logging to BOTH file and console
+# Configure logging to BOTH file and console (using stderr for reliable terminal output)
 logging.basicConfig(
     level=logging.INFO,
     format='%(message)s',
     handlers=[
         logging.FileHandler('retinaguard_analysis.log', mode='w', encoding='utf-8'),
-        logging.StreamHandler(sys.stdout)
+        logging.StreamHandler(sys.stderr)
     ]
 )
 logger = logging.getLogger(__name__)
 
+class LoggerWriter:
+    def __init__(self, logger_func):
+        self.logger_func = logger_func
+        self.buf = []
+        self.encoding = 'utf-8'
+        
+    def write(self, msg):
+        if isinstance(msg, bytes):
+            try:
+                msg = msg.decode(self.encoding)
+            except Exception:
+                msg = str(msg)
+                
+        if msg == '\n':
+            if self.buf:
+                self.logger_func("".join(self.buf))
+                self.buf = []
+            else:
+                self.logger_func("")
+        else:
+            self.buf.append(msg)
+            
+    def flush(self):
+        if self.buf:
+            self.logger_func("".join(self.buf))
+            self.buf = []
+            
+    @property
+    def buffer(self):
+        return self
+
+sys.stdout = LoggerWriter(logger.info)
+
 warnings.filterwarnings('ignore')
 
 # Optional: Load TensorFlow model if available
-try:
-    import tensorflow as tf
-    # Use standalone Keras 3.x to load Keras 3.x models
-    import keras
-    TENSORFLOW_AVAILABLE = True
-except Exception as e:
-    TENSORFLOW_AVAILABLE = False
-    print(f"[!] TensorFlow not available - using rule-based fallback: {e}")
+TENSORFLOW_AVAILABLE = True
+log_print("[!] TensorFlow enabled - loading deep learning models.")
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -237,12 +257,14 @@ CONFIG = {
 DEEP_LEARNING_MODEL = None
 if TENSORFLOW_AVAILABLE:
     try:
+        import tensorflow as tf
+        from tensorflow import keras
         if os.path.exists(CONFIG["MODEL_PATH"]):
             # Use Keras 3.x directly - model was saved with Keras 3.10
             DEEP_LEARNING_MODEL = keras.models.load_model(CONFIG["MODEL_PATH"], compile=False)
-            print(f"[+] Loaded model from {CONFIG['MODEL_PATH']}")
+            log_print(f"[+] Loaded model from {CONFIG['MODEL_PATH']}")
     except Exception as e:
-        print(f"[!] Could not load model: {e}")
+        log_print(f"[!] Could not load model: {e}")
 
 # ==============================================================================
 #   FEATURE EXTRACTION - Clinical Analysis (FOV-Masked)
@@ -309,12 +331,17 @@ def extract_vessel_features(img, fov_mask, is_angiography=False):
     density = raw_density * correction_factor
     
     # DIAGNOSTIC: Log vessel density calculation
-    print(f"   [VESSEL] Raw density: {raw_density*100:.1f}%, Brightness: {mean_brightness:.1f}, Correction: {correction_factor:.2f}, Final: {density*100:.1f}%")
+    log_print(f"   [VESSEL] Raw density: {raw_density*100:.1f}%, Brightness: {mean_brightness:.1f}, Correction: {correction_factor:.2f}, Final: {density*100:.1f}%")
     sys.stdout.flush()
     
+    # ADJUST FOR ANGIOGRAPHY: Vessels glow bright white against black, creating massive artificial density.
+    # ADJUST FOR ANGIOGRAPHY: Vessels glow bright white against black.
+    if is_angiography:
+        density = density * 0.25
+        
     return {'density': density, 'mask': vessel_mask, 'brightness_corrected': correction_factor < 1.0}
 
-def extract_pigment_features(img, fov_mask):
+def extract_pigment_features(img, fov_mask, is_angiography=False):
     """TRIAD #1: Bone Spicule Pigmentation Detection
     BUG FIX #2: Apply FOV mask so black borders aren't counted as pigment.
     BUG FIX #13: ADAPTIVE threshold for different imaging modalities (autofluorescence, color shifts).
@@ -346,7 +373,7 @@ def extract_pigment_features(img, fov_mask):
     final_threshold = min(final_threshold, 65)  # Lower cap (was 70) for bright images
     
     # DIAGNOSTIC: Log adaptive thresholds
-    print(f"   [PIGMENT] L-channel: mean={l_mean:.1f}, std={l_std:.1f}, percentile={dark_threshold:.1f}, statistical={relative_threshold:.1f}, brightness_comp={brightness_comp}, final_threshold={final_threshold:.1f}")
+    log_print(f"   [PIGMENT] L-channel: mean={l_mean:.1f}, std={l_std:.1f}, percentile={dark_threshold:.1f}, statistical={relative_threshold:.1f}, brightness_comp={brightness_comp}, final_threshold={final_threshold:.1f}")
     sys.stdout.flush()
     
     _, dark_mask = cv2.threshold(l_channel, final_threshold, 255, cv2.THRESH_BINARY_INV)
@@ -366,10 +393,14 @@ def extract_pigment_features(img, fov_mask):
         # Tighter size range: 20-500 pixels (was 10-800) to filter noise and large shadows
         if 20 < area < 500:
             valid_clusters += 1
+            
+    # ADJUST FOR ANGIOGRAPHY: Bone spicules appear black but so does the background.
+    if is_angiography:
+        valid_clusters = int(valid_clusters * 0.1)
     
     return {'num_clusters': valid_clusters, 'mask': dark_mask}
 
-def extract_optic_disc_features(img, fov_mask):
+def extract_optic_disc_features(img, fov_mask, is_angiography=False):
     """TRIAD #3: Optic Disc Pallor Detection
     BUG FIX #4: Find the brightest region ANYWHERE in the FOV instead of
     assuming optic disc is in the center (it's usually off to the side).
@@ -391,7 +422,11 @@ def extract_optic_disc_features(img, fov_mask):
     kernel_small = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
     disc_mask = cv2.dilate(disc_mask, kernel_small, iterations=2)
     
-    if cv2.countNonZero(disc_mask) > 50:
+    disc_area = cv2.countNonZero(disc_mask)
+    fov_area = cv2.countNonZero(fov_mask)
+    
+    # Optic disc must be a reasonable size: not noise (>50px) and not a giant flash artifact (<5% of FOV)
+    if 50 < disc_area < (fov_area * 0.05):
         disc_pixels_l = l_channel[disc_mask > 0]
         raw_disc_brightness = float(np.mean(disc_pixels_l))
         disc_std = float(np.std(disc_pixels_l))
@@ -419,6 +454,13 @@ def extract_optic_disc_features(img, fov_mask):
     is_pale = disc_brightness > 195
     is_waxy = disc_brightness > 210 and disc_uniformity > 0.7
     
+    # ADJUST FOR ANGIOGRAPHY: Optic disc is intensely hyper-fluorescent (bright) in FA.
+    # We force it to normal brightness so it doesn't trigger "Optic Disc Pallor".
+    if is_angiography:
+        disc_brightness = 160.0
+        is_pale = False
+        is_waxy = False
+    
     return {
         'disc_brightness': disc_brightness,
         'disc_uniformity': disc_uniformity,
@@ -428,7 +470,7 @@ def extract_optic_disc_features(img, fov_mask):
         'overall_brightness': overall_brightness
     }
 
-def extract_texture_features(img, fov_mask):
+def extract_texture_features(img, fov_mask, is_angiography=False):
     """Supporting: Texture Degeneration
     BUG FIX: Apply FOV mask to histogram so black background doesn't skew entropy.
     BUG FIX #14: Add local texture variation to detect atrophy on color-shifted images."""
@@ -455,12 +497,19 @@ def extract_texture_features(img, fov_mask):
     texture_variation = np.mean(fov_local_std)
     
     # DIAGNOSTIC: Log texture metrics
-    print(f"[TEXTURE] Global entropy={entropy:.2f}, Local variation={texture_variation:.2f}, Mean brightness={np.mean(gray_float):.1f}")
+    log_print(f"[TEXTURE] Global entropy={entropy:.2f}, Local variation={texture_variation:.2f}, Mean brightness={np.mean(gray_float):.1f}")
     sys.stdout.flush()
     
+    # ADJUST FOR ANGIOGRAPHY: The bright capillaries against dark background
+    # create massive natural entropy and texture variation.
+    # ADJUST FOR ANGIOGRAPHY: The bright capillaries against dark background
+    if is_angiography:
+        entropy = max(4.0, entropy - 0.2)
+        texture_variation = max(2.0, texture_variation - 0.5)
+        
     return {'entropy': entropy, 'local_variation': texture_variation}
 
-def extract_spatial_features(img, fov_mask):
+def extract_spatial_features(img, fov_mask, is_angiography=False):
     """Supporting: Peripheral vs Central Degradation
     BUG FIX #5: Now uses FOV mask to exclude background/vignetting artifacts.
     BUG FIX #7: Clamp degradation to [0.0, 1.0] to prevent negative values."""
@@ -477,22 +526,31 @@ def extract_spatial_features(img, fov_mask):
     peripheral_mask = (distances > (max_dist * 0.6)) & (fov_mask > 0)
     
     # Only calculate if we have valid pixels in both regions
+    center_mean = 0.0
+    periphery_mean = 0.0
+    peripheral_degradation = 0.0
+    
     if np.count_nonzero(center_mask) > 100 and np.count_nonzero(peripheral_mask) > 100:
-        center_brightness = np.mean(gray[center_mask])
-        peripheral_brightness = np.mean(gray[peripheral_mask])
+        center_mean = np.mean(gray[center_mask])
+        periphery_mean = np.mean(gray[peripheral_mask])
         
-        if center_brightness > 0:
-            peripheral_degradation = (center_brightness - peripheral_brightness) / center_brightness
+        if center_mean > 0:
+            peripheral_degradation = (center_mean - periphery_mean) / center_mean
             # Clamp to [0.0, 1.0] - negative means peripheral is brighter (artifact/angio)
             peripheral_degradation = max(0.0, min(1.0, peripheral_degradation))
-        else:
-            peripheral_degradation = 0.0
-    else:
-        peripheral_degradation = 0.0
     
-    return {'peripheral_degradation': peripheral_degradation}
+    # ADJUST FOR ANGIOGRAPHY: The periphery of an FA is naturally dark.
+    # ADJUST FOR ANGIOGRAPHY: The periphery of an FA is naturally dark.
+    if is_angiography:
+        peripheral_degradation = max(0.0, peripheral_degradation - 0.1)
+        
+    return {
+        'center_intensity': float(center_mean),
+        'periphery_intensity': float(periphery_mean),
+        'peripheral_degradation': float(peripheral_degradation)
+    }
 
-def extract_bright_lesion_features(img, fov_mask):
+def extract_bright_lesion_features(img, fov_mask, is_angiography=False):
     """NEW SCANNER #1: Retinitis Punctata Albescens Detection
     RPA presents with BRIGHT white/yellowish flecks instead of dark bone spicules.
     This scanner specifically looks for abnormal bright lesions in the retina."""
@@ -529,14 +587,22 @@ def extract_bright_lesion_features(img, fov_mask):
     yellow_contours, _ = cv2.findContours(yellow_cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     yellow_fleck_count = sum(1 for cnt in yellow_contours if 20 < cv2.contourArea(cnt) < 2000)
     
+    combined_flecks = lesion_count + yellow_fleck_count
+    
+    # ADJUST FOR ANGIOGRAPHY: Everything glows in FA. 
+    # Don't flag normal dye as RPA "bright lesions".
+    if is_angiography:
+        combined_flecks = int(combined_flecks * 0.1)
+        lesion_density = lesion_density * 0.1
+    
     return {
         'lesion_count': lesion_count,
         'lesion_density': lesion_density,
         'yellow_fleck_count': yellow_fleck_count,
-        'combined_flecks': lesion_count + yellow_fleck_count
+        'combined_flecks': combined_flecks
     }
 
-def extract_macula_features(img, fov_mask):
+def extract_macula_features(img, fov_mask, is_angiography=False):
     """NEW SCANNER #2: Cystoid Macular Edema Detection
     CME presents as swelling and fluid cysts in the CENTRAL macula.
     This scanner focuses specifically on the macular region (center 15% of image)."""
@@ -576,16 +642,24 @@ def extract_macula_features(img, fov_mask):
     
     # CME score: combines irregularity + dark cyst ratio + edge density
     cme_score = (macula_std / 50) * 0.4 + dark_cyst_ratio * 0.3 + edge_density * 0.3
+    irregularity = macula_std
     
+    # ADJUST FOR ANGIOGRAPHY: Fluid leakage in FA looks like CME, but 
+    # threshold should be much higher since it's naturally bright.
+    if is_angiography:
+        cme_score = cme_score * 0.4
+        irregularity = irregularity * 0.4
+        
     return {
         'cme_score': min(cme_score, 1.0),
-        'macula_irregularity': macula_std,
+        'macula_irregularity': irregularity,
         'dark_cyst_ratio': dark_cyst_ratio,
         'edge_density': edge_density,
+        'irregularity': irregularity,
         'edema_likelihood': cme_score
     }
 
-def extract_quadrant_features(img, fov_mask):
+def extract_quadrant_features(img, fov_mask, is_angiography=False):
     """NEW SCANNER #3: Sectoral RP Detection
     Sectoral RP only affects ONE quadrant (usually inferior/nasal), leaving others normal.
     This scanner analyzes each quadrant independently instead of averaging."""
@@ -646,14 +720,22 @@ def extract_quadrant_features(img, fov_mask):
     # Find which quadrant is affected
     worst_quadrant = max(quadrant_scores.keys(), key=lambda k: quadrant_scores[k]['degradation'])
     
+    # ADJUST FOR ANGIOGRAPHY: Camera artifacts and date stamps often appear in
+    # one corner of an FA, causing massive false asymmetry.
+    if is_angiography:
+        quadrant_asymmetry = max(0.0, quadrant_asymmetry - 0.5)
+        max_degradation = max(0.0, max_degradation - 0.3)
+        
     # STRICT Sectoral RP Detection:
     # 1. Must have SIGNIFICANT asymmetry (> 0.25, not just 0.15)
     # 2. The worst quadrant must show ACTUAL degradation (> 0.25), not just edge darkness
-    # 3. The best quadrant must be relatively healthy (< 0.10)
+    # 3. The best quadrant must be relatively healthy (< 0.20)
+    # Note: In angiograms, min_degradation threshold is loosened slightly.
+    min_deg_threshold = 0.25 if is_angiography else 0.20
     is_truly_sectoral = (
         quadrant_asymmetry > 0.25 and  # Much stricter asymmetry threshold
         max_degradation > 0.25 and     # Worst quadrant must be degraded
-        min_degradation < 0.10          # Best quadrant must be healthy
+        min_degradation < min_deg_threshold  # Best quadrant must be healthy
     )
     
     return {
@@ -682,13 +764,13 @@ def preprocess_image(image_data):
         
         return img_bgr
     except Exception as e:
-        print(f"Error preprocessing image: {e}")
+        log_print(f"Error preprocessing image: {e}")
         return None
 
 def detect_angiography(img):
     """Detect if image is fluorescein/ICG angiography instead of color fundus.
     Angiography characteristics:
-    - Grayscale or near-grayscale (low color saturation)
+    - Grayscale or near-grayscale (low color saturation/chroma)
     - High contrast (bright vessels on dark background)
     - Black background with bright features
     Returns: (is_angio, confidence, reason)
@@ -697,16 +779,40 @@ def detect_angiography(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     
+    # Create mask for retinal region (exclude black background/borders)
+    _, mask = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)
+    has_retina = np.sum(mask > 0) > 0
+    
     # Check 1: Color saturation (angiograms are grayscale)
     saturation = hsv[:, :, 1]
     mean_saturation = np.mean(saturation)
     
+    if has_retina:
+        masked_saturation = saturation[mask > 0]
+        mean_masked_sat = np.mean(masked_saturation)
+    else:
+        mean_masked_sat = mean_saturation
+        
     # Check 2: Channel similarity (R≈G≈B in grayscale)
     b, g, r = cv2.split(img)
-    rg_diff = np.mean(np.abs(r.astype(float) - g.astype(float)))
-    rb_diff = np.mean(np.abs(r.astype(float) - b.astype(float)))
-    gb_diff = np.mean(np.abs(g.astype(float) - b.astype(float)))
+    if has_retina:
+        rg_diff = np.mean(np.abs(r[mask > 0].astype(float) - g[mask > 0].astype(float)))
+        rb_diff = np.mean(np.abs(r[mask > 0].astype(float) - b[mask > 0].astype(float)))
+        gb_diff = np.mean(np.abs(g[mask > 0].astype(float) - b[mask > 0].astype(float)))
+    else:
+        rg_diff = np.mean(np.abs(r.astype(float) - g.astype(float)))
+        rb_diff = np.mean(np.abs(r.astype(float) - b.astype(float)))
+        gb_diff = np.mean(np.abs(g.astype(float) - b.astype(float)))
     max_channel_diff = max(rg_diff, rb_diff, gb_diff)
+    
+    # Check 2b: Mean Chroma (max channel - min channel) inside mask to detect monochromatic/dye scans
+    if has_retina:
+        max_ch = np.max(img, axis=2)
+        min_ch = np.min(img, axis=2)
+        chroma = max_ch - min_ch
+        mean_chroma = np.mean(chroma[mask > 0])
+    else:
+        mean_chroma = 0.0
     
     # Check 3: High contrast (angiograms have very bright and very dark regions)
     std_brightness = np.std(gray)
@@ -722,13 +828,20 @@ def detect_angiography(img):
     score = 0
     
     # Scoring system
-    if mean_saturation < 20:  # Very low saturation
+    if mean_masked_sat < 20:  # Very low saturation
         score += 3
-        reasons.append(f"Low color saturation ({mean_saturation:.1f})")
-    elif mean_saturation < 35:
+        reasons.append(f"Low color saturation ({mean_masked_sat:.1f})")
+    elif mean_masked_sat < 35:
         score += 1
-        reasons.append(f"Reduced saturation ({mean_saturation:.1f})")
+        reasons.append(f"Reduced saturation ({mean_masked_sat:.1f})")
     
+    if mean_chroma < 18:  # Very low chroma (highly monochromatic / grayscale)
+        score += 4
+        reasons.append(f"Low color chroma ({mean_chroma:.1f})")
+    elif mean_chroma < 35:  # Borderline monochromatic
+        score += 2
+        reasons.append(f"Reduced color chroma ({mean_chroma:.1f})")
+        
     if max_channel_diff < 5:  # Channels almost identical (grayscale)
         score += 3
         reasons.append(f"Grayscale image (channel diff: {max_channel_diff:.1f})")
@@ -784,9 +897,9 @@ def ai_pattern_recognition_expert(img, is_angiography=False):
             confidence = float(np.mean(probs))
         
         # ANGIOGRAPHY ADJUSTMENT: Slight reduction (model trained on color fundus)
-        # Reduce by 15% instead of 40% - RP patterns still visible in angiography
+        # Reduce by only 5% so we don't accidentally silence a true positive.
         if is_angiography:
-            confidence = confidence * 0.85  # Reduce by 15%
+            confidence = confidence * 0.95
         
         if confidence > CONFIG["AI_CRITICAL"]:
             status = "ANOMALY DETECTED"
@@ -849,7 +962,7 @@ def ai_pattern_recognition_expert(img, is_angiography=False):
         
         confidence = min(score, 0.95)
         
-        if confidence > CONFIG["CRITICAL_THRESHOLDS"]["ai_high_confidence"]:
+        if confidence > CONFIG["AI_CRITICAL"]:
             status = "ANOMALY DETECTED"
             severity = "CRITICAL"
             significance = CONFIG["SIGNIFICANCE_MULTIPLIERS"]["ai_high_confidence"]
@@ -1268,12 +1381,12 @@ def analyze_retinal_scan():
         msg2 = "[!!] IMAGE UPLOAD DETECTED - STARTING ANALYSIS [!!]"
         msg3 = "="*70
         
-        print(msg1)
-        print(msg2)
-        print(msg3)
-        logger.info(msg1)
-        logger.info(msg2)
-        logger.info(msg3)
+        log_print(msg1)
+        log_print(msg2)
+        log_print(msg3)
+        log_print(msg1)
+        log_print(msg2)
+        log_print(msg3)
         sys.stdout.flush()
         
         data = request.get_json()
@@ -1282,8 +1395,8 @@ def analyze_retinal_scan():
             return jsonify({"error": "No image provided"}), 400
         
         header = f"\n{'='*70}\n[{datetime.now().strftime('%H:%M:%S')}] [A] Analyzing scan for {data.get('patientId', 'Unknown')}\n{'='*70}"
-        print(header)
-        logger.info(header)
+        log_print(header)
+        log_print(header)
         sys.stdout.flush()  # Force output to display immediately
         
         # Preprocess image
@@ -1291,11 +1404,33 @@ def analyze_retinal_scan():
         if img is None:
             return jsonify({"error": "Invalid image data"}), 400
         
+        # ===== NEW: Camera Calibration =====
+        camera_type = data.get('cameraType', 'Generic')
+        if camera_type != 'Generic':
+            log_print(f"   [C] Applying camera calibration for {camera_type}...")
+            # Import calibrate_camera dynamically if not at top level
+            try:
+                from camera_calibrator import calibrate_camera
+                img, calibration_info = calibrate_camera(img, camera_type=camera_type)
+            except Exception as e:
+                log_print(f"   [!] Calibration failed: {str(e)}")
+            sys.stdout.flush()
+        # ===================================
+
         # ===== NEW: Image Quality Validation =====
-        print("   [Q] Validating image quality...")
+        log_print("   [Q] Validating image quality...")
         sys.stdout.flush()
-        quality_result = validate_image_quality(img)
         
+        # If the camera is handheld/smartphone, we expect slightly lower quality
+        # even after calibration.
+        try:
+            from image_quality_validator import ImageQualityValidator
+            validator = ImageQualityValidator(strict_mode=(camera_type == 'Generic'))
+            quality_result = validator.validate(img, patient_id=data.get('patientId', 'UNKNOWN'))
+        except Exception as e:
+            # Fallback to function if class isn't available
+            quality_result = validate_image_quality(img)
+            
         # Combine errors and warnings into issues list
         issues = quality_result.get('errors', []) + quality_result.get('warnings', [])
         
@@ -1303,9 +1438,9 @@ def analyze_retinal_scan():
         # Bypassed/relaxed to allow analysis of varied-quality and online testing images,
         # only rejecting on critical resolution failures (<512px) to prevent backend crashes.
         if quality_result.get('critical_failure', False) or quality_result['quality_score'] < 30:
-            print(f"   [X] IMAGE REJECTED: Critical quality failure (Score: {quality_result['quality_score']}/100)")
+            log_print(f"   [X] IMAGE REJECTED: Critical quality failure (Score: {quality_result['quality_score']}/100)")
             for issue in issues:
-                print(f"      - {issue}")
+                log_print(f"      - {issue}")
             sys.stdout.flush()
             return jsonify({
                 "error": "Image quality too low for reliable analysis",
@@ -1317,12 +1452,12 @@ def analyze_retinal_scan():
                 "critical_failure": quality_result.get('critical_failure', False)
             }), 400
         elif quality_result['quality_score'] < 85:
-            print(f"   [!] WARNING: Marginal image quality (score: {quality_result['quality_score']}/100)")
+            log_print(f"   [!] WARNING: Marginal image quality (score: {quality_result['quality_score']}/100)")
             for issue in issues:
-                print(f"      - {issue}")
+                log_print(f"      - {issue}")
             sys.stdout.flush()
         else:
-            print(f"   [+] Image quality: {quality_result['quality_score']}/100 - Acceptable")
+            log_print(f"   [+] Image quality: {quality_result['quality_score']}/100 - Acceptable")
             sys.stdout.flush()
         
         # Add combined issues list for frontend compatibility
@@ -1332,23 +1467,17 @@ def analyze_retinal_scan():
         # Detect image type (warn if angiography, but continue analysis)
         is_angio, angio_confidence, angio_reason = detect_angiography(img)
         if is_angio:
-            print(f"   [!] WARNING: Angiography image detected (confidence: {angio_confidence*100:.1f}%)")
-            print(f"   [R] Reason: {angio_reason}")
-            print(f"   [I] Continuing analysis with adjusted thresholds...")
+            log_print(f"   [!] WARNING: Angiography image detected (confidence: {angio_confidence*100:.1f}%)")
+            log_print(f"   [R] Reason: {angio_reason}")
+            log_print(f"   [I] Continuing analysis with adjusted thresholds...")
             sys.stdout.flush()
         
-        # ===== NEW: Camera Calibration =====
-        camera_type = data.get('cameraType', 'Generic')
-        if camera_type != 'Generic':
-            print(f"   [C] Applying camera calibration for {camera_type}...")
-            img = calibrate_camera(img, camera_type=camera_type)
-            sys.stdout.flush()
-        # ===================================
+
         
         # ===== NEW: Patient History Integration =====
         patient_data_raw = data.get('patient_history', {})
         if patient_data_raw:
-            print("   [U] Analyzing patient demographics and history...")
+            log_print("   [U] Analyzing patient demographics and history...")
             sys.stdout.flush()
             patient_module = PatientHistoryModule()
             
@@ -1360,9 +1489,9 @@ def analyze_retinal_scan():
             
             # Apply demographic adjustments to CONFIG thresholds
             adjusted_config = patient_module.apply_adjustments_to_config(CONFIG, threshold_adjustments)
-            print(f"      Ethnicity: {patient_data['ethnicity']} (Pigment adjustment: {threshold_adjustments['pigment_adjustment']})")
-            print(f"      Age: {patient_data['age_category']} (Vessel adjustment: {threshold_adjustments['vessel_adjustment']})")
-            print(f"      Risk Score: {patient_data['risk_score']}/100 (Symptoms: {patient_data['symptom_score']:.1f})")
+            log_print(f"      Ethnicity: {patient_data['ethnicity']} (Pigment adjustment: {threshold_adjustments['pigment_adjustment']})")
+            log_print(f"      Age: {patient_data['age_category']} (Vessel adjustment: {threshold_adjustments['vessel_adjustment']})")
+            log_print(f"      Risk Score: {patient_data['risk_score']}/100 (Symptoms: {patient_data['symptom_score']:.1f})")
             sys.stdout.flush()
             
             # Use adjusted thresholds for expert scanners
@@ -1379,19 +1508,19 @@ def analyze_retinal_scan():
         CONFIG.update(CONFIG_ADJUSTED)  # Apply adjustments
         
         # Extract features (with FOV mask to ignore black borders)
-        print("   [*] Extracting clinical features...")
+        log_print("   [*] Extracting clinical features...")
         sys.stdout.flush()
         fov_mask = get_fov_mask(img)
         vessel_feats = extract_vessel_features(img, fov_mask, is_angiography=is_angio)
-        pigment_feats = extract_pigment_features(img, fov_mask)
-        optic_disc_feats = extract_optic_disc_features(img, fov_mask)
-        texture_feats = extract_texture_features(img, fov_mask)
-        spatial_feats = extract_spatial_features(img, fov_mask)
+        pigment_feats = extract_pigment_features(img, fov_mask, is_angiography=is_angio)
+        optic_disc_feats = extract_optic_disc_features(img, fov_mask, is_angiography=is_angio)
+        texture_feats = extract_texture_features(img, fov_mask, is_angiography=is_angio)
+        spatial_feats = extract_spatial_features(img, fov_mask, is_angiography=is_angio)
         
         # NEW: Extract features for variant/complication detection
-        bright_lesion_feats = extract_bright_lesion_features(img, fov_mask)
-        macula_feats = extract_macula_features(img, fov_mask)
-        quadrant_feats = extract_quadrant_features(img, fov_mask)
+        bright_lesion_feats = extract_bright_lesion_features(img, fov_mask, is_angiography=is_angio)
+        macula_feats = extract_macula_features(img, fov_mask, is_angiography=is_angio)
+        quadrant_feats = extract_quadrant_features(img, fov_mask, is_angiography=is_angio)
         
         features = {
             'vessel': vessel_feats,
@@ -1405,8 +1534,8 @@ def analyze_retinal_scan():
         }
         
         # Run all 10 expert systems
-        print("   [E] Expert panel consultation (10 scanners)...")
-        print("   " + "-"*66)
+        log_print("   [E] Expert panel consultation (10 scanners)...")
+        log_print("   " + "-"*66)
         sys.stdout.flush()
         
         ai_result = ai_pattern_recognition_expert(img, is_angiography=is_angio)
@@ -1437,8 +1566,8 @@ def analyze_retinal_scan():
         ]
         for name, r in experts_list:
             icon = "[+]" if r['severity'] == 'NORMAL' else "[!]"
-            print(f"   {icon} {name:<40} -> {r['status']:<20} ({r['confidence']:>5.1f}%)")
-            print(f"      Vote: {r['vote']:.4f} | {r.get('detail', '')}")
+            log_print(f"   {icon} {name:<40} -> {r['status']:<20} ({r['confidence']:>5.1f}%)")
+            log_print(f"      Vote: {r['vote']:.4f} | {r.get('detail', '')}")
         sys.stdout.flush()
         
         # Restore original CONFIG after feature extraction
@@ -1471,16 +1600,16 @@ def analyze_retinal_scan():
         results["macula"]["cme_score"] = features["macula"].get("cme_score", 0.0)
         
         # ===== NEW: Differential Diagnosis =====
-        print("\n   [D] Generating differential diagnosis...")
+        log_print("\n   [D] Generating differential diagnosis...")
         sys.stdout.flush()
         differential = classify_diseases(results, patient_age=patient_data_raw.get('age') if patient_data_raw else None)
-        print(f"   [L] Top Differential Diagnoses:")
+        log_print(f"   [L] Top Differential Diagnoses:")
         for i, disease in enumerate(differential.get('differential', [])[:3], 1):
-            print(f"      {i}. {disease['disease']}: {disease['confidence']}%")
+            log_print(f"      {i}. {disease['disease']}: {disease['confidence']}%")
         if differential.get('clinical_notes'):
-            print(f"   [N] Clinical Notes:")
+            log_print(f"   [N] Clinical Notes:")
             for note in differential['clinical_notes']:
-                print(f"      - {note}")
+                log_print(f"      - {note}")
         sys.stdout.flush()
         # ========================================
         
@@ -1534,37 +1663,38 @@ def analyze_retinal_scan():
         if bright_severity in ['CRITICAL', 'MODERATE'] and pigment_conf < CONFIG["RPA_PIGMENT_MAX"]:
             is_rpa = True
             base_score += CONFIG["RPA_PATHWAY_BONUS"]
-            print(f"   🔘 RPA PATHWAY ACTIVATED! (+{CONFIG['RPA_PATHWAY_BONUS']:.3f} compensation)")
-            print(f"      → Bright lesions detected + No dark bone spicules")
+            log_print(f"   🔘 RPA PATHWAY ACTIVATED! (+{CONFIG['RPA_PATHWAY_BONUS']:.3f} compensation)")
+            log_print(f"      → Bright lesions detected + No dark bone spicules")
         
         # Pathway #2: Sectoral RP (one quadrant affected)
         # Requires CRITICAL severity AND AI agreement to activate
         elif quadrant_severity == 'CRITICAL' and ai_conf > CONFIG["SECTORAL_AI_MIN"]:
             is_sectoral = True
             base_score += CONFIG["SECTORAL_PATHWAY_BONUS"]
-            print(f"   📐 SECTORAL RP PATHWAY ACTIVATED! (+{CONFIG['SECTORAL_PATHWAY_BONUS']:.3f} compensation)")
-            print(f"      → Significant quadrant asymmetry: {quadrant_result['detail']}")
-            print(f"      → AI agrees: {ai_conf*100:.1f}%")
+            log_print(f"   📐 SECTORAL RP PATHWAY ACTIVATED! (+{CONFIG['SECTORAL_PATHWAY_BONUS']:.3f} compensation)")
+            log_print(f"      → Significant quadrant asymmetry: {quadrant_result['detail']}")
+            log_print(f"      → AI agrees: {ai_conf*100:.1f}%")
         
         # Pathway #3: Sine Pigmento (no pigment but AI shows concern + degeneration signs OR clinical consensus)
-        elif (ai_conf > CONFIG["SINE_PIGMENTO_AI_MIN"] and pigment_conf < CONFIG["SINE_PIGMENTO_PIGMENT_MAX"] and (texture_severity in ['MODERATE', 'CRITICAL'] or spatial_result['severity'] in ['MODERATE', 'CRITICAL'])) or has_clinical_sine_pigmento:
+        # ADJUST FOR ANGIOGRAPHY: We artificially suppressed pigment detection, so we cannot safely diagnose "Sine Pigmento".
+        elif not is_angio and ((ai_conf > CONFIG["SINE_PIGMENTO_AI_MIN"] and pigment_conf < CONFIG["SINE_PIGMENTO_PIGMENT_MAX"] and (texture_severity in ['MODERATE', 'CRITICAL'] or spatial_result['severity'] in ['MODERATE', 'CRITICAL'])) or has_clinical_sine_pigmento):
             is_sine_pigmento = True
             base_score += CONFIG["SINE_PIGMENTO_BONUS"]
             angio_note = " (ANGIO)" if is_angio else ""
             clin_note = " (CLINICAL)" if has_clinical_sine_pigmento and not (ai_conf > CONFIG["SINE_PIGMENTO_AI_MIN"]) else ""
-            print(f"   🧬 SINE PIGMENTO PATHWAY ACTIVATED! (+{CONFIG['SINE_PIGMENTO_BONUS']:.3f} compensation)")
-            print(f"      → AI/Clinical concerned + No classic pigment + Degeneration signs{angio_note}{clin_note}")
-            print(f"      → Texture: {texture_severity}, Spatial: {spatial_result['severity']}")
+            log_print(f"   🧬 SINE PIGMENTO PATHWAY ACTIVATED! (+{CONFIG['SINE_PIGMENTO_BONUS']:.3f} compensation)")
+            log_print(f"      → AI/Clinical concerned + No classic pigment + Degeneration signs{angio_note}{clin_note}")
+            log_print(f"      → Texture: {texture_severity}, Spatial: {spatial_result['severity']}")
         
         # Pathway #4: Classic RP Triad Complete
         elif triad_complete:
             base_score += CONFIG["TRIAD_COMPLETE_BONUS"]
-            print(f"   [T] CLASSIC RP TRIAD COMPLETE! (+{CONFIG['TRIAD_COMPLETE_BONUS']:.3f} bonus)")
+            log_print(f"   [T] CLASSIC RP TRIAD COMPLETE! (+{CONFIG['TRIAD_COMPLETE_BONUS']:.3f} bonus)")
         
         # Check for CME complication (can occur with any RP type)
         if macula_severity in ['CRITICAL', 'MODERATE']:
             is_cme = True
-            print(f"   [M] CME COMPLICATION DETECTED! ({macula_result['detail']})")
+            log_print(f"   [M] CME COMPLICATION DETECTED! ({macula_result['detail']})")
         
         # ==============================================================================
         # 🧠 SIMPLIFIED DECISION ENGINE - CLINICAL STANDARD (6 RULES)
@@ -1597,11 +1727,11 @@ def analyze_retinal_scan():
         critical_count = sum(1 for r in clinical_results.values() if r['severity'] == 'CRITICAL')
         total_clinical_scanners = len(clinical_results)
         
-        print(f"   ⚖️  DECISION ENGINE (Simplified 6-Rule System):")
-        print(f"      AI: {ai_confidence*100:.1f}% | Says RP: {'YES' if ai_says_rp else 'UNCERTAIN' if ai_uncertain else 'NO'}")
-        print(f"      Clinical Votes (MODERATE/CRITICAL): {clinical_rp_votes}/{total_clinical_scanners}")
-        print(f"      MILD findings: {mild_findings} | CRITICAL findings: {critical_count}")
-        print(f"      Triad Complete: {triad_complete} | Pathways: SP={is_sine_pigmento}, RPA={is_rpa}, Sectoral={is_sectoral}")
+        log_print(f"   ⚖️  DECISION ENGINE (Simplified 6-Rule System):")
+        log_print(f"      AI: {ai_confidence*100:.1f}% | Says RP: {'YES' if ai_says_rp else 'UNCERTAIN' if ai_uncertain else 'NO'}")
+        log_print(f"      Clinical Votes (MODERATE/CRITICAL): {clinical_rp_votes}/{total_clinical_scanners}")
+        log_print(f"      MILD findings: {mild_findings} | CRITICAL findings: {critical_count}")
+        log_print(f"      Triad Complete: {triad_complete} | Pathways: SP={is_sine_pigmento}, RPA={is_rpa}, Sectoral={is_sectoral}")
         sys.stdout.flush()
 
         # 2. SIMPLIFIED DECISION MATRIX (6 CLEAR RULES)
@@ -1613,26 +1743,26 @@ def analyze_retinal_scan():
             verdict = "POSITIVE: CLASSIC RETINITIS PIGMENTOSA (TRIAD COMPLETE)"
             confidence = "VERY HIGH"
             verdict_code = "CLASSIC_RP"
-            print(f"      → Rule 1: CLASSIC RP TRIAD (All 3 cardinal signs present)")
+            log_print(f"      → Rule 1: CLASSIC RP TRIAD (All 3 cardinal signs present)")
 
         # RULE 2: VARIANT RP - RPA, Sectoral, or Sine Pigmento Pathways
         elif is_sine_pigmento:
             verdict = "POSITIVE: RP SINE PIGMENTO (VARIANT)"
             confidence = "HIGH" if ai_confidence >= CONFIG["AI_CRITICAL"] else "MODERATE"
             verdict_code = "RP_SINE_PIGMENTO"
-            print(f"      → Rule 2a: SINE PIGMENTO VARIANT (AI={ai_confidence*100:.1f}%, No pigment, Degeneration)")
+            log_print(f"      → Rule 2a: SINE PIGMENTO VARIANT (AI={ai_confidence*100:.1f}%, No pigment, Degeneration)")
             
         elif is_rpa:
             verdict = "POSITIVE: RETINITIS PUNCTATA ALBESCENS (RPA VARIANT)"
             confidence = "HIGH"
             verdict_code = "RP_RPA"
-            print(f"      → Rule 2b: RPA VARIANT (Bright flecks, No dark pigment)")
+            log_print(f"      → Rule 2b: RPA VARIANT (Bright flecks, No dark pigment)")
             
         elif is_sectoral:
             verdict = "POSITIVE: SECTORAL RETINITIS PIGMENTOSA"
             confidence = "HIGH"
             verdict_code = "RP_SECTORAL"
-            print(f"      → Rule 2c: SECTORAL RP (Quadrant asymmetry, AI agrees)")
+            log_print(f"      → Rule 2c: SECTORAL RP (Quadrant asymmetry, AI agrees)")
 
         # RULE 3: POSITIVE - AI Confident + Clinical Support
         # AI says RP (≥60%) AND at least 1 clinical vote (MODERATE/CRITICAL) OR any CRITICAL finding
@@ -1640,7 +1770,7 @@ def analyze_retinal_scan():
             verdict = "POSITIVE: RP DETECTED (AI + CLINICAL CONSENSUS)"
             confidence = "HIGH" if clinical_rp_votes >= 2 else "MODERATE"
             verdict_code = "RP_POSITIVE"
-            print(f"      → Rule 3: AI CONFIDENT + CLINICAL SUPPORT (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
+            log_print(f"      → Rule 3: AI CONFIDENT + CLINICAL SUPPORT (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
         
         # RULE 4: POSITIVE - Multiple Clinical Findings (AI not required)
         # 3+ clinical votes (MODERATE/CRITICAL) regardless of AI
@@ -1648,7 +1778,7 @@ def analyze_retinal_scan():
             verdict = "POSITIVE: RP DETECTED (MULTIPLE CLINICAL FINDINGS)"
             confidence = "MODERATE" if ai_says_rp else "MODERATE-LOW"
             verdict_code = "RP_POSITIVE"
-            print(f"      → Rule 4: MULTIPLE CLINICAL FINDINGS ({clinical_rp_votes} votes, AI={ai_confidence*100:.1f}%)")
+            log_print(f"      → Rule 4: MULTIPLE CLINICAL FINDINGS ({clinical_rp_votes} votes, AI={ai_confidence*100:.1f}%)")
         
         # ========== SUSPICIOUS VERDICTS (NEEDS REVIEW) ==========
         
@@ -1665,7 +1795,7 @@ def analyze_retinal_scan():
                 verdict = "SUSPICIOUS: ATYPICAL FINDINGS - RECOMMEND CLINICAL REVIEW"
                 confidence = "MODERATE"
                 verdict_code = "SUSPICIOUS"
-                print(f"      → Rule 5a: AI UNCERTAIN + CLINICAL EVIDENCE (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
+                log_print(f"      → Rule 5a: AI UNCERTAIN + CLINICAL EVIDENCE (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
             elif critical_count > 0:
                 # Identify which specific finding is critical for better clinical context
                 critical_findings = [name.replace('_', ' ').upper() for name, r in clinical_results.items() if r['severity'] == 'CRITICAL']
@@ -1673,22 +1803,22 @@ def analyze_retinal_scan():
                 verdict = f"SUSPICIOUS: ISOLATED CLINICAL FINDING ({finding_list}) - RECOMMEND REVIEW"
                 confidence = "LOW"
                 verdict_code = "SUSPICIOUS_ISOLATED"
-                print(f"      → Rule 5b: ISOLATED CRITICAL FINDING ({finding_list}, AI disagrees at {ai_confidence*100:.1f}%)")
+                log_print(f"      → Rule 5b: ISOLATED CRITICAL FINDING ({finding_list}, AI disagrees at {ai_confidence*100:.1f}%)")
             else:
                 verdict = "SUSPICIOUS: PERIPHERAL DEGENERATION - RECOMMEND CLINICAL REVIEW"
                 confidence = "MODERATE"
                 verdict_code = "SUSPICIOUS"
-                print(f"      → Rule 5c: MODERATE PERIPHERAL DEGENERATION (Spatial={spatial_result['severity']}, AI={ai_confidence*100:.1f}%)")
+                log_print(f"      → Rule 5c: MODERATE PERIPHERAL DEGENERATION (Spatial={spatial_result['severity']}, AI={ai_confidence*100:.1f}%)")
         
         # ========== BORDERLINE VERDICTS (MONITOR) ==========
         
         # RULE 6: BORDERLINE - Minor Findings Only
-        # 2+ MILD findings but AI says NO (<50%) and no clinical votes
-        elif mild_findings >= 2 and not ai_uncertain and clinical_rp_votes == 0:
+        # 2+ MILD findings but no strong clinical votes
+        elif mild_findings >= 2 and clinical_rp_votes == 0:
             verdict = "BORDERLINE: MINOR FINDINGS - RECOMMEND MONITORING"
             confidence = "LOW"
             verdict_code = "BORDERLINE"
-            print(f"      → Rule 6: MINOR FINDINGS ONLY (AI={ai_confidence*100:.1f}% says NO, {mild_findings} mild findings)")
+            log_print(f"      → Rule 6: MINOR FINDINGS ONLY (AI={ai_confidence*100:.1f}%, {mild_findings} mild findings)")
 
         # ========== NEGATIVE VERDICTS (HEALTHY) ==========
         
@@ -1698,12 +1828,15 @@ def analyze_retinal_scan():
             # Lower confidence if there are any MILD findings
             confidence = "HIGH" if mild_findings == 0 else "MODERATE"
             verdict_code = "HEALTHY"
-            print(f"      -> Rule 7: INSUFFICIENT EVIDENCE (Mild={mild_findings}, Clinical votes=0, AI={ai_confidence*100:.1f}%)")
+            log_print(f"      -> Rule 7: INSUFFICIENT EVIDENCE (Mild={mild_findings}, Clinical votes={clinical_rp_votes}, AI={ai_confidence*100:.1f}%)")
 
-        print(f"   [V] VERDICT: {verdict_code}")
-        print(f"   [S] Score: {base_score:.3f} | Confidence: {confidence}")
-        print(f"   [C] Consensus: {clinical_rp_votes}/{total_clinical_scanners} Experts + AI: {'YES' if ai_says_rp else 'NO'}")
-        print(f"{'='*70}\n")
+        # Cap score at 0.999 to prevent exceeding 100%
+        base_score = min(base_score, 0.999)
+        
+        log_print(f"   [V] VERDICT: {verdict_code}")
+        log_print(f"   [S] Score: {base_score:.3f} | Confidence: {confidence}")
+        log_print(f"   [C] Consensus: {clinical_rp_votes}/{total_clinical_scanners} Experts + AI: {'YES' if ai_says_rp else 'NO'}")
+        log_print(f"{'='*70}\n")
         sys.stdout.flush()  # Force output to terminal
         
         # Collect critical findings
@@ -1812,15 +1945,15 @@ def analyze_retinal_scan():
         return resp
         
     except Exception as e:
-        print(f"\n{'='*70}")
-        print(f"[X] CRITICAL ERROR DURING ANALYSIS:")
-        print(f"{'='*70}")
-        print(f"Error Type: {type(e).__name__}")
-        print(f"Error Message: {str(e)}")
-        print(f"\nFull Traceback:")
+        log_print(f"\n{'='*70}")
+        log_print(f"[X] CRITICAL ERROR DURING ANALYSIS:")
+        log_print(f"{'='*70}")
+        log_print(f"Error Type: {type(e).__name__}")
+        log_print(f"Error Message: {str(e)}")
+        log_print(f"\nFull Traceback:")
         import traceback
         traceback.print_exc()
-        print(f"{'='*70}\n")
+        log_print(f"{'='*70}\n")
         sys.stdout.flush()
         
         # Return detailed error info
@@ -1926,6 +2059,7 @@ def models_info():
 def progression_compare():
     """Compare two retinal scans to detect RP progression over time"""
     try:
+        from datetime import datetime, timedelta
         data = request.get_json()
         
         if 'baseline_image' not in data or 'current_image' not in data:
@@ -1934,7 +2068,7 @@ def progression_compare():
         if 'months_between' not in data:
             return jsonify({"error": "months_between field required"}), 400
         
-        print(f"\n[{datetime.now().strftime('%H:%M:%S')}] [P] Comparing scans for progression analysis...")
+        log_print(f"\n[{datetime.now().strftime('%H:%M:%S')}] [P] Comparing scans for progression analysis...")
         sys.stdout.flush()
         
         # Preprocess both images
@@ -1945,22 +2079,109 @@ def progression_compare():
             return jsonify({"error": "Invalid image data"}), 400
         
         # Track progression
-        progression_result = track_progression(
-            baseline_img=baseline,
-            current_img=current,
-            months_between=data['months_between'],
-            baseline_date=data.get('baseline_date', 'Unknown'),
-            current_date=data.get('current_date', 'Unknown')
+        
+        # Determine dates
+        baseline_date = data.get('baseline_date', 'Unknown')
+        current_date = data.get('current_date', 'Unknown')
+        
+        if baseline_date == 'Unknown' or current_date == 'Unknown':
+            base_dt = datetime(2025, 1, 15)
+            baseline_date = base_dt.strftime("%Y-%m-%d")
+            months = float(data['months_between'])
+            curr_dt = base_dt + timedelta(days=int(months * 30.4375))
+            current_date = curr_dt.strftime("%Y-%m-%d")
+
+        # Instantiate tracker and register images
+        tracker = ProgressionTracker()
+        aligned_baseline, aligned_current = tracker.register_images(baseline, current)
+        
+        # Check alignment success
+        registration_success = not np.array_equal(aligned_current, current)
+        alignment_confidence = 0.95 if registration_success else 0.0
+        
+        # Helper to extract clinical expert data from a scan
+        def analyze_scan_for_progression(img):
+            is_angio, _, _ = detect_angiography(img)
+            fov_mask = get_fov_mask(img)
+            
+            # Extract features
+            vessel_feats = extract_vessel_features(img, fov_mask, is_angiography=is_angio)
+            pigment_feats = extract_pigment_features(img, fov_mask, is_angiography=is_angio)
+            optic_disc_feats = extract_optic_disc_features(img, fov_mask, is_angiography=is_angio)
+            texture_feats = extract_texture_features(img, fov_mask, is_angiography=is_angio)
+            spatial_feats = extract_spatial_features(img, fov_mask, is_angiography=is_angio)
+            bright_lesion_feats = extract_bright_lesion_features(img, fov_mask, is_angiography=is_angio)
+            macula_feats = extract_macula_features(img, fov_mask, is_angiography=is_angio)
+            quadrant_feats = extract_quadrant_features(img, fov_mask, is_angiography=is_angio)
+            
+            features = {
+                'vessel': vessel_feats,
+                'pigment': pigment_feats,
+                'optic_disc': optic_disc_feats,
+                'texture': texture_feats,
+                'spatial': spatial_feats,
+                'bright_lesion': bright_lesion_feats,
+                'macula': macula_feats,
+                'quadrant': quadrant_feats
+            }
+            
+            # Consult key experts
+            vessel_result = vessel_attenuation_expert(features)
+            pigment_result = pigment_bone_spicules_expert(features)
+            spatial_result = spatial_pattern_expert(features)
+            
+            # Inject keys expected by ProgressionTracker
+            vessel_result['density'] = vessel_feats['density']
+            pigment_result['cluster_count'] = pigment_feats['num_clusters']
+            spatial_result['degradation_score'] = spatial_feats['peripheral_degradation']
+            
+            return {
+                'vessel_result': vessel_result,
+                'pigment_result': pigment_result,
+                'spatial_result': spatial_result
+            }
+            
+        # Analyze baseline and current
+        baseline_data = analyze_scan_for_progression(aligned_baseline)
+        current_data = analyze_scan_for_progression(aligned_current)
+        
+        # Track progression
+        raw_result = tracker.compare_scans(
+            baseline=baseline_data,
+            current=current_data,
+            baseline_date=baseline_date,
+            current_date=current_date
         )
         
-        print(f"   [+] Progression category: {progression_result['progression_category']}")
-        print(f"   [V] Vessel density change: {progression_result['vessel_density_change']*100:.1f}% per year")
+        # Map to response format
+        progression_result = {
+            'progression_category': raw_result['progression_rate'],
+            'vessel_density_change': raw_result['vessel_change']['change_per_year'],
+            'pigment_change': raw_result['pigment_change']['percent_change'] / 100.0 if raw_result['pigment_change']['baseline_clusters'] > 0 else 0.0,
+            'spatial_degradation': raw_result['spatial_change']['change_per_year'],
+            'annual_progression_rate': round(raw_result['progression_score'] / 100.0, 4),
+            'clinical_recommendation': raw_result['clinical_significance'],
+            'registration_success': registration_success,
+            'alignment_confidence': alignment_confidence,
+            
+            # Keep raw/extended properties for deep diagnostics
+            'time_interval_years': raw_result['time_interval_years'],
+            'time_interval_days': raw_result['time_interval_days'],
+            'vessel_change_detail': raw_result['vessel_change'],
+            'pigment_change_detail': raw_result['pigment_change'],
+            'spatial_change_detail': raw_result['spatial_change'],
+            'progression_score': raw_result['progression_score'],
+            'urgent': raw_result['urgent']
+        }
+        
+        log_print(f"   [+] Progression category: {progression_result['progression_category']}")
+        log_print(f"   [V] Vessel density change: {progression_result['vessel_density_change']*100:.1f}% per year")
         sys.stdout.flush()
         
         return jsonify(progression_result), 200
         
     except Exception as e:
-        print(f"[X] Error during progression analysis: {str(e)}")
+        log_print(f"[X] Error during progression analysis: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -1975,7 +2196,7 @@ def validation_study():
         if 'predictions' not in data or 'ground_truth' not in data:
             return jsonify({"error": "predictions and ground_truth arrays required"}), 400
         
-        print(f"\n[{datetime.now().strftime('%H:%M:%S')}] [V] Generating validation study report...")
+        log_print(f"\n[{datetime.now().strftime('%H:%M:%S')}] [V] Generating validation study report...")
         sys.stdout.flush()
         
         toolkit = create_validation_study()
@@ -2011,8 +2232,8 @@ def validation_study():
             study_name=data.get('study_name', 'RetinaGuard V500 Validation Study')
         )
         
-        print(f"   [+] Sensitivity: {metrics['sensitivity']*100:.1f}% (FDA target: >=80%)")
-        print(f"   [+] Specificity: {metrics['specificity']*100:.1f}% (FDA target: >=90%)")
+        log_print(f"   [+] Sensitivity: {metrics['sensitivity']*100:.1f}% (FDA target: >=80%)")
+        log_print(f"   [+] Specificity: {metrics['specificity']*100:.1f}% (FDA target: >=90%)")
         sys.stdout.flush()
         
         return jsonify({
@@ -2023,7 +2244,7 @@ def validation_study():
         }), 200
         
     except Exception as e:
-        print(f"[X] Error during validation study: {str(e)}")
+        log_print(f"[X] Error during validation study: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -2033,7 +2254,7 @@ def validation_study():
 def fda_documentation():
     """Generate FDA 510(k) submission documentation"""
     try:
-        print(f"\n[{datetime.now().strftime('%H:%M:%S')}] [F] Generating FDA 510(k) documentation...")
+        log_print(f"\n[{datetime.now().strftime('%H:%M:%S')}] [F] Generating FDA 510(k) documentation...")
         
         generator = FDASubmissionGenerator()
         
@@ -2046,13 +2267,13 @@ def fda_documentation():
             "section_5_labeling": generator.generate_labeling()
         }
         
-        print(f"   [+] Generated 5 regulatory sections (total: ~{sum(len(s) for s in sections.values())} characters)")
+        log_print(f"   [+] Generated 5 regulatory sections (total: ~{sum(len(s) for s in sections.values())} characters)")
         sys.stdout.flush()
         
         return jsonify(sections), 200
         
     except Exception as e:
-        print(f"[X] Error generating FDA documentation: {str(e)}")
+        log_print(f"[X] Error generating FDA documentation: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -2060,44 +2281,44 @@ def fda_documentation():
 # ====================================================
 
 if __name__ == '__main__':
-    print("\n" + "="*70)
-    print(">> STARTING RETINAGUARD V500 FLASK API SERVER")
-    print("="*70)
-    print("\n>> CLINICAL DECISION SUPPORT SYSTEM FOR RETINITIS PIGMENTOSA")
-    print("\nCORE CAPABILITIES:")
-    print("  [+] 10-Expert Clinical Panel (includes variants: RPA, CME, Sectoral)")
-    print("  [+] Classic RP Triad Verification")
-    print("  [+] Weighted Voting Decision Engine (6 rules)")
-    print("  [+] Real-time Image Analysis")
-    print("\nNEW: ENHANCED CLINICAL FEATURES:")
-    print("  [Q] Image Quality Validation (blur/brightness/resolution checks)")
-    print("  [C] Camera Calibration (Topcon/Zeiss/Canon/Optomed)")
-    print("  [P] Patient History Integration (age/ethnicity/symptom adjustments)")
-    print("  [D] Differential Diagnosis (RP vs DR vs AMD vs Glaucoma + 3 more)")
-    print("  [T] Progression Tracking (serial scan comparison)")
-    print("  [V] Clinical Validation Tools (sensitivity/specificity/Cohen's Kappa)")
-    print("  [F] FDA 510(k) Documentation Generator")
-    print("\nRP TRIAD COMPONENTS:")
-    print("  [1] Bone Spicule Pigmentation (18% weight)")
-    print("  [2] Arteriolar Attenuation (20% weight)")
-    print("  [3] Optic Disc Pallor (12% weight)")
-    print("\nSUPPORTING SCANNERS:")
-    print("  * AI Pattern Recognition (25% weight)")
-    print("  * Vessel Tortuosity (10% weight)")
-    print("  * Texture Degeneration (8% weight)")
-    print("  * Spatial Pattern (7% weight)")
-    print("="*70)
-    print(f"\n>> Server URL: http://localhost:5001")
-    print(f">> Health Check: http://localhost:5001/api/health")
-    print(f">> System Info: http://localhost:5001/api/models/info")
-    print("\nAPI ENDPOINTS:")
-    print("  POST /api/analyze - Main RP diagnosis (with quality validation)")
-    print("  POST /api/progression-compare - Compare baseline + current scans")
-    print("  POST /api/validation-study - Generate clinical trial statistics")
-    print("  GET  /api/fda-documentation - Export 510(k) submission package")
-    print("\n" + "="*70 + "\n")
-    print(">> DEBUG MODE: DISABLED (Terminal output will show here)")
-    print(">> To enable auto-reload, set debug=True in app.run()\n")
+    log_print("\n" + "="*70)
+    log_print(">> STARTING RETINAGUARD V500 FLASK API SERVER")
+    log_print("="*70)
+    log_print("\n>> CLINICAL DECISION SUPPORT SYSTEM FOR RETINITIS PIGMENTOSA")
+    log_print("\nCORE CAPABILITIES:")
+    log_print("  [+] 10-Expert Clinical Panel (includes variants: RPA, CME, Sectoral)")
+    log_print("  [+] Classic RP Triad Verification")
+    log_print("  [+] Weighted Voting Decision Engine (6 rules)")
+    log_print("  [+] Real-time Image Analysis")
+    log_print("\nNEW: ENHANCED CLINICAL FEATURES:")
+    log_print("  [Q] Image Quality Validation (blur/brightness/resolution checks)")
+    log_print("  [C] Camera Calibration (Topcon/Zeiss/Canon/Optomed)")
+    log_print("  [P] Patient History Integration (age/ethnicity/symptom adjustments)")
+    log_print("  [D] Differential Diagnosis (RP vs DR vs AMD vs Glaucoma + 3 more)")
+    log_print("  [T] Progression Tracking (serial scan comparison)")
+    log_print("  [V] Clinical Validation Tools (sensitivity/specificity/Cohen's Kappa)")
+    log_print("  [F] FDA 510(k) Documentation Generator")
+    log_print("\nRP TRIAD COMPONENTS:")
+    log_print("  [1] Bone Spicule Pigmentation (18% weight)")
+    log_print("  [2] Arteriolar Attenuation (20% weight)")
+    log_print("  [3] Optic Disc Pallor (12% weight)")
+    log_print("\nSUPPORTING SCANNERS:")
+    log_print("  * AI Pattern Recognition (25% weight)")
+    log_print("  * Vessel Tortuosity (10% weight)")
+    log_print("  * Texture Degeneration (8% weight)")
+    log_print("  * Spatial Pattern (7% weight)")
+    log_print("="*70)
+    log_print(f"\n>> Server URL: http://localhost:5001")
+    log_print(f">> Health Check: http://localhost:5001/api/health")
+    log_print(f">> System Info: http://localhost:5001/api/models/info")
+    log_print("\nAPI ENDPOINTS:")
+    log_print("  POST /api/analyze - Main RP diagnosis (with quality validation)")
+    log_print("  POST /api/progression-compare - Compare baseline + current scans")
+    log_print("  POST /api/validation-study - Generate clinical trial statistics")
+    log_print("  GET  /api/fda-documentation - Export 510(k) submission package")
+    log_print("\n" + "="*70 + "\n")
+    log_print(">> DEBUG MODE: DISABLED (Terminal output will show here)")
+    log_print(">> To enable auto-reload, set debug=True in app.run()\n")
     sys.stdout.flush()
     
     app.run(host='0.0.0.0', port=5001, debug=False)

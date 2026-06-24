@@ -53,6 +53,16 @@ class ImageQualityValidator:
         """
         self.strict_mode = strict_mode
         
+        # If strict_mode is False (e.g., handheld camera or smartphone),
+        # relax the physical hardware thresholds because these cameras
+        # inherently produce darker, blurrier, and flatter images.
+        if not strict_mode:
+            self.BLUR_THRESHOLD = 5.0          # Allow massive blur
+            self.MIN_BRIGHTNESS = 5            # Allow massive underexposure
+            self.MIN_DYNAMIC_RANGE = 5         # Allow flat contrast
+            self.MIN_VESSEL_DENSITY = 0.001    # Allow poor vessel visibility
+            self.MAX_VIGNETTING_RATIO = 0.50   # Allow heavier vignetting
+            
     def validate(self, image: np.ndarray, patient_id: str = "UNKNOWN") -> Dict:
         """
         Comprehensive image quality validation

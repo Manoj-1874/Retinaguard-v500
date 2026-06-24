@@ -1,15 +1,461 @@
+[!] TensorFlow enabled - loading deep learning models.
+[+] Loaded model from models/RetinaGuard_Clinical_Balanced.h5
+
+======================================================================
+>> STARTING RETINAGUARD V500 FLASK API SERVER
+======================================================================
+
+>> CLINICAL DECISION SUPPORT SYSTEM FOR RETINITIS PIGMENTOSA
+
+CORE CAPABILITIES:
+  [+] 10-Expert Clinical Panel (includes variants: RPA, CME, Sectoral)
+  [+] Classic RP Triad Verification
+  [+] Weighted Voting Decision Engine (6 rules)
+  [+] Real-time Image Analysis
+
+NEW: ENHANCED CLINICAL FEATURES:
+  [Q] Image Quality Validation (blur/brightness/resolution checks)
+  [C] Camera Calibration (Topcon/Zeiss/Canon/Optomed)
+  [P] Patient History Integration (age/ethnicity/symptom adjustments)
+  [D] Differential Diagnosis (RP vs DR vs AMD vs Glaucoma + 3 more)
+  [T] Progression Tracking (serial scan comparison)
+  [V] Clinical Validation Tools (sensitivity/specificity/Cohen's Kappa)
+  [F] FDA 510(k) Documentation Generator
+
+RP TRIAD COMPONENTS:
+  [1] Bone Spicule Pigmentation (18% weight)
+  [2] Arteriolar Attenuation (20% weight)
+  [3] Optic Disc Pallor (12% weight)
+
+SUPPORTING SCANNERS:
+  * AI Pattern Recognition (25% weight)
+  * Vessel Tortuosity (10% weight)
+  * Texture Degeneration (8% weight)
+  * Spatial Pattern (7% weight)
+======================================================================
+
+>> Server URL: http://localhost:5001
+>> Health Check: http://localhost:5001/api/health
+>> System Info: http://localhost:5001/api/models/info
+
+API ENDPOINTS:
+  POST /api/analyze - Main RP diagnosis (with quality validation)
+  POST /api/progression-compare - Compare baseline + current scans
+  POST /api/validation-study - Generate clinical trial statistics
+  GET  /api/fda-documentation - Export 510(k) submission package
+
+======================================================================
+
+>> DEBUG MODE: DISABLED (Terminal output will show here)
+>> To enable auto-reload, set debug=True in app.run()
+
+ * Serving Flask app 'app'
+
+ * Debug mode: off
+
 [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:5001
- * Running on http://10.36.201.89:5001
+ * Running on http://10.12.7.89:5001
 [33mPress CTRL+C to quit[0m
-127.0.0.1 - - [21/Jun/2026 21:28:15] "OPTIONS /api/analyze HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 19:59:10] "OPTIONS /api/analyze HTTP/1.1" 200 -
 
 ======================================================================
 [!!] IMAGE UPLOAD DETECTED - STARTING ANALYSIS [!!]
 ======================================================================
 
 ======================================================================
-[21:28:15] [A] Analyzing scan for PT-8587
+[!!] IMAGE UPLOAD DETECTED - STARTING ANALYSIS [!!]
 ======================================================================
-127.0.0.1 - - [21/Jun/2026 21:28:27] "POST /api/analyze HTTP/1.1" 200 -
+
+======================================================================
+[19:59:11] [A] Analyzing scan for PT-8525
+======================================================================
+
+======================================================================
+[19:59:11] [A] Analyzing scan for PT-8525
+======================================================================
+   [Q] Validating image quality...
+
+   [Q] IMAGE QUALITY VALIDATION for PT-8525
+      ============================================================
+      [1] Resolution: 1024x1024 px -> [+] PASS
+      [2] Blur Detection: variance=60.44 -> [X] FAIL (out of focus)
+      [3] Brightness: mean=110.1 -> [+] PASS
+      [4] Contrast: std=69.3 -> [+] PASS
+      [5] Vignetting: ratio=0.280 -> [X] FAIL (dark edges)
+      [6] Color Balance: R=158.0 G=94.0 B=67.6 -> [!] WARN (color cast)
+      [7] Vessel Network: coverage=0.1725 -> [+] PASS
+
+      [X] VERDICT: REJECTED (Quality Score: 55.0/100)
+      Errors: 2 | Warnings: 1
+      ============================================================
+
+   [!] WARNING: Marginal image quality (score: 55.0/100)
+      - Image too blurry (variance=60.44). Minimum: 100.0
+      - Excessive vignetting (ratio=0.280). Maximum: 0.3
+      - Color cast detected (max channel diff=90.4)
+   [U] Analyzing patient demographics and history...
+
+   [P] PATIENT HISTORY ANALYSIS
+      ============================================================
+      Age: 22 years | Gender: Unknown | Ethnicity: Caucasian
+
+      [S] SYMPTOM ASSESSMENT:
+         -> Total Symptom Score: 0.0/100
+
+      [F] FAMILY HISTORY: Negative
+
+      [R] OVERALL RISK SCORE: 10.0/100
+         -> [LOW] Routine screening - No immediate concern
+
+      [A] THRESHOLD ADJUSTMENTS:
+         Pigment threshold: +0.0 (ethnicity correction)
+         Vessel threshold: +0.000 (age correction)
+         AI confidence shift: +0.00 (symptom risk)
+      ============================================================
+
+      Ethnicity: caucasian (Pigment adjustment: 0)
+      Age: adult (Vessel adjustment: 0.0)
+      Risk Score: 10.0/100 (Symptoms: 0.0)
+   [*] Extracting clinical features...
+   [VESSEL] Raw density: 31.5%, Brightness: 140.2, Correction: 0.85, Final: 26.8%
+   [PIGMENT] L-channel: mean=150.4, std=45.2, percentile=114.0, statistical=50.9, brightness_comp=-8, final_threshold=65.0
+[TEXTURE] Global entropy=6.42, Local variation=4.83, Mean brightness=110.1
+   [E] Expert panel consultation (10 scanners)...
+   ------------------------------------------------------------------
+   [!] AI Pattern Recognition                   -> ANOMALY DETECTED     ( 76.8%)
+      Vote: 0.2304 | Neural network RP probability: 76.8%
+   [+] Vessel Attenuation (TRIAD #2)            -> NORMAL               ( 20.0%)
+      Vote: 0.0320 | Vessel density: 26.8% (Normal: >25%) (brightness corrected)
+   [+] Bone Spicule Pigmentation (TRIAD #1)     -> NORMAL               ( 15.0%)
+      Vote: 0.0210 | Clusters: 0 (Normal: <8)
+   [+] Optic Disc Pallor (TRIAD #3)             -> NORMAL               ( 20.0%)
+      Vote: 0.0200 | Brightness: 150 (Normal: 140-180)
+   [+] Vessel Tortuosity                        -> NORMAL               ( 25.0%)
+      Vote: 0.0200 | Tortuosity: 1.00 (Normal: <1.3)
+   [!] Texture Degeneration                     -> MODERATE CHANGES     ( 50.0%)
+      Vote: 0.0300 | Entropy: 6.42, Local: 4.8 (Normal: <6.4/<7.0)
+   [!] Spatial Pattern                          -> MILD PERIPHERAL CHANGES ( 50.0%)
+      Vote: 0.0200 | Degradation: 0.48 (Normal: <0.4)
+   [+] Bright Lesions (RPA)                     -> NORMAL               ( 15.0%)
+      Vote: 0.0120 | Flecks: 3 | Density: 0.0002
+   [!] Macula (CME)                             -> MILD IRREGULARITY    ( 45.0%)
+      Vote: 0.0378 | CME Score: 0.34 | Irregularity: 32.7
+   [+] Quadrant (Sectoral)                      -> SYMMETRIC            ( 10.0%)
+      Vote: 0.0070 | Asymmetry: 0.00 | Worst: sup_temporal
+
+   [D] Generating differential diagnosis...
+
+   [D] DIFFERENTIAL DIAGNOSIS
+      ============================================================
+
+      [F] FEATURE EXTRACTION:
+         • Ai Rp Probability: 0.77
+         • Vessel Attenuation: 0.11
+         • Peripheral Loss: 0.48
+         • Exudates: 0.80
+         • Cotton Wool Spots: 0.56
+         • Drusen: 0.15
+         • Macular Edema: 0.34
+         • Abnormal Texture: 0.92
+         • Rnfl Thinning: 0.05
+         • Optic Disc Edema: 0.25
+         • Chorioretinal Atrophy: 0.38
+         • Macular Preservation: 0.66
+         • Early Onset: 0.50
+
+      [D] DIFFERENTIAL DIAGNOSIS:
+         [1] Choroideremia: 39.6%
+         [2] Retinitis Pigmentosa: 24.9%
+         [3] Age-Related Macular Degeneration: 22.0%
+         [4] Diabetic Retinopathy: 21.7%
+         [5] Hypertensive Retinopathy: 16.4%
+
+      [N] CLINICAL NOTES:
+         - Ambiguous diagnosis: Choroideremia vs Retinitis Pigmentosa - clinical correlation required
+      ============================================================
+
+   [L] Top Differential Diagnoses:
+      1. Choroideremia: 39.6%
+      2. Retinitis Pigmentosa: 24.9%
+      3. Age-Related Macular Degeneration: 22.0%
+   [N] Clinical Notes:
+      - Ambiguous diagnosis: Choroideremia vs Retinitis Pigmentosa - clinical correlation required
+   ⚖️  DECISION ENGINE (Simplified 6-Rule System):
+      AI: 76.8% | Says RP: YES
+      Clinical Votes (MODERATE/CRITICAL): 0/9
+      MILD findings: 3 | CRITICAL findings: 0
+      Triad Complete: False | Pathways: SP=False, RPA=False, Sectoral=False
+      → Rule 6: MINOR FINDINGS ONLY (AI=76.8%, 3 mild findings)
+   [V] VERDICT: BORDERLINE
+   [S] Score: 0.430 | Confidence: LOW
+   [C] Consensus: 0/9 Experts + AI: YES
+======================================================================
+
+127.0.0.1 - - [24/Jun/2026 19:59:30] "POST /api/analyze HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 20:00:02] "OPTIONS /api/analyze HTTP/1.1" 200 -
+
+======================================================================
+[!!] IMAGE UPLOAD DETECTED - STARTING ANALYSIS [!!]
+======================================================================
+
+======================================================================
+[!!] IMAGE UPLOAD DETECTED - STARTING ANALYSIS [!!]
+======================================================================
+
+======================================================================
+[20:00:02] [A] Analyzing scan for PT-2403
+======================================================================
+
+======================================================================
+[20:00:02] [A] Analyzing scan for PT-2403
+======================================================================
+   [Q] Validating image quality...
+
+   [Q] IMAGE QUALITY VALIDATION for PT-2403
+      ============================================================
+      [1] Resolution: 1024x1024 px -> [+] PASS
+      [2] Blur Detection: variance=264.84 -> [+] PASS (sharp)
+      [3] Brightness: mean=79.2 -> [+] PASS
+      [4] Contrast: std=45.4 -> [+] PASS
+      [5] Vignetting: ratio=0.439 -> [+] PASS
+      [6] Color Balance: R=122.6 G=66.5 B=30.7 -> [!] WARN (color cast)
+      [7] Vessel Network: coverage=0.2535 -> [+] PASS
+
+      [!] VERDICT: ACCEPTED WITH WARNINGS (Quality Score: 95.0/100)
+      Warnings: 1
+      ============================================================
+
+   [+] Image quality: 95.0/100 - Acceptable
+   [U] Analyzing patient demographics and history...
+
+   [P] PATIENT HISTORY ANALYSIS
+      ============================================================
+      Age: 22 years | Gender: Unknown | Ethnicity: Caucasian
+
+      [S] SYMPTOM ASSESSMENT:
+         -> Total Symptom Score: 0.0/100
+
+      [F] FAMILY HISTORY: Negative
+
+      [R] OVERALL RISK SCORE: 10.0/100
+         -> [LOW] Routine screening - No immediate concern
+
+      [A] THRESHOLD ADJUSTMENTS:
+         Pigment threshold: +0.0 (ethnicity correction)
+         Vessel threshold: +0.000 (age correction)
+         AI confidence shift: +0.00 (symptom risk)
+      ============================================================
+
+      Ethnicity: caucasian (Pigment adjustment: 0)
+      Age: adult (Vessel adjustment: 0.0)
+      Risk Score: 10.0/100 (Symptoms: 0.0)
+   [*] Extracting clinical features...
+   [VESSEL] Raw density: 51.9%, Brightness: 97.2, Correction: 1.00, Final: 51.9%
+   [PIGMENT] L-channel: mean=107.7, std=29.8, percentile=87.0, statistical=42.2, brightness_comp=-8, final_threshold=65.0
+[TEXTURE] Global entropy=6.71, Local variation=10.88, Mean brightness=79.2
+   [E] Expert panel consultation (10 scanners)...
+   ------------------------------------------------------------------
+   [!] AI Pattern Recognition                   -> SUSPICIOUS           ( 60.4%)
+      Vote: 0.1569 | Neural network RP probability: 60.4%
+   [+] Vessel Attenuation (TRIAD #2)            -> NORMAL               ( 20.0%)
+      Vote: 0.0320 | Vessel density: 51.9% (Normal: >25%)
+   [!] Bone Spicule Pigmentation (TRIAD #1)     -> EXTENSIVE BONE SPICULES ( 95.0%)
+      Vote: 0.3059 | Clusters: 36 (Normal: <8)
+   [+] Optic Disc Pallor (TRIAD #3)             -> NORMAL               ( 20.0%)
+      Vote: 0.0200 | Brightness: 150 (Normal: 140-180)
+   [+] Vessel Tortuosity                        -> NORMAL               ( 25.0%)
+      Vote: 0.0200 | Tortuosity: 1.00 (Normal: <1.3)
+   [!] Texture Degeneration                     -> MODERATE CHANGES     ( 50.0%)
+      Vote: 0.0300 | Entropy: 6.71, Local: 10.9 (Normal: <6.4/<7.0)
+   [+] Spatial Pattern                          -> NORMAL               ( 20.0%)
+      Vote: 0.0080 | Degradation: 0.23 (Normal: <0.4)
+   [!] Bright Lesions (RPA)                     -> SCATTERED FLECKS     ( 45.0%)
+      Vote: 0.0432 | Flecks: 38 | Density: 0.0066
+   [!] Macula (CME)                             -> MILD IRREGULARITY    ( 45.0%)
+      Vote: 0.0378 | CME Score: 0.31 | Irregularity: 28.4
+   [+] Quadrant (Sectoral)                      -> SYMMETRIC            ( 10.0%)
+      Vote: 0.0070 | Asymmetry: 0.16 | Worst: inf_temporal
+
+   [D] Generating differential diagnosis...
+
+   [D] DIFFERENTIAL DIAGNOSIS
+      ============================================================
+
+      [F] FEATURE EXTRACTION:
+         • Ai Rp Probability: 0.60
+         • Bone Spicules: 1.00
+         • Peripheral Loss: 0.23
+         • Exudates: 1.00
+         • Cotton Wool Spots: 0.70
+         • Drusen: 1.00
+         • Macular Edema: 0.31
+         • Abnormal Texture: 0.96
+         • Optic Disc Edema: 0.25
+         • Chorioretinal Atrophy: 0.19
+         • Macular Preservation: 0.69
+         • Early Onset: 0.50
+
+      [D] DIFFERENTIAL DIAGNOSIS:
+         [1] Age-Related Macular Degeneration: 27.9%
+         [2] Usher Syndrome (RP variant): 19.2%
+         [3] Retinitis Pigmentosa: 18.7%
+         [4] Diabetic Retinopathy: 13.5%
+
+      [N] CLINICAL NOTES:
+         - Isolated pigmentation without vessel changes: Consider benign causes (CHRPE, laser scars)
+         - Ambiguous diagnosis: Age-Related Macular Degeneration vs Usher Syndrome (RP variant) - clinical correlation required
+      ============================================================
+
+   [L] Top Differential Diagnoses:
+      1. Age-Related Macular Degeneration: 27.9%
+      2. Usher Syndrome (RP variant): 19.2%
+      3. Retinitis Pigmentosa: 18.7%
+   [N] Clinical Notes:
+      - Isolated pigmentation without vessel changes: Consider benign causes (CHRPE, laser scars)
+      - Ambiguous diagnosis: Age-Related Macular Degeneration vs Usher Syndrome (RP variant) - clinical correlation required
+   ⚖️  DECISION ENGINE (Simplified 6-Rule System):
+      AI: 60.4% | Says RP: YES
+      Clinical Votes (MODERATE/CRITICAL): 1/9
+      MILD findings: 3 | CRITICAL findings: 1
+      Triad Complete: False | Pathways: SP=False, RPA=False, Sectoral=False
+      → Rule 3: AI CONFIDENT + CLINICAL SUPPORT (AI=60.4%, Votes=1)
+   [V] VERDICT: RP_POSITIVE
+   [S] Score: 0.661 | Confidence: MODERATE
+   [C] Consensus: 1/9 Experts + AI: YES
+======================================================================
+
+127.0.0.1 - - [24/Jun/2026 20:00:03] "POST /api/analyze HTTP/1.1" 200 -
+127.0.0.1 - - [24/Jun/2026 20:01:27] "OPTIONS /api/analyze HTTP/1.1" 200 -
+
+======================================================================
+[!!] IMAGE UPLOAD DETECTED - STARTING ANALYSIS [!!]
+======================================================================
+
+======================================================================
+[!!] IMAGE UPLOAD DETECTED - STARTING ANALYSIS [!!]
+======================================================================
+
+======================================================================
+[20:01:27] [A] Analyzing scan for PT-4719
+======================================================================
+
+======================================================================
+[20:01:27] [A] Analyzing scan for PT-4719
+======================================================================
+   [Q] Validating image quality...
+
+   [Q] IMAGE QUALITY VALIDATION for PT-4719
+      ============================================================
+      [1] Resolution: 1024x1024 px -> [+] PASS
+      [2] Blur Detection: variance=264.84 -> [+] PASS (sharp)
+      [3] Brightness: mean=79.2 -> [+] PASS
+      [4] Contrast: std=45.4 -> [+] PASS
+      [5] Vignetting: ratio=0.439 -> [+] PASS
+      [6] Color Balance: R=122.6 G=66.5 B=30.7 -> [!] WARN (color cast)
+      [7] Vessel Network: coverage=0.2535 -> [+] PASS
+
+      [!] VERDICT: ACCEPTED WITH WARNINGS (Quality Score: 95.0/100)
+      Warnings: 1
+      ============================================================
+
+   [+] Image quality: 95.0/100 - Acceptable
+   [U] Analyzing patient demographics and history...
+
+   [P] PATIENT HISTORY ANALYSIS
+      ============================================================
+      Age: 33 years | Gender: Unknown | Ethnicity: Caucasian
+
+      [S] SYMPTOM ASSESSMENT:
+         -> Total Symptom Score: 0.0/100
+
+      [F] FAMILY HISTORY: Negative
+
+      [R] OVERALL RISK SCORE: 10.0/100
+         -> [LOW] Routine screening - No immediate concern
+
+      [A] THRESHOLD ADJUSTMENTS:
+         Pigment threshold: +0.0 (ethnicity correction)
+         Vessel threshold: +0.000 (age correction)
+         AI confidence shift: +0.00 (symptom risk)
+      ============================================================
+
+      Ethnicity: caucasian (Pigment adjustment: 0)
+      Age: adult (Vessel adjustment: 0.0)
+      Risk Score: 10.0/100 (Symptoms: 0.0)
+   [*] Extracting clinical features...
+   [VESSEL] Raw density: 51.9%, Brightness: 97.2, Correction: 1.00, Final: 51.9%
+   [PIGMENT] L-channel: mean=107.7, std=29.8, percentile=87.0, statistical=42.2, brightness_comp=-8, final_threshold=65.0
+[TEXTURE] Global entropy=6.71, Local variation=10.88, Mean brightness=79.2
+   [E] Expert panel consultation (10 scanners)...
+   ------------------------------------------------------------------
+   [!] AI Pattern Recognition                   -> SUSPICIOUS           ( 60.4%)
+      Vote: 0.1569 | Neural network RP probability: 60.4%
+   [+] Vessel Attenuation (TRIAD #2)            -> NORMAL               ( 20.0%)
+      Vote: 0.0320 | Vessel density: 51.9% (Normal: >25%)
+   [!] Bone Spicule Pigmentation (TRIAD #1)     -> EXTENSIVE BONE SPICULES ( 95.0%)
+      Vote: 0.3059 | Clusters: 36 (Normal: <8)
+   [+] Optic Disc Pallor (TRIAD #3)             -> NORMAL               ( 20.0%)
+      Vote: 0.0200 | Brightness: 150 (Normal: 140-180)
+   [+] Vessel Tortuosity                        -> NORMAL               ( 25.0%)
+      Vote: 0.0200 | Tortuosity: 1.00 (Normal: <1.3)
+   [!] Texture Degeneration                     -> MODERATE CHANGES     ( 50.0%)
+      Vote: 0.0300 | Entropy: 6.71, Local: 10.9 (Normal: <6.4/<7.0)
+   [+] Spatial Pattern                          -> NORMAL               ( 20.0%)
+      Vote: 0.0080 | Degradation: 0.23 (Normal: <0.4)
+   [!] Bright Lesions (RPA)                     -> SCATTERED FLECKS     ( 45.0%)
+      Vote: 0.0432 | Flecks: 38 | Density: 0.0066
+   [!] Macula (CME)                             -> MILD IRREGULARITY    ( 45.0%)
+      Vote: 0.0378 | CME Score: 0.31 | Irregularity: 28.4
+   [+] Quadrant (Sectoral)                      -> SYMMETRIC            ( 10.0%)
+      Vote: 0.0070 | Asymmetry: 0.16 | Worst: inf_temporal
+
+   [D] Generating differential diagnosis...
+
+   [D] DIFFERENTIAL DIAGNOSIS
+      ============================================================
+
+      [F] FEATURE EXTRACTION:
+         • Ai Rp Probability: 0.60
+         • Bone Spicules: 1.00
+         • Peripheral Loss: 0.23
+         • Exudates: 1.00
+         • Cotton Wool Spots: 0.70
+         • Drusen: 1.00
+         • Macular Edema: 0.31
+         • Abnormal Texture: 0.96
+         • Optic Disc Edema: 0.25
+         • Chorioretinal Atrophy: 0.19
+         • Macular Preservation: 0.69
+
+      [D] DIFFERENTIAL DIAGNOSIS:
+         [1] Age-Related Macular Degeneration: 27.9%
+         [2] Retinitis Pigmentosa: 18.7%
+         [3] Usher Syndrome (RP variant): 16.7%
+         [4] Diabetic Retinopathy: 13.5%
+
+      [N] CLINICAL NOTES:
+         - Isolated pigmentation without vessel changes: Consider benign causes (CHRPE, laser scars)
+         - Ambiguous diagnosis: Age-Related Macular Degeneration vs Retinitis Pigmentosa - clinical correlation required
+      ============================================================
+
+   [L] Top Differential Diagnoses:
+      1. Age-Related Macular Degeneration: 27.9%
+      2. Retinitis Pigmentosa: 18.7%
+      3. Usher Syndrome (RP variant): 16.7%
+   [N] Clinical Notes:
+      - Isolated pigmentation without vessel changes: Consider benign causes (CHRPE, laser scars)
+      - Ambiguous diagnosis: Age-Related Macular Degeneration vs Retinitis Pigmentosa - clinical correlation required
+   ⚖️  DECISION ENGINE (Simplified 6-Rule System):
+      AI: 60.4% | Says RP: YES
+      Clinical Votes (MODERATE/CRITICAL): 1/9
+      MILD findings: 3 | CRITICAL findings: 1
+      Triad Complete: False | Pathways: SP=False, RPA=False, Sectoral=False
+      → Rule 3: AI CONFIDENT + CLINICAL SUPPORT (AI=60.4%, Votes=1)
+   [V] VERDICT: RP_POSITIVE
+   [S] Score: 0.661 | Confidence: MODERATE
+   [C] Consensus: 1/9 Experts + AI: YES
+======================================================================
+
+127.0.0.1 - - [24/Jun/2026 20:01:33] "POST /api/analyze HTTP/1.1" 200 -

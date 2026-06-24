@@ -8,7 +8,7 @@ net start MongoDB
 
 if %errorlevel% == 0 (
     echo.
-    echo ✓ MongoDB started successfully!
+    echo  MongoDB started successfully!
     echo.
     echo MongoDB is now running on: mongodb://127.0.0.1:27017
     echo.
