@@ -1,0 +1,3 @@
+Base Paper 1 proves you have a clinical target (Retinitis Pigmentosa).
+Base Paper 2 proves that upgrading standard GANs to WGAN-GP is the correct mathematical way to solve data scarcity for rare diseases.
+Base Paper 3 proves that using Explainable AI (XAI) is the correct way to make the system trustable for medical doctors.
