@@ -37,6 +37,21 @@ Our project completely abandons the vulnerable "Black Box" approach, replacing i
 
 ---
 
+## 💡 Feasibility Analysis
+**1. Technical Feasibility:**
+* **Low Computational Overhead:** By shifting the bulk of the analysis from massive Deep Learning networks to highly optimized Mathematical/Morphological Computer Vision algorithms (OpenCV), the system runs efficiently on standard CPUs without requiring expensive cloud GPUs.
+* **Modular Design:** The 10-Expert system is highly modular, meaning new experts or disease variants can be added mathematically without retraining the entire neural network from scratch.
+
+**2. Economic Feasibility:**
+* **Hardware Agnostic:** Traditional RP diagnostic tools require $50,000+ tabletop fundus scanners. Our dynamic camera calibration allows the software to accurately diagnose RP using $500 handheld or smartphone-based fundus cameras.
+* **Low-Resource Clinics:** By reducing hardware costs and cloud computing requirements, this CDSS can be deployed in rural and low-resource medical clinics globally.
+
+**3. Operational Feasibility:**
+* **Clinical Trust & Legal Compliance:** The "White-Box" rules-based engine provides explicit, medically sound justifications (e.g., "Severe Vessel Attenuation: 4.4% Density") for every diagnosis, ensuring doctors can trust and legally verify the AI's decision.
+* **Accessible UI:** The dashboard is built as a lightweight web application, meaning any doctor with a standard laptop and web browser can instantly use the system without complex installations.
+
+---
+
 ## 🛠️ Technology Stack
 * **Frontend:** HTML5, CSS3 (Custom Glassmorphism Medical UI), Vanilla JavaScript
 * **Backend:** Python (Flask API)
