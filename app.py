@@ -1464,8 +1464,8 @@ def generate_xai_explanation(ai_conf, expert_opinions, verdict_code, is_sine_pig
         phys_part = "The physical scanners did not find any severe structural damage."
 
     # 3. Build Summary based on Verdict
-    if verdict_code == "SUSPICIOUS":
-        summary = f"{ai_part} {phys_part} Because the physical signs are mild or unusual, a real doctor wouldn't diagnose a rare disease just yet. The system is playing it safe and asking for a follow-up check."
+    if verdict_code in ["SUSPICIOUS", "SUSPICIOUS_ISOLATED"]:
+        summary = f"{ai_part} {phys_part} Because the physical signs are isolated or unusual, a real doctor wouldn't diagnose a rare disease just yet. The system is playing it safe and asking for a follow-up check."
     elif verdict_code == "OTHER_DISEASE":
         summary = f"{ai_part} However, the differential diagnosis engine mathematically proved that these abnormalities are far more likely caused by a different eye disease (such as Macular Degeneration or Diabetic Retinopathy) rather than Retinitis Pigmentosa. The RP diagnosis was correctly aborted."
     elif verdict_code == "RP_SINE_PIGMENTO":
