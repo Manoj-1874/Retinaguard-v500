@@ -790,7 +790,7 @@ def extract_quadrant_features(img, fov_mask, is_angiography=False):
     # Note: In angiograms, min_degradation threshold is loosened slightly.
     min_deg_threshold = 0.25 if is_angiography else 0.20
     is_truly_sectoral = (
-        quadrant_asymmetry > 0.25 and  # Much stricter asymmetry threshold
+        (quadrant_asymmetry > 0.25 or (quadrant_asymmetry > 0.15 and max_degradation > 0.35)) and
         max_degradation > 0.25 and     # Worst quadrant must be degraded
         min_degradation < min_deg_threshold  # Best quadrant must be healthy
     )
@@ -1810,8 +1810,11 @@ def analyze_retinal_scan():
         has_clinical_sine_pigmento = vessel_abnormal and optic_abnormal and (pigment_conf < CONFIG["SINE_PIGMENTO_PIGMENT_MAX"]) and (texture_severity in ['MODERATE', 'CRITICAL'] or spatial_abnormal)
         
         # Pathway #1: Retinitis Punctata Albescens (white flecks instead of dark)
-        if bright_severity in ['CRITICAL', 'MODERATE'] and pigment_conf < CONFIG["RPA_PIGMENT_MAX"]:
-            is_rpa = True
+        is_rpa = (
+            bright_severity == 'CRITICAL' or
+            (bright_severity == 'MODERATE' and pigment_conf < CONFIG["RPA_PIGMENT_MAX"])
+        )
+        if is_rpa:
             base_score += CONFIG["RPA_PATHWAY_BONUS"]
             log_print(f"   🔘 RPA PATHWAY ACTIVATED! (+{CONFIG['RPA_PATHWAY_BONUS']:.3f} compensation)")
             log_print(f"      → Bright lesions detected + No dark bone spicules")
@@ -1907,9 +1910,11 @@ def analyze_retinal_scan():
             verdict_code = "OTHER_DISEASE"
             log_print(f"      → Rule 0: DIFFERENTIAL OVERRIDE (Top: {top_disease} {top_score}%, RP: {rp_score}%)")
             
+        syndromic_prefix = "USHER SYNDROME (SYNDROMIC RP)" if top_disease == "Usher Syndrome" else "RETINITIS PIGMENTOSA"
+            
         # RULE 1: CLASSIC RP - Triad Complete (Gold Standard)
         elif triad_complete:
-            verdict = "POSITIVE: CLASSIC RETINITIS PIGMENTOSA (TRIAD COMPLETE)"
+            verdict = f"POSITIVE: CLASSIC {syndromic_prefix} (TRIAD COMPLETE)"
             confidence = "VERY HIGH"
             verdict_code = "CLASSIC_RP"
             log_print(f"      → Rule 1: CLASSIC RP TRIAD (All 3 cardinal signs present)")
@@ -1927,34 +1932,42 @@ def analyze_retinal_scan():
             verdict_code = "RP_RPA"
             log_print(f"      → Rule 2b: RPA VARIANT (Bright flecks, No dark pigment)")
             
-        elif is_sectoral:
-            verdict = "POSITIVE: SECTORAL RETINITIS PIGMENTOSA"
+        elif is_sectoral and ai_says_rp:
+            verdict = f"POSITIVE: SECTORAL {syndromic_prefix} (ASYMMETRIC)"
             confidence = "HIGH"
             verdict_code = "RP_SECTORAL"
             log_print(f"      → Rule 2c: SECTORAL RP (Quadrant asymmetry, AI agrees)")
 
-        # RULE 3: POSITIVE - AI Confident + Clinical Support
-        # AI says RP (≥60%) AND at least 1 clinical vote (MODERATE/CRITICAL) OR any CRITICAL finding
-        elif ai_says_rp and (clinical_rp_votes >= 1 or critical_count > 0):
-            verdict = "POSITIVE: RP DETECTED (AI + CLINICAL CONSENSUS)"
-            confidence = "HIGH" if clinical_rp_votes >= 2 else "MODERATE"
+        # RULE 3: HIGH CONSENSUS (4+ clinical experts + AI agreement)
+        elif clinical_rp_votes >= 4 and ai_says_rp:
+            verdict = f"POSITIVE: {syndromic_prefix} (CLINICAL CONSENSUS)"
+            confidence = "HIGH"
             verdict_code = "RP_POSITIVE"
-            log_print(f"      → Rule 3: AI CONFIDENT + CLINICAL SUPPORT (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
-        
-        # RULE 4: POSITIVE - Multiple Clinical Findings (AI not required)
-        # 3+ clinical votes (MODERATE/CRITICAL) regardless of AI
+            log_print(f"      → Rule 3: CLINICAL CONSENSUS ({clinical_rp_votes} experts agree + AI)")
+            
+        # RULE 4: OVERWHELMING PHYSICAL EVIDENCE (5+ experts, overrides AI)
+        elif clinical_rp_votes >= 5 or (clinical_rp_votes == 4 and critical_count >= 2):
+            verdict = f"POSITIVE: {syndromic_prefix} (OVERWHELMING EVIDENCE)"
+            confidence = "HIGH"
+            verdict_code = "RP_POSITIVE"
+            log_print(f"      → Rule 4: OVERWHELMING EVIDENCE ({clinical_rp_votes} experts, {critical_count} critical)")
+            
+        # RULE 5: POSITIVE - Multiple Clinical Findings (AI not required)
         elif clinical_rp_votes >= 3:
             verdict = "POSITIVE: RP DETECTED (MULTIPLE CLINICAL FINDINGS)"
             confidence = "MODERATE" if ai_says_rp else "MODERATE-LOW"
             verdict_code = "RP_POSITIVE"
-            log_print(f"      → Rule 4: MULTIPLE CLINICAL FINDINGS ({clinical_rp_votes} votes, AI={ai_confidence*100:.1f}%)")
+            log_print(f"      → Rule 5: MULTIPLE CLINICAL FINDINGS ({clinical_rp_votes} votes, AI={ai_confidence*100:.1f}%)")
         
         # ========== SUSPICIOUS VERDICTS (NEEDS REVIEW) ==========
         
-        # RULE 5: SUSPICIOUS - AI Uncertain + Clinical Support OR Critical Standalone Finding
-        # (a) AI uncertain (50-60%) + at least 1 clinical vote, OR
-        # (b) Any CRITICAL finding (even if AI disagrees), OR
-        # (c) MODERATE peripheral degeneration + AI concern (>35%)
+        # RULE 5a: HIGH AI SUSPICION + MODERATE PHYSICAL EVIDENCE
+        elif ai_confidence > 0.85 and clinical_rp_votes >= 2:
+            verdict = f"POSITIVE: {syndromic_prefix} (AI + PHYSICAL CORRELATION)"
+            confidence = "HIGH"
+            verdict_code = "RP_POSITIVE"
+            log_print(f"      → Rule 5a: HIGH AI + PHYSICAL CORRELATION (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
+        
         elif (ai_uncertain and clinical_rp_votes >= 1) or \
              (critical_count > 0) or \
              (spatial_result['severity'] == 'MODERATE' and ai_confidence > CONFIG["AI_MILD"]):
@@ -1964,7 +1977,7 @@ def analyze_retinal_scan():
                 verdict = "SUSPICIOUS: ATYPICAL FINDINGS - RECOMMEND CLINICAL REVIEW"
                 confidence = "MODERATE"
                 verdict_code = "SUSPICIOUS"
-                log_print(f"      → Rule 5a: AI UNCERTAIN + CLINICAL EVIDENCE (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
+                log_print(f"      → Rule 5b: AI UNCERTAIN + CLINICAL EVIDENCE (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
             elif critical_count > 0:
                 # Identify which specific finding is critical for better clinical context
                 critical_findings = [name.replace('_', ' ').upper() for name, r in clinical_results.items() if r['severity'] == 'CRITICAL']
@@ -1972,18 +1985,17 @@ def analyze_retinal_scan():
                 verdict = f"SUSPICIOUS: ISOLATED CLINICAL FINDING ({finding_list}) - RECOMMEND REVIEW"
                 confidence = "LOW"
                 verdict_code = "SUSPICIOUS_ISOLATED"
-                log_print(f"      → Rule 5b: ISOLATED CRITICAL FINDING ({finding_list}, AI disagrees at {ai_confidence*100:.1f}%)")
+                log_print(f"      → Rule 5c: ISOLATED CRITICAL FINDING ({finding_list}, AI disagrees at {ai_confidence*100:.1f}%)")
             else:
                 verdict = "SUSPICIOUS: PERIPHERAL DEGENERATION - RECOMMEND CLINICAL REVIEW"
                 confidence = "MODERATE"
                 verdict_code = "SUSPICIOUS"
-                log_print(f"      → Rule 5c: MODERATE PERIPHERAL DEGENERATION (Spatial={spatial_result['severity']}, AI={ai_confidence*100:.1f}%)")
+                log_print(f"      → Rule 5d: MODERATE PERIPHERAL DEGENERATION (Spatial={spatial_result['severity']}, AI={ai_confidence*100:.1f}%)")
         
         # ========== BORDERLINE VERDICTS (MONITOR) ==========
         
         # RULE 6: AI HALLUCINATION OVERRIDE - Healthy despite AI
         # If AI is confident but clinical experts strongly disagree (0 votes)
-        # This is almost always an artifact (like bright lesions/glare) tricking the AI.
         elif ai_confidence > 0.60 and clinical_rp_votes == 0:
             verdict = "NEGATIVE: HEALTHY RETINA - NO RP DETECTED (AI OVERRIDDEN)"
             confidence = "HIGH"
