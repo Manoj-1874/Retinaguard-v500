@@ -1893,7 +1893,7 @@ def analyze_retinal_scan():
         # and RP is significantly lower (< 30%), block RP-positive verdicts.
         top_disease = differential.get('top_diagnosis', '') if differential else ''
         top_score = differential.get('top_confidence', 0) if differential else 0
-        rp_score = differential.get('disease_scores', {}).get('Retinitis Pigmentosa', 100) if differential else 100
+        rp_score = differential.get('disease_scores', {}).get('retinitis_pigmentosa', 100) if differential else 100
         
         is_other_disease_dominant = (
             top_score > 50.0 
