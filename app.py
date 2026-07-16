@@ -1431,7 +1431,7 @@ def quadrant_expert(features):
         "detail": f"Asymmetry: {asymmetry:.2f} | Worst: {worst}"
     }
 
-def generate_xai_explanation(ai_conf, expert_opinions, verdict_code, is_sine_pigmento, is_rpa, is_sectoral, is_cme, quality_score, risk_score):
+def generate_xai_explanation(ai_conf, expert_opinions, verdict_code, is_sine_pigmento, is_rpa, is_sectoral, is_cme, quality_score, risk_score, is_angiography=False):
     # 1. AI Part
     if ai_conf > 0.8:
         ai_part = f"The AI is highly confident ({ai_conf*100:.1f}%) there is a problem."
@@ -1483,7 +1483,10 @@ def generate_xai_explanation(ai_conf, expert_opinions, verdict_code, is_sine_pig
         summary = f"{ai_part} A few minor irregularities were found by the physical scanners. This is likely a benign finding or a very early sub-clinical change."
     else:
         if ai_conf > 0.60:
-            summary = f"{ai_part} However, the physical scanners found zero critical evidence of disease. The system determined the AI was likely tricked by bright light artifacts or glare, and correctly overruled it. The retina is healthy."
+            if is_angiography:
+                summary = f"{ai_part} However, the physical scanners found zero critical evidence of disease. The system determined the AI was heavily confused by the glowing white blood vessels unique to Fluorescein Angiography, and correctly overruled it. The retina is healthy."
+            else:
+                summary = f"{ai_part} However, the physical scanners found zero critical evidence of disease. The system determined the AI was likely tricked by bright light artifacts or glare, and correctly overruled it. The retina is healthy."
         else:
             summary = f"{ai_part} All the eye scanners came back normal. The retina looks completely healthy."
 
@@ -1564,6 +1567,14 @@ def analyze_retinal_scan():
             sys.stdout.flush()
         # ===================================
 
+        # ===== Detect image type (warn if angiography, but continue analysis) =====
+        is_angio, angio_confidence, angio_reason = detect_angiography(img)
+        if is_angio:
+            log_print(f"   [!] WARNING: Angiography image detected (confidence: {angio_confidence*100:.1f}%)")
+            log_print(f"   [R] Reason: {angio_reason}")
+            log_print(f"   [I] Continuing analysis with adjusted thresholds...")
+            sys.stdout.flush()
+
         # ===== NEW: Image Quality Validation =====
         log_print("   [Q] Validating image quality...")
         sys.stdout.flush()
@@ -1573,7 +1584,7 @@ def analyze_retinal_scan():
         try:
             from image_quality_validator import ImageQualityValidator
             validator = ImageQualityValidator(strict_mode=(camera_type == 'Generic'))
-            quality_result = validator.validate(img, patient_id=data.get('patientId', 'UNKNOWN'))
+            quality_result = validator.validate(img, patient_id=data.get('patientId', 'UNKNOWN'), is_angiography=is_angio)
         except Exception as e:
             # Fallback to function if class isn't available
             quality_result = validate_image_quality(img)
@@ -1611,13 +1622,7 @@ def analyze_retinal_scan():
         quality_result['issues'] = issues
         # ==========================================
         
-        # Detect image type (warn if angiography, but continue analysis)
-        is_angio, angio_confidence, angio_reason = detect_angiography(img)
-        if is_angio:
-            log_print(f"   [!] WARNING: Angiography image detected (confidence: {angio_confidence*100:.1f}%)")
-            log_print(f"   [R] Reason: {angio_reason}")
-            log_print(f"   [I] Continuing analysis with adjusted thresholds...")
-            sys.stdout.flush()
+        # (Moved up before quality validation)
         
 
         
@@ -2125,7 +2130,7 @@ def analyze_retinal_scan():
             # FRONTEND COMPATIBILITY: Add commonly accessed fields at root level
             "quality_score": quality_result.get('quality_score') if quality_result else None,
             "angiography_warning": f"[!] ANGIOGRAPHY DETECTED: This appears to be a fluorescein/ICG angiography image. Results may be less reliable than color fundus analysis. ({angio_reason})" if is_angio else None,
-            "xai_explanation": generate_xai_explanation(ai_conf, expert_opinions, verdict_code, is_sine_pigmento, is_rpa, is_sectoral, is_cme, quality_result.get("quality_score", 100) if quality_result else 100, patient_data.get("risk_score", 0) if patient_data else 0)
+            "xai_explanation": generate_xai_explanation(ai_conf, expert_opinions, verdict_code, is_sine_pigmento, is_rpa, is_sectoral, is_cme, quality_result.get("quality_score", 100) if quality_result else 100, patient_data.get("risk_score", 0) if patient_data else 0, is_angio)
         }
         
         # Add cache control headers to prevent browser caching

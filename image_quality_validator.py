@@ -63,13 +63,14 @@ class ImageQualityValidator:
             self.MIN_VESSEL_DENSITY = 0.001    # Allow poor vessel visibility
             self.MAX_VIGNETTING_RATIO = 0.50   # Allow heavier vignetting
             
-    def validate(self, image: np.ndarray, patient_id: str = "UNKNOWN") -> Dict:
+    def validate(self, image: np.ndarray, patient_id: str = "UNKNOWN", is_angiography: bool = False) -> Dict:
         """
         Comprehensive image quality validation
         
         Args:
             image: Input fundus image (BGR or RGB format)
             patient_id: Patient identifier for logging
+            is_angiography: True if image is an FA/ICG scan (relaxes certain checks)
             
         Returns:
             Dictionary with:
@@ -225,7 +226,9 @@ class ImageQualityValidator:
         
         print(f"      [5] Vignetting: ratio={vignetting_ratio:.3f}", end=" -> ", flush=True)
         
-        if vignetting_ratio < self.MAX_VIGNETTING_RATIO:
+        if is_angiography:
+            print(f"[+] PASS (angio artifact ignored)", flush=True)
+        elif vignetting_ratio < self.MAX_VIGNETTING_RATIO:
             errors.append(f"Excessive vignetting (ratio={vignetting_ratio:.3f}). Maximum: {self.MAX_VIGNETTING_RATIO}")
             print(f"[X] FAIL (dark edges)", flush=True)
         elif vignetting_ratio < self.MAX_VIGNETTING_RATIO + 0.1:
@@ -241,16 +244,19 @@ class ImageQualityValidator:
             
             print(f"      [6] Color Balance: R={color_balance['r']:.1f} G={color_balance['g']:.1f} B={color_balance['b']:.1f}", end=" -> ", flush=True)
             
-            # Check for severe color casts
-            max_diff = max(abs(color_balance['r'] - color_balance['g']),
-                          abs(color_balance['g'] - color_balance['b']),
-                          abs(color_balance['b'] - color_balance['r']))
-            
-            if max_diff > 50:
-                warnings.append(f"Color cast detected (max channel diff={max_diff:.1f})")
-                print(f"[!] WARN (color cast)", flush=True)
+            if is_angiography:
+                print(f"[+] PASS (angio grayscale)", flush=True)
             else:
-                print(f"[+] PASS", flush=True)
+                # Check for severe color casts
+                max_diff = max(abs(color_balance['r'] - color_balance['g']),
+                              abs(color_balance['g'] - color_balance['b']),
+                              abs(color_balance['b'] - color_balance['r']))
+                
+                if max_diff > 50:
+                    warnings.append(f"Color cast detected (max channel diff={max_diff:.1f})")
+                    print(f"[!] WARN (color cast)", flush=True)
+                else:
+                    print(f"[+] PASS", flush=True)
         
         # CHECK 7: Vessel Network Detection (Ensures vascularization)
         vessel_coverage = self._estimate_vessel_coverage(gray)
