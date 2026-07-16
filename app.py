@@ -1643,9 +1643,9 @@ def analyze_retinal_scan():
             
             # Apply demographic adjustments to CONFIG thresholds
             adjusted_config = patient_module.apply_adjustments_to_config(CONFIG, threshold_adjustments)
-            log_print(f"      Ethnicity: {patient_data['ethnicity']} (Pigment adjustment: {threshold_adjustments['pigment_adjustment']})")
-            log_print(f"      Age: {patient_data['age_category']} (Vessel adjustment: {threshold_adjustments['vessel_adjustment']})")
-            log_print(f"      Risk Score: {patient_data['risk_score']}/100 (Symptoms: {patient_data['symptom_score']:.1f})")
+            log_print(f"      Ethnicity: {patient_data_raw.get('ethnicity', 'unknown')} (Pigment adjustment: {threshold_adjustments['pigment_adjustment']})")
+            log_print(f"      Age: {patient_data_raw.get('age', 'unknown')} (Vessel adjustment: {threshold_adjustments['vessel_adjustment']})")
+            log_print(f"      Risk Score: {patient_data.get('risk_score', 0)}/100")
             sys.stdout.flush()
             
             # Use adjusted thresholds for expert scanners
