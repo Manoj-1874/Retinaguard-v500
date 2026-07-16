@@ -2000,7 +2000,7 @@ def analyze_retinal_scan():
         
         # RULE 6: AI HALLUCINATION OVERRIDE vs. EARLY-STAGE PRE-CLINICAL RP
         # If AI is confident but clinical experts strongly disagree (0 votes)
-        elif ai_confidence > 0.60 and clinical_rp_votes == 0:
+        elif (ai_confidence > 0.60 or (ai_confidence > 0.40 and (patient_data.get('risk_score', 0) if patient_data else 0) >= 70)) and clinical_rp_votes == 0:
             risk_score = patient_data.get('risk_score', 0) if patient_data else 0
             if risk_score >= 70:
                 # The patient has high clinical risk (symptoms/family history) and the AI sees invisible early signs
