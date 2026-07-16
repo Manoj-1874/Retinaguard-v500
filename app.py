@@ -1904,13 +1904,13 @@ def analyze_retinal_scan():
             and rp_score < 30.0
         )
 
+        syndromic_prefix = "USHER SYNDROME (SYNDROMIC RP)" if top_disease == "Usher Syndrome" else "RETINITIS PIGMENTOSA"
+
         if is_other_disease_dominant:
             verdict = f"NEGATIVE FOR RP: ALTERNATIVE PATHOLOGY DETECTED ({top_disease.upper()})"
             confidence = "HIGH"
             verdict_code = "OTHER_DISEASE"
             log_print(f"      → Rule 0: DIFFERENTIAL OVERRIDE (Top: {top_disease} {top_score}%, RP: {rp_score}%)")
-            
-        syndromic_prefix = "USHER SYNDROME (SYNDROMIC RP)" if top_disease == "Usher Syndrome" else "RETINITIS PIGMENTOSA"
             
         # RULE 1: CLASSIC RP - Triad Complete (Gold Standard)
         elif triad_complete:
