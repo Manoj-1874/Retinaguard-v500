@@ -684,9 +684,12 @@ def extract_macula_features(img, fov_mask, is_angiography=False):
     macula_std = np.std(macula_region)
     macula_mean = np.mean(macula_region)
     
-    # Cysts appear as dark spots within the bright macula
+    # Cysts appear as dark spots in color fundus, but BRIGHT glowing spots in Angiography!
     l_macula = l_channel[macula_mask]
-    dark_cyst_ratio = np.sum(l_macula < (np.mean(l_macula) - 20)) / len(l_macula)
+    if is_angiography:
+        cyst_ratio = np.sum(l_macula > (np.mean(l_macula) + 20)) / len(l_macula)
+    else:
+        cyst_ratio = np.sum(l_macula < (np.mean(l_macula) - 20)) / len(l_macula)
     
     # Calculate Local Binary Pattern variance for texture irregularity
     # High variance in the macula = potential CME
@@ -697,20 +700,14 @@ def extract_macula_features(img, fov_mask, is_angiography=False):
     edges = cv2.Canny(macula_img, 30, 100)
     edge_density = np.sum(edges[macula_mask]) / (np.sum(macula_mask) * 255)
     
-    # CME score: combines irregularity + dark cyst ratio + edge density
-    cme_score = (macula_std / 50) * 0.4 + dark_cyst_ratio * 0.3 + edge_density * 0.3
+    # CME score: combines irregularity + cyst ratio + edge density
+    cme_score = (macula_std / 50) * 0.4 + cyst_ratio * 0.3 + edge_density * 0.3
     irregularity = macula_std
-    
-    # ADJUST FOR ANGIOGRAPHY: Fluid leakage in FA looks like CME, but 
-    # threshold should be much higher since it's naturally bright.
-    if is_angiography:
-        cme_score = cme_score * 0.4
-        irregularity = irregularity * 0.4
         
     return {
         'cme_score': min(cme_score, 1.0),
         'macula_irregularity': irregularity,
-        'dark_cyst_ratio': dark_cyst_ratio,
+        'dark_cyst_ratio': cyst_ratio,
         'edge_density': edge_density,
         'irregularity': irregularity,
         'edema_likelihood': cme_score
