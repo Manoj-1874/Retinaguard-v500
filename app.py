@@ -1463,6 +1463,8 @@ def generate_xai_explanation(ai_conf, expert_opinions, verdict_code, is_sine_pig
     # 3. Build Summary based on Verdict
     if verdict_code in ["SUSPICIOUS", "SUSPICIOUS_ISOLATED"]:
         summary = f"{ai_part} {phys_part} Because the physical signs are isolated or unusual, a real doctor wouldn't diagnose a rare disease just yet. The system is playing it safe and asking for a follow-up check."
+    elif verdict_code == "SUSPICIOUS_EARLY_STAGE":
+        summary = f"{ai_part} The physical scanners found zero visible structural damage. However, because the patient has a high clinical risk profile (such as family history or symptoms), the system trusts the Neural Network's ability to detect invisible, early-stage microscopic changes. Genetic testing is required."
     elif verdict_code == "OTHER_DISEASE":
         summary = f"{ai_part} However, the differential diagnosis engine mathematically proved that these abnormalities are far more likely caused by a different eye disease (such as Macular Degeneration or Diabetic Retinopathy) rather than Retinitis Pigmentosa. The RP diagnosis was correctly aborted."
     elif verdict_code == "RP_SINE_PIGMENTO":
@@ -1996,13 +1998,22 @@ def analyze_retinal_scan():
         
         # ========== BORDERLINE VERDICTS (MONITOR) ==========
         
-        # RULE 6: AI HALLUCINATION OVERRIDE - Healthy despite AI
+        # RULE 6: AI HALLUCINATION OVERRIDE vs. EARLY-STAGE PRE-CLINICAL RP
         # If AI is confident but clinical experts strongly disagree (0 votes)
         elif ai_confidence > 0.60 and clinical_rp_votes == 0:
-            verdict = "NEGATIVE: HEALTHY RETINA - NO RP DETECTED (AI OVERRIDDEN)"
-            confidence = "HIGH"
-            verdict_code = "HEALTHY"
-            log_print(f"      → Rule 6: AI OVERRIDDEN (AI={ai_confidence*100:.1f}%, but 0 clinical votes)")
+            risk_score = patient_data.get('risk_score', 0) if patient_data else 0
+            if risk_score >= 70:
+                # The patient has high clinical risk (symptoms/family history) and the AI sees invisible early signs
+                verdict = "SUSPICIOUS: EARLY-STAGE PRE-CLINICAL RP - RECOMMEND GENETIC TESTING"
+                confidence = "MODERATE"
+                verdict_code = "SUSPICIOUS_EARLY_STAGE"
+                log_print(f"      → Rule 6b: EARLY-STAGE RP DETECTED (AI={ai_confidence*100:.1f}%, Risk Score={risk_score})")
+            else:
+                # No symptoms, no physical evidence, it's just an AI hallucination
+                verdict = "NEGATIVE: HEALTHY RETINA - NO RP DETECTED (AI OVERRIDDEN)"
+                confidence = "HIGH"
+                verdict_code = "HEALTHY"
+                log_print(f"      → Rule 6: AI OVERRIDDEN (AI={ai_confidence*100:.1f}%, but 0 clinical votes)")
             
         # RULE 7: BORDERLINE - Minor Findings Only
         # 2+ MILD findings but no strong clinical votes (and AI is not heavily hallucinating)
