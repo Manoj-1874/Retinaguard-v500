@@ -1466,6 +1466,8 @@ def generate_xai_explanation(ai_conf, expert_opinions, verdict_code, is_sine_pig
     # 3. Build Summary based on Verdict
     if verdict_code == "SUSPICIOUS":
         summary = f"{ai_part} {phys_part} Because the physical signs are mild or unusual, a real doctor wouldn't diagnose a rare disease just yet. The system is playing it safe and asking for a follow-up check."
+    elif verdict_code == "OTHER_DISEASE":
+        summary = f"{ai_part} However, the differential diagnosis engine mathematically proved that these abnormalities are far more likely caused by a different eye disease (such as Macular Degeneration or Diabetic Retinopathy) rather than Retinitis Pigmentosa. The RP diagnosis was correctly aborted."
     elif verdict_code == "RP_SINE_PIGMENTO":
         if has_other_damage:
             summary = f"{ai_part} Although there are no dark pigment spots (which is unusual), the scanners detected significant structural damage in the blood vessels and optic disc. This strongly points to a rare variant of the disease called Sine Pigmento."
@@ -1500,10 +1502,13 @@ def generate_xai_explanation(ai_conf, expert_opinions, verdict_code, is_sine_pig
     
     if has_pigment:
         bullets.append("Strongest Proof: Classic dark spots (bone spicules) were detected in the retina.")
-    elif has_other_damage and not is_sine_pigmento:
+    elif has_other_damage and not is_sine_pigmento and verdict_code != "OTHER_DISEASE":
         bullets.append("Key Finding: Secondary structural damage (like texture or spatial loss) supported the diagnosis.")
     elif is_sine_pigmento:
         bullets.append("Key Finding: Clinical signs (vessel/optic disc changes) without pigmentation were the deciding factor.")
+        
+    if verdict_code == "OTHER_DISEASE":
+        bullets.append("Key Finding: The AI and physical scanners were triggered by an alternative pathology, not Retinitis Pigmentosa.")
         
     if is_cme:
         bullets.append("Complication: Dangerous swelling in the macula (CME) was found, threatening central vision.")
@@ -1883,8 +1888,27 @@ def analyze_retinal_scan():
         
         # ========== POSITIVE VERDICTS (RP DETECTED) ==========
         
+        # RULE 0: DIFFERENTIAL DIAGNOSIS OVERRIDE
+        # If the multi-disease classifier strongly believes this is another disease (AMD/DR > 50%),
+        # and RP is significantly lower (< 30%), block RP-positive verdicts.
+        top_disease = differential.get('top_diagnosis', '') if differential else ''
+        top_score = differential.get('top_confidence', 0) if differential else 0
+        rp_score = differential.get('disease_scores', {}).get('Retinitis Pigmentosa', 100) if differential else 100
+        
+        is_other_disease_dominant = (
+            top_score > 50.0 
+            and top_disease not in ["Retinitis Pigmentosa", "Usher Syndrome", "Choroideremia"]
+            and rp_score < 30.0
+        )
+
+        if is_other_disease_dominant:
+            verdict = f"NEGATIVE FOR RP: ALTERNATIVE PATHOLOGY DETECTED ({top_disease.upper()})"
+            confidence = "HIGH"
+            verdict_code = "OTHER_DISEASE"
+            log_print(f"      → Rule 0: DIFFERENTIAL OVERRIDE (Top: {top_disease} {top_score}%, RP: {rp_score}%)")
+            
         # RULE 1: CLASSIC RP - Triad Complete (Gold Standard)
-        if triad_complete:
+        elif triad_complete:
             verdict = "POSITIVE: CLASSIC RETINITIS PIGMENTOSA (TRIAD COMPLETE)"
             confidence = "VERY HIGH"
             verdict_code = "CLASSIC_RP"
@@ -2022,6 +2046,8 @@ def analyze_retinal_scan():
         # Determine overall severity for frontend color coding based on verdict
         if verdict_code in ["CLASSIC_RP", "RP_POSITIVE", "RP_SINE_PIGMENTO", "RP_RPA", "RP_SECTORAL"]:
             overall_severity = "CRITICAL"
+        elif verdict_code == "OTHER_DISEASE":
+            overall_severity = "MODERATE"
         elif verdict_code == "SUSPICIOUS":
             overall_severity = "MODERATE"
         elif verdict_code == "BORDERLINE":
@@ -2055,6 +2081,8 @@ def analyze_retinal_scan():
                 rp_stage = "Early-Stage (Mild)"
         elif verdict_code == "SUSPICIOUS":
             rp_stage = "Pre-clinical / Suspected Early-Stage"
+        elif verdict_code == "OTHER_DISEASE":
+            rp_stage = "Alternative Pathology Found"
         else:
             rp_stage = "Normal / Non-pathological"
 
