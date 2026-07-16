@@ -105,6 +105,15 @@ class MultiDiseaseClassifier:
                 'early_onset': 0.10  # Requires patient history
             },
             'exclusions': ['drusen', 'microaneurysms']
+        },
+        'syphilis': {
+            'name': 'Ophthalmic Syphilis (Infectious Mimic)',
+            'key_features': {
+                'abnormal_texture': 0.40,       # Severe inflammation/vitritis
+                'bone_spicules': 0.35,          # Pseudo-RP pigment
+                'optic_disc_pallor': 0.25       # Optic atrophy
+            },
+            'exclusions': ['microaneurysms']
         }
     }
     

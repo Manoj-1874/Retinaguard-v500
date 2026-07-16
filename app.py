@@ -1903,7 +1903,7 @@ def analyze_retinal_scan():
         is_other_disease_dominant = (
             top_score > 50.0 
             and top_disease not in ["Retinitis Pigmentosa", "Usher Syndrome", "Choroideremia"]
-            and rp_score < 30.0
+            and (rp_score < 30.0 or top_score > rp_score + 15.0)
         )
 
         syndromic_prefix = "USHER SYNDROME (SYNDROMIC RP)" if top_disease == "Usher Syndrome" else "RETINITIS PIGMENTOSA"
