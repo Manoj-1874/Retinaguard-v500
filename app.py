@@ -26,12 +26,12 @@ Version: 5.2.0 Flask Edition - AI+Consensus Decision Logic
 """
 
 import sys
+import os
+import io
+import warnings
+import logging
 
 # Ensure reliable output for Windows console
-import sys
-import io
-
-import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
@@ -40,16 +40,10 @@ cv2.ocl.setUseOpenCL(False)
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import cv2
 import numpy as np
 from PIL import Image
 import base64
-import io
-import os
-import sys
-import warnings
 from datetime import datetime
-import logging
 
 # ===== NEW: Import enhanced clinical modules =====
 from image_quality_validator import validate_image_quality
@@ -108,11 +102,31 @@ sys.stdout = LoggerWriter(logger.info)
 warnings.filterwarnings('ignore')
 
 # Optional: Load TensorFlow model if available
-TENSORFLOW_AVAILABLE = True
-log_print("[!] TensorFlow enabled - loading deep learning models.")
+TENSORFLOW_AVAILABLE = False
+log_print("[*] Checking TensorFlow availability for model loading...")
+try:
+    import tensorflow as tf
+    from tensorflow import keras
+    TENSORFLOW_AVAILABLE = True
+    log_print("[+] TensorFlow is available.")
+except ImportError:
+    log_print("[!] TensorFlow not installed; continuing without deep learning model.")
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
+
+@app.before_request
+def log_request_info():
+    log_print(f"[REQUEST] {request.method} {request.path} from {request.remote_addr}")
+    sys.stdout.flush()
+
+@app.after_request
+def set_response_headers(response):
+    response.headers['X-RetinaGuard-Version'] = '5.3.0'
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 # Configuration
 UPLOAD_FOLDER = 'uploads'
