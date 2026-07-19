@@ -18,7 +18,7 @@ Retinitis Pigmentosa (RP) is a rare genetic eye disease causing severe vision lo
 ## Project Contributors
 
 - 23CSR110 - KIRAN SEKAR C
-- 23CSR117 - LOKESH P
+- 23CSR117 - LOKESH P 
 - 23CSR124 - MANOJ P
 
 ## 📄 Base Paper & Limitations
@@ -26,7 +26,7 @@ Retinitis Pigmentosa (RP) is a rare genetic eye disease causing severe vision lo
 
 ### Limitations of the Base Paper (Existing Models):
 1. **Black Box Nature:** Existing AI models output a simple probability score without clinical rationale, which is legally and medically insufficient for doctors to trust.
-2. **Massive False Positives:** Basic AI fails to mathematically differentiate between RP "Bone Spicules" (melanin pigment) and Diabetic "Hemorrhages" (dark red blood) or AMD pigment clumping.
+2. **Massive False Positives:** Basic AI fails to mathematically differentiate between RP "Bone Spicules" (melanin pigment) and Diabetic "Hemorrhages" (dark red) or AMD pigment clumping.
 3. **Inability to Handle Hardware Variance:** Models trained on $50,000 tabletop scanners fail completely when given underexposed, blurry images from affordable handheld or smartphone cameras.
 4. **Variant Blindness:** Standard models only look for the "Classic Triad" and fail to diagnose rare variants like Sine Pigmento (RP without pigment) or Sectoral RP.
 
