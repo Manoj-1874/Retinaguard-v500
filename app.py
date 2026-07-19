@@ -1,5 +1,7 @@
 import logging
 
+# Setup common logging formatter for the backend server
+# This helper function centralizes message formatting for audit and debug logs.
 def log_print(*args, **kwargs):
     logger = logging.getLogger(__name__)
     msg = " ".join(str(a) for a in args)
