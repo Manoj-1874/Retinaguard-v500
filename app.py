@@ -128,6 +128,8 @@ def set_response_headers(response):
     response.headers['Expires'] = '0'
     return response
 
+START_TIME = datetime.utcnow().isoformat() + 'Z'
+
 # Configuration
 UPLOAD_FOLDER = 'uploads'
 MODEL_PATH = 'models'
@@ -2007,7 +2009,9 @@ def health_check():
         "model_loaded": DEEP_LEARNING_MODEL is not None,
         "tensorflow_available": TENSORFLOW_AVAILABLE,
         "expert_count": 10,
-        "version": "5.3.0"
+        "version": "5.3.0",
+        "start_time": START_TIME,
+        "current_time": datetime.utcnow().isoformat() + 'Z'
     }), 200
 
 @app.route('/api/models/info', methods=['GET'])
