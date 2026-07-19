@@ -2189,7 +2189,8 @@ def progression_compare():
             'pigment_change_detail': raw_result['pigment_change'],
             'spatial_change_detail': raw_result['spatial_change'],
             'progression_score': raw_result['progression_score'],
-            'urgent': raw_result['urgent']
+            'urgent': raw_result['urgent'],
+            'interval_warning': raw_result.get('interval_warning', False)
         }
         
         log_print(f"   [+] Progression category: {progression_result['progression_category']}")

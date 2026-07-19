@@ -80,7 +80,8 @@ class ProgressionTracker:
         print(f"      Interval: {time_delta.days} days ({years:.2f} years)")
         
         # Check minimum interval
-        if time_delta.days < self.MIN_SCAN_INTERVAL_DAYS:
+        interval_warning = time_delta.days < self.MIN_SCAN_INTERVAL_DAYS
+        if interval_warning:
             print(f"\n      [!] WARNING: Interval too short (<{self.MIN_SCAN_INTERVAL_DAYS} days)")
             print(f"      Progression estimates unreliable - need ≥6 months between scans")
         
@@ -136,6 +137,7 @@ class ProgressionTracker:
             'progression_score': progression_score,
             'clinical_significance': clinical_sig,
             'urgent': urgent,
+            'interval_warning': interval_warning,
             'baseline_date': baseline_date,
             'current_date': current_date
         }
