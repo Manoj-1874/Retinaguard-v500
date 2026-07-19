@@ -83,7 +83,7 @@ class ImageQualityValidator:
         errors = []
         metrics = {}
         
-        print(f"\n   [Q] IMAGE QUALITY VALIDATION for {patient_id}")
+        print(f"\n   [Q] IMAGE QUALITY VALIDATION for {patient_id} (Strict Mode: {self.strict_mode})")
         print(f"      {'='*60}")
         
         # Convert to grayscale for some checks
