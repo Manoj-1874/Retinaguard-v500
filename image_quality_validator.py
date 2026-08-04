@@ -96,3 +96,29 @@ def validate_image_quality(image: np.ndarray, patient_id: str = "UNKNOWN", stric
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (25, 25))
         mask = cv2.erode(mask, kernel, iterations=1)
         return mask
+
+# ==============================================================================
+# IMAGE QUALITY THRESHOLD REFERENCE
+# ==============================================================================
+# BLUR (Laplacian Variance):
+#   < 100  = Reject  (blurry, out of focus)
+#   100-150 = Warn   (borderline focus)
+#   > 150  = Accept  (sharp image)
+#
+# BRIGHTNESS (Mean Intensity 0-255):
+#   < 30   = Reject  (severely underexposed)
+#   30-50  = Warn    (dark image, camera issue)
+#   50-200 = Accept  (normal fundus range)
+#   200-220 = Warn   (slightly overexposed)
+#   > 220  = Reject  (overexposed, washed out)
+#
+# RESOLUTION:
+#   < 512x512  = Reject  (insufficient for vessel measurement)
+#   512-1023   = Warn    (below optimal)
+#   >= 1024    = Accept  (clinical grade)
+#
+# VIGNETTING RATIO (peripheral/center brightness):
+#   < 0.30 = Reject  (severe peripheral darkening)
+#   0.30-0.40 = Warn (noticeable vignetting)
+#   > 0.40 = Accept  (uniform illumination)
+# ==============================================================================
