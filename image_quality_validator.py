@@ -82,3 +82,17 @@ class ImageQualityValidator:
 
 def validate_image_quality(image: np.ndarray, patient_id: str = "UNKNOWN", strict: bool = True) -> Dict:
     return ImageQualityValidator(strict_mode=strict).validate(image, patient_id)
+
+    def get_fov_mask(self, img: np.ndarray) -> np.ndarray:
+        """
+        Create binary mask ignoring black borders of fundus images.
+        BUG FIX: Increased erosion kernel from 15x15 to 25x25 to fully
+        remove the bright camera ring artifact at the FOV boundary.
+        Without this, the ring was being detected as bone spicules.
+        """
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        _, mask = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)
+        # Kernel size 25 removes camera ring artifact completely
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (25, 25))
+        mask = cv2.erode(mask, kernel, iterations=1)
+        return mask
