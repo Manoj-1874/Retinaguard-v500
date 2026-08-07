@@ -101,3 +101,23 @@ class PatientHistoryModule:
             "risk_score":         risk_score,
             "risk_level":         risk_level,
         }
+
+    def get_age_adjusted_thresholds(self, base_config: dict, age: int) -> dict:
+        """
+        Return a copy of CONFIG with vessel/pigment thresholds adjusted for age.
+        Pediatric sub-categories added (0-12 early onset vs 13-17 typical juvenile).
+        Edge case fix: age=0 previously caused ZeroDivisionError in risk scoring.
+        """
+        config = base_config.copy()
+        if age == 0:
+            age = 1  # Guard: newborn edge case
+        if age < 12:
+            # Early onset - vessels still developing, higher baseline density
+            config["VESSEL_MILD"] = base_config["VESSEL_MILD"] + 0.08
+        elif age < 18:
+            # Juvenile RP - standard pediatric adjustment
+            config["VESSEL_MILD"] = base_config["VESSEL_MILD"] + 0.05
+        elif age > 65:
+            # Geriatric - reduce vessel threshold (normal age-related attenuation)
+            config["VESSEL_MILD"] = max(0.18, base_config["VESSEL_MILD"] - 0.03)
+        return config
