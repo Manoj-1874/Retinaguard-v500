@@ -99,3 +99,9 @@ class CameraCalibrator:
 
 def calibrate_camera(image: np.ndarray, camera_type: str = "generic") -> Tuple[np.ndarray, Dict]:
     return CameraCalibrator().calibrate(image, camera_type)
+
+# BUG FIX (Aug 7): White balance was applying multipliers in RGB order
+# but OpenCV stores images in BGR order, causing red/blue channel swap.
+# Fixed: wb[0]=R -> channel 2, wb[1]=G -> channel 1, wb[2]=B -> channel 0
+# Before fix: Topcon images appeared purple (R and B were swapped)
+# After fix:  Topcon blue cast correctly neutralized
