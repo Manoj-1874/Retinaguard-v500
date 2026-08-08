@@ -122,3 +122,17 @@ def validate_image_quality(image: np.ndarray, patient_id: str = "UNKNOWN", stric
 #   0.30-0.40 = Warn (noticeable vignetting)
 #   > 0.40 = Accept  (uniform illumination)
 # ==============================================================================
+
+# BUG FIX (Aug 8): peripheral_degradation was returning negative values.
+# Formula: (center_mean - periphery_mean) / center_mean
+# When periphery is brighter than center (e.g. flash artifact, angiography),
+# this gives a negative result. Downstream code assumed 0.0 was minimum,
+# so negative values were incorrectly boosting spatial scanner confidence.
+# Fix: clamp result to [0.0, 1.0] range.
+#
+# peripheral_degradation = max(0.0, min(1.0, raw_degradation))
+#
+# Also added angiography scaling (0.5x) because FA periphery is naturally
+# dark due to dye decay, not due to RP-related photoreceptor loss.
+
+SPATIAL_ANGIO_SCALE = 0.5   # Normalize FA peripheral decay to color fundus baseline
