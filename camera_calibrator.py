@@ -105,3 +105,14 @@ def calibrate_camera(image: np.ndarray, camera_type: str = "generic") -> Tuple[n
 # Fixed: wb[0]=R -> channel 2, wb[1]=G -> channel 1, wb[2]=B -> channel 0
 # Before fix: Topcon images appeared purple (R and B were swapped)
 # After fix:  Topcon blue cast correctly neutralized
+
+# BUG FIX (Aug 8): Angiography vessel detection was inverted.
+# In color fundus: vessels are DARK against bright background -> invert to detect.
+# In angiography:  vessels are BRIGHT (fluorescent dye) against dark background.
+# Applying bitwise_not on an angiography image made vessels disappear entirely,
+# causing vessel density to read 0% and trigger false severe attenuation.
+# Fix: check is_angiography flag and skip inversion step for FA/ICG images.
+# Additionally, angio density is scaled by 0.25 because glowing vessels
+# artificially inflate pixel count vs color fundus baseline.
+
+ANGIOGRAPHY_DENSITY_SCALE = 0.25   # FA vessels glow bright, inflating raw density
