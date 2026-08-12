@@ -51,6 +51,14 @@ CAMERA_PROFILES = {
         "brightness_offset": 10,
         "contrast_multiplier": 1.10,
     },
+    "smartphone": {
+        "name": "Smartphone / Generic Camera",
+        "white_balance": (1.08, 0.95, 1.12),
+        "gamma": 1.2,
+        "brightness_offset": 15,
+        "contrast_multiplier": 1.15,
+        "note": "High variability — apply aggressive CLAHE correction",
+    },
     "generic": {
         "name": "Generic/Unknown",
         "white_balance": (1.0, 1.0, 1.0),
