@@ -1,6 +1,7 @@
 # Flask Web Framework
 Flask==3.0.0
 flask-cors==4.0.0
+flask-pymongo==2.3.0
 
 # Deep Learning Frameworks (choose one or both)
 tensorflow==2.15.0

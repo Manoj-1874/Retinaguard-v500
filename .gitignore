@@ -1,0 +1,69 @@
+# ============================================================
+# RetinaGuard V500 - .gitignore
+# ============================================================
+
+# ---- Python ------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.whl
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.cache/
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# ---- Node.js -----------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# ---- Logs & runtime ----------------------------------------
+*.log
+*.pid
+retinaguard_analysis.log
+debug_error.log
+hs_err_pid*.log
+
+# ---- Model weights (large binary files) --------------------
+# Committed selectively — keep only .h5 files already tracked
+# *.h5
+# *.pt
+# *.pth
+
+# ---- Uploads (user data, not source code) ------------------
+uploads/*.tmp
+uploads/.DS_Store
+# Keep rest of uploads folder tracked (test images for review)
+
+# ---- IDE / OS ----------------------------------------------
+.vscode/
+.idea/
+*.suo
+*.user
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Misc --------------------------------------------------
+debug_model_config.json
+index_80b8160.html

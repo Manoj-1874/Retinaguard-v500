@@ -190,26 +190,3 @@ To bridge the critical gap between raw AI capabilities and the stringent require
 
 RetinaGuard V500 represents a significant advancement in the automated screening and diagnosis of Retinitis Pigmentosa. By replacing traditional "black-box" deep learning models with a robust, hybrid architecture that fuses deep learning with a 10-Expert rules-based Decision Engine, the system guarantees explainability, clinical accountability, and high diagnostic precision. Through innovations such as dynamic camera calibration, WGAN-GP data synthesis for rare variants, and color-space pathological filtering, RetinaGuard V500 overcomes the critical limitations of hardware variance, data scarcity, and false-positive mimics. Ultimately, this system provides an accessible, cost-effective, and FDA-compliant clinical decision support tool that empowers clinicians—even in low-resource environments—to deliver early, accurate, and explainable diagnoses, paving the way for better patient outcomes and more reliable clinical AI integration.
 
-
----
-
-## Enhanced Clinical Modules (v5.2.0)
-
-Seven new modules were added after Review 1 to address clinical deployment gaps:
-
-| Module | Purpose | Status |
-|--------|---------|--------|
-| `image_quality_validator.py` | Reject blurry/underexposed images before analysis | ✅ |
-| `patient_history_module.py` | Ethnicity + age threshold adjustment | ✅ |
-| `camera_calibrator.py` | Topcon/Zeiss/Canon color normalization | ✅ |
-| `multi_disease_classifier.py` | 7-disease differential diagnosis | ✅ |
-| `progression_tracker.py` | Serial scan comparison (ORB + RANSAC) | ✅ |
-| `validation_study_toolkit.py` | Sensitivity/Specificity/Kappa metrics | ✅ |
-| `fda_submission_generator.py` | FDA 510(k) documentation generator | ✅ |
-
-### New API Endpoints
-- `POST /api/analyze` — enhanced with `patient_history` and `cameraType` fields
-- `POST /api/progression-compare` — compare baseline vs current fundus scan
-- `POST /api/validation-study` — batch clinical validation metrics
-- `GET  /api/fda-documentation` — generate 510(k) submission sections
-- `GET  /api/health` — server uptime check
