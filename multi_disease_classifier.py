@@ -59,6 +59,9 @@ DISEASE_PATTERNS = {
         "name": "Usher Syndrome",
         "features": {"bone_spicules": 0.30, "vessel_attenuation": 0.25, "disc_pallor": 0.20, "peripheral_loss": 0.15, "early_onset": 0.10},
         "exclusions": ["drusen", "microaneurysms"],
+        "age_filter": "pediatric_or_young_adult",
+        "note": "RP + congenital sensorineural hearing loss — always consider in patients under 30",
+        "exclusions": ["drusen", "microaneurysms"],
     },
 }
 
