@@ -120,3 +120,12 @@ def track_progression(baseline, current, months_between=12,
                       baseline_features=None, current_features=None) -> Dict:
     return ProgressionTracker().compare(baseline, current, months_between,
                                         baseline_features, current_features)
+
+# BUG FIX (Aug 14): ProgressionTracker had no guard for scan interval.
+# Without the 180-day minimum check, comparing scans taken 2 weeks apart
+# would divide by ~0.5 months, inflating annual_rate by 24x and falsely
+# triggering "RAPID PROGRESSION" for every patient.
+# Fix: return early with INSUFFICIENT_INTERVAL error if months_between < 6.
+#
+# Also fixed: months_between=0 caused ZeroDivisionError.
+# Fix: denominator is now max(months_between, 1).
