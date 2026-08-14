@@ -123,3 +123,26 @@ class MultiDiseaseClassifier:
 
 def classify_diseases(expert_results: Dict, patient_age: int = 40) -> Dict:
     return MultiDiseaseClassifier().classify(expert_results, patient_age)
+
+    def _apply_sine_pigmento_boost(self, scores: dict, features: dict) -> dict:
+        """
+        Boost RP score for Sine Pigmento variant:
+        Classic RP has bone spicules. Sine Pigmento has vessel attenuation
+        and disc pallor WITHOUT visible bone spicules.
+        Without this boost the classifier would rank RP low and miss this variant.
+        Trigger: vessel_attenuation > 0.4 OR ai_prob > 0.5, AND bone_spicules < 0.3
+        """
+        vessel_att = features.get("vessel_attenuation", 0.0)
+        bone_spic  = features.get("bone_spicules", 0.0)
+        ai_prob    = features.get("ai_rp_probability", 0.0)
+
+        if (vessel_att > 0.4 or ai_prob > 0.5) and bone_spic < 0.3:
+            sine_score = (
+                vessel_att * 0.45 +
+                features.get("disc_pallor", 0.0) * 0.25 +
+                features.get("peripheral_loss", 0.0) * 0.10 +
+                ai_prob * 0.20
+            )
+            if sine_score > scores.get("retinitis_pigmentosa", 0):
+                scores["retinitis_pigmentosa"] = min(sine_score, 0.95)
+        return scores
