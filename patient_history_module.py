@@ -90,6 +90,10 @@ class PatientHistoryModule:
             "LOW"
         )
 
+        # Genetic family history is the single strongest RP risk factor.
+        # First-degree relative with RP raises lifetime risk by ~50%.
+        family_hx_note = "First-degree relative with RP — genetic counseling recommended" if family_hx else "No family history reported"
+
         return {
             "age":                age,
             "age_category":       age_category,
