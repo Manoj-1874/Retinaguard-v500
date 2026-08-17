@@ -56,6 +56,9 @@ from fda_submission_generator import FDASubmissionGenerator
 # ==================================================
 
 def make_serializable(obj):
+    """Recursively convert NumPy types to native Python types for JSON serialization.
+    Prevents TypeError when jsonify() encounters np.float32, np.int64, or np.ndarray
+    returned by OpenCV/NumPy feature extraction pipelines."""
     if isinstance(obj, dict):
         return {k: make_serializable(v) for k, v in obj.items()}
     elif isinstance(obj, (list, tuple, set)):
