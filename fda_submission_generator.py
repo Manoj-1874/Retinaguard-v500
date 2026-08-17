@@ -55,7 +55,7 @@ RISK_ANALYSIS = [
         "hazard":   "Ethnic bias in pigment detection",
         "severity": "MODERATE",
         "probability": "MEDIUM",
-        "mitigation": "Patient History Module applies ethnicity-specific threshold adjustments",
+        "mitigation": "Patient History Module applies ethnicity-specific threshold adjustments (+8 to +15 LAB L-channel offset)",
     },
     {
         "hazard":   "Camera-specific color bias",
