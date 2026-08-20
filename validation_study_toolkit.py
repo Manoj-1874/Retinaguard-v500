@@ -73,3 +73,41 @@ class ValidationStudyToolkit:
 
 def create_validation_study(predictions, ground_truth, positive_label="POSITIVE"):
     return ValidationStudyToolkit().calculate_metrics(predictions, ground_truth, positive_label)
+
+    def cohen_kappa(self, rater1: List[str], rater2: List[str]) -> Dict:
+        """
+        Cohen Kappa inter-rater agreement.
+        Measures how much two clinicians agree beyond random chance.
+
+        Interpretation:
+          > 0.80  : Excellent  (publication-grade agreement)
+          0.60-0.80: Substantial
+          0.40-0.60: Moderate
+          < 0.40  : Poor       (raters disagree significantly)
+
+        Required for FDA 510(k) multi-site validation studies.
+        """
+        labels   = list(set(rater1 + rater2))
+        n        = len(rater1)
+        observed = sum(1 for a, b in zip(rater1, rater2) if a == b) / n
+
+        expected = sum(
+            (rater1.count(l) / n) * (rater2.count(l) / n)
+            for l in labels
+        )
+
+        kappa = (observed - expected) / (1 - expected) if (1 - expected) != 0 else 1.0
+
+        interpretation = (
+            "Excellent"    if kappa > 0.80 else
+            "Substantial"  if kappa > 0.60 else
+            "Moderate"     if kappa > 0.40 else
+            "Poor"
+        )
+
+        return {
+            "kappa":               round(kappa, 4),
+            "observed_agreement":  round(observed, 4),
+            "expected_agreement":  round(expected, 4),
+            "interpretation":      interpretation,
+        }
