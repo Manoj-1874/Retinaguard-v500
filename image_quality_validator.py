@@ -33,6 +33,8 @@ import sys
 class ImageQualityValidator:
     """Validate fundus image quality before clinical analysis"""
     
+    MIN_BLUR_VARIANCE_NOTE = "Laplacian variance < 100 indicates out-of-focus image — reject before feature extraction"
+    
     # Quality thresholds (configurable)
     BLUR_THRESHOLD = 100.0          # Laplacian variance (lower = blurrier)
     MIN_BRIGHTNESS = 30             # Minimum mean intensity (0-255)
