@@ -54,6 +54,7 @@ DISEASE_PATTERNS = {
         "name": "Choroideremia",
         "features": {"chorioretinal_atrophy": 0.45, "peripheral_loss": 0.30, "vessel_attenuation": 0.15, "macular_preservation": 0.10},
         "exclusions": ["bone_spicules", "microaneurysms", "drusen"],
+        "note": "X-linked — affects males; macular island preserved until late stage; key differentiator from RP",
     },
     "usher_syndrome": {
         "name": "Usher Syndrome",
