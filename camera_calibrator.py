@@ -51,6 +51,14 @@ CAMERA_PROFILES = {
         "brightness_offset": 10,
         "contrast_multiplier": 1.10,
     },
+    "nidek": {
+        "name": "Nidek AFC Series",
+        "white_balance": (1.0, 0.97, 1.06),
+        "gamma": 1.08,
+        "brightness_offset": 4,
+        "contrast_multiplier": 1.04,
+        "note": "Moderate blue shift — common in AFC-330/AFC-210 models",
+    },
     "smartphone": {
         "name": "Smartphone / Generic Camera",
         "white_balance": (1.08, 0.95, 1.12),
