@@ -3,17 +3,21 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 import cv2
 import os
-# ================= CONFIGURATION =================
-# 1. Path to your BEST model (Epoch 4260)
-MODEL_PATH = "D:\project 7\Retinaguard-v500\models\wgan_gen_final.h5"
 
-# 2. Where to save the final images
-OUTPUT_FOLDER = "/content/drive/MyDrive/Final_RP_Dataset"
+# ================= CONFIGURATION =================
+# Run locally — no Google Colab or Google Drive dependency.
+# Place the trained generator weights at the path below.
+
+# 1. Path to your BEST model (Epoch 4260)
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "wgan_gen_final.h5")
+
+# 2. Where to save the generated synthetic images
+OUTPUT_FOLDER = os.path.join(os.path.dirname(__file__), "..", "synthetic_dataset")
 
 # 3. Settings
 NUM_IMAGES = 1000
 LATENT_DIM = 128    # Confirmed 128
-IMG_SIZE = (64, 64) # Final size
+IMG_SIZE = (64, 64) # Final output size
 # =================================================
 
 def generate_dataset():
