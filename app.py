@@ -2691,3 +2691,27 @@ if __name__ == '__main__':
 
     app.run(host='0.0.0.0', port=5001, debug=False)
 
+
+# =============================================================================
+# ENHANCED MODULE INTEGRATION - Aug 23, 2026
+# =============================================================================
+# All 7 new clinical modules integrated into /api/analyze endpoint:
+#
+# PRE-ANALYSIS PIPELINE:
+#   1. validate_image_quality()   -> reject poor images early
+#   2. calibrate_camera()         -> normalize device color bias
+#   3. PatientHistoryModule()     -> adjust thresholds for demographics
+#
+# POST-ANALYSIS PIPELINE:
+#   4. classify_diseases()        -> differential diagnosis (7 conditions)
+#   5. track_progression()        -> compare with baseline scan if provided
+#   6. create_validation_study()  -> log prediction for ongoing audit
+#   7. FDASubmissionGenerator()   -> /api/fda-documentation endpoint
+#
+# NEW API ENDPOINTS ADDED:
+#   POST /api/analyze              (enhanced with patient_history, cameraType)
+#   POST /api/progression-compare  (baseline vs current scan)
+#   POST /api/validation-study     (batch sensitivity/specificity calculation)
+#   GET  /api/fda-documentation    (510(k) sections 1-5)
+#   GET  /api/health               (uptime monitoring)
+# =============================================================================
