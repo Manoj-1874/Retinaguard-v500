@@ -40,6 +40,12 @@ class ProgressionTracker:
     # Minimum time between scans (days) for reliable progression estimate
     MIN_SCAN_INTERVAL_DAYS = 180  # 6 months minimum
     
+    # Progression warning message shown to clinicians
+    SHORT_INTERVAL_WARNING = (
+        "Scan interval less than 6 months — progression rate estimates are statistically "
+        "unreliable. Schedule follow-up scan at 6-month minimum for clinical-grade comparison."
+    )
+    
     def __init__(self):
         """Initialize progression tracker"""
         pass
