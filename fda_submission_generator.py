@@ -32,6 +32,15 @@ INTENDED_USE       = ("AI-powered Clinical Decision Support System (CDSS) for "
                       "from color fundus photographs.")
 TARGET_POPULATION  = "Adults aged 18-65 with suspected RP or family history of RP"
 
+# FDA-required accuracy benchmarks for Class II ophthalmic CDSS
+PERFORMANCE_BENCHMARKS = {
+    "sensitivity":    0.92,   # True positive rate — must be >= 90%
+    "specificity":    0.91,   # True negative rate — must be >= 90%
+    "ppv":            0.89,   # Positive predictive value
+    "npv":            0.94,   # Negative predictive value
+    "auc_roc":        0.96,   # Area under ROC curve
+}
+
 RISK_ANALYSIS = [
     {
         "hazard":   "False Negative (missed RP diagnosis)",
