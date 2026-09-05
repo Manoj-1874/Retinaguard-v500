@@ -33,9 +33,9 @@ class ProgressionTracker:
     """Track retinal disease progression over serial scans"""
     
     # Progression severity thresholds (% change per year)
-    RAPID_PROGRESSION_THRESHOLD = 0.15      # 15% change/year = urgent
-    MODERATE_PROGRESSION_THRESHOLD = 0.08   # 8% change/year = typical RP
-    SLOW_PROGRESSION_THRESHOLD = 0.03       # 3% change/year = atypical
+    RAPID_PROGRESSION_THRESHOLD    = 0.15   # >15% change/year = urgent referral
+    MODERATE_PROGRESSION_THRESHOLD = 0.08   # >8% change/year  = typical RP progression
+    SLOW_PROGRESSION_THRESHOLD     = 0.03   # >3% change/year  = atypical/early RP
     
     # Minimum time between scans (days) for reliable progression estimate
     MIN_SCAN_INTERVAL_DAYS = 180  # 6 months minimum
