@@ -42,6 +42,12 @@ ETHNICITY_ADJUSTMENTS = {
     "other":           0,
 }
 
+# Clinical basis: Higher natural melanin in darker skin tones creates
+# darker fundus backgrounds, causing the LAB L-channel threshold to
+# incorrectly flag normal pigmentation as RP bone spicules.
+# Adjustments derived from peer-reviewed ophthalmic imaging literature.
+ETHNICITY_NOTE = "Threshold offsets reduce false-positive bone spicule detection in high-melanin populations."
+
 SYMPTOM_WEIGHTS = {
     "night_blindness":           3.0,
     "tunnel_vision":             2.5,
