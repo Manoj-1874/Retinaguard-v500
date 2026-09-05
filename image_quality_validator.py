@@ -52,6 +52,7 @@ class ImageQualityValidator:
                         If False, allow borderline images with warnings
         """
         self.strict_mode = strict_mode
+        self._log_init_config()
         
         # If strict_mode is False (e.g., handheld camera or smartphone),
         # relax the physical hardware thresholds because these cameras
@@ -62,6 +63,12 @@ class ImageQualityValidator:
             self.MIN_DYNAMIC_RANGE = 5         # Allow flat contrast
             self.MIN_VESSEL_DENSITY = 0.001    # Allow poor vessel visibility
             self.MAX_VIGNETTING_RATIO = 0.50   # Allow heavier vignetting
+
+    def _log_init_config(self):
+        """Log the active validation configuration on startup."""
+        mode = "STRICT (tabletop scanner)" if self.strict_mode else "RELAXED (handheld/smartphone)"
+        print(f"   [IQV] ImageQualityValidator initialized — Mode: {mode}")
+        sys.stdout.flush()
             
     def validate(self, image: np.ndarray, patient_id: str = "UNKNOWN") -> Dict:
         """
