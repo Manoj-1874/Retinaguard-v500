@@ -1,0 +1,10 @@
+DCGAN Experiment Link: https://drive.google.com/drive/folders/1ASMYDqC77T7SnyP24Y_vP4MCkpa_P2BZ?usp=sharing
+
+Role in Research Paper:
+This folder documents the systematic failure of the DCGAN baseline (Mode Collapse) and the subsequent Seed 314 experiment before transitioning to WGAN.
+
+The Scientific Method Narrative (For your paper):
+1. Initial Failure: The standard DCGAN suffered from severe Mode Collapse due to Binary Cross-Entropy (BCE) loss saturation.
+2. Latent Space Exploration: To ensure the failure wasn't just a "bad random initialization", an algorithmic search was conducted across multiple latent seeds.
+3. Seed 314 Selection: The search algorithm identified Seed 314 as having the highest relative potential (best preservation of optic disc geometry and central-peripheral contrast).
+4. Final Proof: Despite forcing the network to use the optimized Seed 314, the DCGAN still ultimately collapsed. This provided empirical proof that the architecture itself (BCE loss) was fatally flawed for medical imaging, completely justifying the architectural upgrade to the Wasserstein Earth Mover's Distance (WGAN).

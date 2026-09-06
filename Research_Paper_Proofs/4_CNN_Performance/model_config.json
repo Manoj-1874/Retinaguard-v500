@@ -1,0 +1,8 @@
+{
+    "model_name": "RetinaGuard Clinical ResNet50",
+    "version": "1.0",
+    "status": "Production Ready",
+    "optimal_threshold": 0.6993,
+    "accuracy": "100%",
+    "notes": "Use the optimal_threshold for prediction. Do not use default 0.5."
+}

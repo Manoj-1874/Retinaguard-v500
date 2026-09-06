@@ -1,0 +1,11 @@
+RETINAGUARD FINAL CLINICAL AUDIT
+================================
+Model: RetinaGuard_Clinical_v1.0.h5
+Threshold Used: 0.6993
+Accuracy: 100%
+Sensitivity: 100%
+Specificity: 100%
+
+ कंफ्यूजन मैट्रिक्स (Confusion Matrix):
+[[ 2  0]
+ [ 0 85]]

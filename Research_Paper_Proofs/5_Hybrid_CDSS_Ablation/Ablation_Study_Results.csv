@@ -1,0 +1,3 @@
+Architecture,Input Pathology,CNN Probability,Clinical Veto,Final Diagnosis,Clinical Safety
+Raw CNN (ResNet50),Diabetic Retinopathy,98.2% (RP),N/A (No Rule Engine),Retinitis Pigmentosa [X],Unsafe (False Positive)
+Hybrid CDSS (CNN + 10-Expert Engine),Diabetic Retinopathy,98.2% (RP),ACTIVATED (Missing Triad),Non-RP / Other [OK],Safe (True Negative)

@@ -1,0 +1,24 @@
+DCGAN TRAINING REPORT - BASELINE (UNSEEDED)
+=========================================
+
+Reproducibility Information:
+- Random Seed: Not Fixed (Stochastic)
+- Training: Standard Initialization
+
+Training Configuration:
+- Image Shape: (128, 128, 3)
+- Latent Dimension: 100
+- Total Epochs: 5000
+
+Training Statistics (Derived from training_curves.png):
+- Final Generator Loss: ~1.8600
+- Final Discriminator Loss: ~0.5000
+- Final Discriminator Accuracy: ~0.4550
+
+Training Assessment:
+[WARNING]: Automated metrics suggest stability, but visual inspection confirms Mode Collapse.
+[FAILED]: BCE loss saturated; gradients vanished.
+
+Conclusion:
+Architectural upgrade to Wasserstein GAN required.
+
