@@ -117,6 +117,18 @@
         .action-card.archive-btn:hover { border-color: #00ff88; box-shadow: 0 0 40px rgba(0,255,136,0.2); }
         .action-card.archive-btn .card-icon { color: #00ff88; filter: drop-shadow(0 0 15px rgba(0,255,136,0.4));}
 
+        .action-card.class-btn { border-color: rgba(179,0,255,0.3); }
+        .action-card.class-btn:hover { border-color: #b300ff; box-shadow: 0 0 40px rgba(179,0,255,0.2); }
+        .action-card.class-btn .card-icon { color: #b300ff; filter: drop-shadow(0 0 15px rgba(179,0,255,0.4));}
+
+        .action-card.diff-btn { border-color: rgba(255,0,85,0.3); }
+        .action-card.diff-btn:hover { border-color: #ff0055; box-shadow: 0 0 40px rgba(255,0,85,0.2); }
+        .action-card.diff-btn .card-icon { color: #ff0055; filter: drop-shadow(0 0 15px rgba(255,0,85,0.4));}
+
+        .action-card.rule-btn { border-color: rgba(255,215,0,0.3); }
+        .action-card.rule-btn:hover { border-color: #ffd700; box-shadow: 0 0 40px rgba(255,215,0,0.2); }
+        .action-card.rule-btn .card-icon { color: #ffd700; filter: drop-shadow(0 0 15px rgba(255,215,0,0.4));}
+
         /* --- 2A. ARMORY --- */
         .logs-grid {
             display: grid;
@@ -133,6 +145,18 @@
         .model-card:hover { transform: translateY(-5px); background: rgba(20, 30, 40, 0.95); border-color: #ff9900; box-shadow: 0 5px 20px rgba(255,153,0,0.2); }
         .model-card h3 { font-family: 'Orbitron'; color: white; font-size: 16px; margin-bottom: 5px; }
         .model-card p { color: #888; font-size: 11px; margin-top: 10px; }
+
+        /* Differential Cards */
+        .diff-card { background: rgba(10, 15, 20, 0.85); border: 1px solid rgba(255,255,255,0.05); padding: 20px; transition: all 0.3s; clip-path: polygon(15px 0, 100% 0, calc(100% - 15px) 100%, 0 100%); border-right: 3px solid #ff0055; margin-left: 5px; margin-right: 5px; }
+        .diff-card:hover { transform: translateX(10px); background: rgba(30, 10, 20, 0.95); border-color: #ff0055; box-shadow: -10px 0 20px rgba(255,0,85,0.2); }
+        .diff-card h3 { font-family: 'Orbitron'; color: white; font-size: 16px; margin-bottom: 5px; }
+        .diff-card p { color: #888; font-size: 11px; margin-top: 10px; }
+
+        /* Rule Cards */
+        .rule-card { background: rgba(15, 15, 10, 0.85); border: 1px dashed rgba(255,215,0,0.3); padding: 20px; transition: all 0.4s; clip-path: polygon(0 15px, 15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%); border-top: 2px solid #ffd700; }
+        .rule-card:hover { transform: scale(1.05) rotate(1deg); background: rgba(30, 30, 10, 0.95); border-color: #ffd700; border-style: solid; box-shadow: 0 0 25px rgba(255,215,0,0.3); }
+        .rule-card h3 { font-family: 'Orbitron'; color: white; font-size: 14px; margin-bottom: 5px; letter-spacing: 1px; }
+        .rule-card p { color: #bbb; font-size: 11px; margin-top: 10px; font-style: italic; }
 
         /* --- 2B. DATABASE ARCHIVE --- */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
@@ -324,11 +348,26 @@
             <h2>PATIENT ARCHIVE</h2>
             <p>VIEW SAVED RECORDS</p>
         </div>
+        <div class="action-card class-btn btn-hover" onclick="navigate('classifications-ui', -15, 0, 20, null, Math.PI/2)">
+            <i class="fa-solid fa-dna card-icon"></i>
+            <h2>DISEASE TYPES</h2>
+            <p>RP CLASSIFICATIONS</p>
+        </div>
+        <div class="action-card diff-btn btn-hover" onclick="navigate('differential-ui', -15, 0, 20, null, Math.PI/2)">
+            <i class="fa-solid fa-virus card-icon"></i>
+            <h2>DIFFERENTIAL</h2>
+            <p>OTHER DISEASES</p>
+        </div>
+        <div class="action-card rule-btn btn-hover" onclick="navigate('rules-ui', -15, 0, 20, null, Math.PI/2)">
+            <i class="fa-solid fa-gavel card-icon"></i>
+            <h2>DECISION RULES</h2>
+            <p>CLINICAL ENGINE</p>
+        </div>
     </div>
 
     <div class="screen-section" id="armory-ui">
         <h2 style="font-family:'Orbitron'; color:#ff9900; font-size:24px; letter-spacing:4px; margin-bottom: 20px; text-shadow: 0 0 15px rgba(255,153,0,0.5);">V500 NEURAL ARMORY</h2>
-        <div class="logs-grid">
+        <div class="logs-grid custom-scrollbar">
             <div class="model-card btn-hover"><h3>AI PATTERN</h3><p>Neural network overall RP probability pattern.</p></div>
             <div class="model-card btn-hover"><h3>VESSELS</h3><p>Arteriolar narrowing. Detects attenuation.</p></div>
             <div class="model-card btn-hover"><h3>PIGMENT</h3><p>Bone spicule pigmentation. Triad component.</p></div>
@@ -340,6 +379,50 @@
             <div class="model-card btn-hover"><h3>MACULA CME</h3><p>Cystoid Macular Edema detection.</p></div>
             <div class="model-card btn-hover" style="border-left-color:#00ff88"><h3>SECTORAL</h3><p>Quadrant asymmetry. Sectoral RP.</p></div>
             <div class="model-card btn-hover" style="grid-column: span 2; border-left-color: #00f3ff;"><h3>VERDICT</h3><p>COMMAND NODE. Aggregates all sub-models.</p></div>
+        </div>
+        <div class="back-btn btn-hover" onclick="navigate('lobby', 0, -7, 28, Math.PI/3, 0)"><i class="fa-solid fa-arrow-left"></i> RETURN TO LOBBY</div>
+    </div>
+
+    <div class="screen-section" id="classifications-ui">
+        <h2 style="font-family:'Orbitron'; color:#b300ff; font-size:24px; letter-spacing:4px; margin-bottom: 20px; text-shadow: 0 0 15px rgba(179,0,255,0.5);">DISEASE CLASSIFICATIONS</h2>
+        <div class="logs-grid custom-scrollbar">
+            <div class="model-card btn-hover" style="border-left-color:#b300ff" onclick="showInfoModal('CLASSIC RP', 'Typical Retinitis Pigmentosa characterized by the clinical triad: bone spicule pigmentation, vessel attenuation, and waxy optic disc pallor.', '#b300ff')"><h3>CLASSIC RP</h3><p>Typical Retinitis Pigmentosa characterized by the clinical triad...</p></div>
+            <div class="model-card btn-hover" style="border-left-color:#b300ff" onclick="showInfoModal('SINE PIGMENTO', 'A variant lacking the classic dark bone spicule pigment, diagnosed via vessel and optic disc changes.', '#b300ff')"><h3>SINE PIGMENTO</h3><p>A variant lacking the classic dark bone spicule pigment...</p></div>
+            <div class="model-card btn-hover" style="border-left-color:#b300ff" onclick="showInfoModal('SECTORAL RP', 'Asymmetric degeneration affecting primarily one or two quadrants (often inferior), leaving others relatively healthy.', '#b300ff')"><h3>SECTORAL RP</h3><p>Asymmetric degeneration affecting primarily one or two quadrants...</p></div>
+            <div class="model-card btn-hover" style="border-left-color:#b300ff" onclick="showInfoModal('PUNCTATA ALBESCENS', 'RPA variant characterized by numerous bright white or yellow flecks instead of dark pigment.', '#b300ff')"><h3>PUNCTATA ALBESCENS</h3><p>RPA variant characterized by numerous bright white or yellow flecks...</p></div>
+            <div class="model-card btn-hover" style="border-left-color:#ff0055" onclick="showInfoModal('MACULAR EDEMA', 'Cystoid Macular Edema (CME) complication showing cystic fluid accumulation in the central macula.', '#ff0055')"><h3>MACULAR EDEMA</h3><p>Cystoid Macular Edema (CME) complication...</p></div>
+            <div class="model-card btn-hover" style="border-left-color:#00ff88" onclick="showInfoModal('SYNDROMIC RP', 'Systemic conditions like Usher Syndrome (with hearing loss) exhibiting typical RP retinal changes alongside other symptoms.', '#00ff88')"><h3>SYNDROMIC RP</h3><p>Systemic conditions like Usher Syndrome (with hearing loss)...</p></div>
+        </div>
+        <div class="back-btn btn-hover" onclick="navigate('lobby', 0, -7, 28, Math.PI/3, 0)"><i class="fa-solid fa-arrow-left"></i> RETURN TO LOBBY</div>
+    </div>
+
+    <div class="screen-section" id="differential-ui">
+        <h2 style="font-family:'Orbitron'; color:#ff0055; font-size:24px; letter-spacing:4px; margin-bottom: 20px; text-shadow: 0 0 15px rgba(255,0,85,0.5);">DIFFERENTIAL DIAGNOSES</h2>
+        <div class="logs-grid custom-scrollbar">
+            <div class="diff-card btn-hover" onclick="showInfoModal('DIABETIC RETINOPATHY', 'Detects microaneurysms, hemorrhages, and exudates linked to diabetes.', '#ff0055')"><h3>DIABETIC RETINOPATHY</h3><p>Detects microaneurysms, hemorrhages, and exudates linked to diabetes.</p></div>
+            <div class="diff-card btn-hover" onclick="showInfoModal('MACULAR DEGENERATION', 'Checks for drusen and geographic atrophy in the macula.', '#ff0055')"><h3>MACULAR DEGENERATION (AMD)</h3><p>Checks for drusen and geographic atrophy in the macula.</p></div>
+            <div class="diff-card btn-hover" onclick="showInfoModal('GLAUCOMA', 'Analyzes optic disc cupping and nerve fiber thinning.', '#ff0055')"><h3>GLAUCOMA</h3><p>Analyzes optic disc cupping and nerve fiber thinning.</p></div>
+            <div class="diff-card btn-hover" onclick="showInfoModal('HYPERTENSIVE RETINOPATHY', 'Scans for extreme vessel tortuosity and flame hemorrhages.', '#ff0055')"><h3>HYPERTENSIVE RETINOPATHY</h3><p>Scans for extreme vessel tortuosity and flame hemorrhages.</p></div>
+            <div class="diff-card btn-hover" onclick="showInfoModal('CHOROIDEREMIA', 'Looks for severe chorioretinal atrophy mimicking RP.', '#ff0055')"><h3>CHOROIDEREMIA</h3><p>Looks for severe chorioretinal atrophy mimicking RP.</p></div>
+            <div class="diff-card btn-hover" onclick="showInfoModal('OPHTHALMIC SYPHILIS', 'Detects infectious pseudo-RP pigment and severe inflammation.', '#ff0055')"><h3>OPHTHALMIC SYPHILIS</h3><p>Detects infectious pseudo-RP pigment and severe inflammation.</p></div>
+            <div class="diff-card btn-hover" onclick="showInfoModal('STARGARDT DISEASE', 'Macular dystrophy with yellow flecks often confused with drusen.', '#ff0055')"><h3>STARGARDT DISEASE</h3><p>Macular dystrophy with yellow flecks often confused with drusen.</p></div>
+            <div class="diff-card btn-hover" onclick="showInfoModal('PATHOLOGIC MYOPIA', 'Extreme nearsightedness causing retinal stretching and thinning.', '#ff0055')"><h3>PATHOLOGIC MYOPIA</h3><p>Extreme nearsightedness causing retinal stretching and thinning.</p></div>
+        </div>
+        <div class="back-btn btn-hover" onclick="navigate('lobby', 0, -7, 28, Math.PI/3, 0)"><i class="fa-solid fa-arrow-left"></i> RETURN TO LOBBY</div>
+    </div>
+
+    <div class="screen-section" id="rules-ui">
+        <h2 style="font-family:'Orbitron'; color:#ffd700; font-size:24px; letter-spacing:4px; margin-bottom: 20px; text-shadow: 0 0 15px rgba(255,215,0,0.5);">CLINICAL DECISION RULES</h2>
+        <div class="logs-grid custom-scrollbar">
+            <div class="rule-card btn-hover" onclick="showInfoModal('RULE 0', 'DIFFERENTIAL OVERRIDE: If another disease (e.g. AMD) has >50% probability, blocks RP diagnosis.', '#ffd700')"><h3>RULE 0: DIFFERENTIAL OVERRIDE</h3><p>If another disease (e.g. AMD) has >50% probability, blocks RP diagnosis.</p></div>
+            <div class="rule-card btn-hover" onclick="showInfoModal('RULE 1', 'CLASSIC RP: Triggers when the complete triad is present (Spicules, Vessels, Disc).', '#ffd700')"><h3>RULE 1: CLASSIC RP</h3><p>Triggers when the complete triad is present (Spicules, Vessels, Disc).</p></div>
+            <div class="rule-card btn-hover" onclick="showInfoModal('RULE 2', 'RP VARIANTS: Detects Sine Pigmento, Punctata Albescens, and Sectoral RP pathways.', '#ffd700')"><h3>RULE 2: RP VARIANTS</h3><p>Detects Sine Pigmento, Punctata Albescens, and Sectoral RP pathways.</p></div>
+            <div class="rule-card btn-hover" onclick="showInfoModal('RULE 3', 'CLINICAL CONSENSUS: Requires 4+ clinical expert abnormalities AND AI agreement.', '#ffd700')"><h3>RULE 3: CLINICAL CONSENSUS</h3><p>Requires 4+ clinical expert abnormalities AND AI agreement.</p></div>
+            <div class="rule-card btn-hover" onclick="showInfoModal('RULE 4', 'OVERWHELMING EVIDENCE: 5+ expert abnormalities force a positive diagnosis, overriding AI.', '#ffd700')"><h3>RULE 4: OVERWHELMING EVIDENCE</h3><p>5+ expert abnormalities force a positive diagnosis, overriding AI.</p></div>
+            <div class="rule-card btn-hover" onclick="showInfoModal('RULE 5', 'ATYPICAL FINDINGS: Flags suspicious scans with high AI but low clinical correlation for review.', '#ffd700')"><h3>RULE 5: ATYPICAL FINDINGS</h3><p>Flags suspicious scans with high AI but low clinical correlation for review.</p></div>
+            <div class="rule-card btn-hover" onclick="showInfoModal('RULE 6', 'AI HALLUCINATION: Rejects high AI confidence if 0 clinical experts find abnormalities.', '#ffd700')"><h3>RULE 6: AI HALLUCINATION</h3><p>Rejects high AI confidence if 0 clinical experts find abnormalities.</p></div>
+            <div class="rule-card btn-hover" onclick="showInfoModal('RULE 7', 'BORDERLINE: Monitors patients with 2+ mild findings but no strong abnormalities.', '#ffd700')"><h3>RULE 7: BORDERLINE</h3><p>Monitors patients with 2+ mild findings but no strong abnormalities.</p></div>
+            <div class="rule-card btn-hover" onclick="showInfoModal('RULE 8', 'INSUFFICIENT EVIDENCE (AI OVERRIDE): Overrides uncertain AI predictions (e.g. 50-60%) if clinical scanners find no supporting evidence.', '#ffd700')"><h3>RULE 8: INSUFFICIENT EVIDENCE</h3><p>Overrides uncertain AI predictions if clinical scanners find no supporting evidence.</p></div>
         </div>
         <div class="back-btn btn-hover" onclick="navigate('lobby', 0, -7, 28, Math.PI/3, 0)"><i class="fa-solid fa-arrow-left"></i> RETURN TO LOBBY</div>
     </div>
@@ -389,8 +472,11 @@
                 </div>
 
                 <!-- Image Area -->
-                <div style="flex-grow: 1; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle at center, rgba(0,40,50,0.4) 0%, #000 100%); padding: 15px; position: relative;">
-                    <img id="result-thumbnail" src="" style="max-width: 100%; max-height: 250px; object-fit: contain; filter: drop-shadow(0 0 15px rgba(0,243,255,0.2)); z-index: 2;">
+                <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at center, rgba(0,40,50,0.4) 0%, #000 100%); padding: 15px; position: relative;">
+                    <img id="result-thumbnail" src="" style="max-width: 100%; max-height: 250px; object-fit: contain; filter: drop-shadow(0 0 15px rgba(0,243,255,0.2)); z-index: 2; margin-bottom: 10px;">
+                    <button class="btn-hover" id="heatmap-toggle-btn" onclick="toggleHeatmap()" style="display: none; padding: 6px 12px; background: rgba(255,0,85,0.15); border: 1px solid #ff0055; color: #ff0055; font-family: 'Orbitron'; font-size: 11px; font-weight: bold; cursor: pointer; border-radius: 4px; z-index: 3; box-shadow: 0 0 15px rgba(255,0,85,0.2);">
+                        <i class="fa-solid fa-fire"></i> TOGGLE AI HEATMAP
+                    </button>
                     
                     <!-- Grid Overlay for futuristic look -->
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px); background-size: 20px 20px; z-index: 1; pointer-events: none;"></div>
@@ -549,6 +635,18 @@
         </div>
     </div>
 
+    <!-- Info Modal -->
+    <div class="modal-overlay" id="info-modal">
+        <div class="modal-content" style="width: 500px; text-align: center; border-width: 2px;">
+            <i class="fa-solid fa-xmark modal-close btn-hover" onclick="closeInfoModal()"></i>
+            <div class="modal-header-text" id="info-title" style="font-size: 24px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 15px;">TITLE</div>
+            <div id="info-desc" style="color: #ccc; font-size: 15px; line-height: 1.6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 10px 0;">Description goes here</div>
+            <div style="margin-top: 30px;">
+                <button onclick="closeInfoModal()" class="action-btn btn-hover" style="background: rgba(255,255,255,0.1); padding: 10px 30px; border: 1px solid rgba(255,255,255,0.3); color: white; font-family: 'Orbitron'; cursor: pointer; border-radius: 4px;">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Detailed Report Modal -->
     <div class="modal-overlay" id="report-detail-modal">
         <div class="modal-content" style="width: 900px; max-width: 95vw; max-height: 90vh; overflow-y: auto;">
@@ -583,7 +681,7 @@
         let currentCameraType = "Generic"; // NEW: Camera type
         let isAnimating = false; // System lock for transitions
         let isProcessing = false;
-        const ALL_SCREENS = ['lobby', 'armory-ui', 'archive-ui', 'processing', 'results'];
+        const ALL_SCREENS = ['lobby', 'armory-ui', 'archive-ui', 'processing', 'results', 'classifications-ui', 'differential-ui', 'rules-ui'];
 
         window.onload = () => { syncHeaderStats(); };
 
@@ -1146,6 +1244,30 @@
             }, 1000);
         }
 
+        function showInfoModal(title, desc, color) {
+            if(isAnimating) return;
+            sfxClick.currentTime = 0; sfxClick.play().catch(e=>{});
+            const iModal = document.getElementById('info-modal');
+            const iTitle = document.getElementById('info-title');
+            const iDesc = document.getElementById('info-desc');
+            const iContent = iModal.querySelector('.modal-content');
+            
+            iTitle.innerText = title;
+            iTitle.style.color = color;
+            iContent.style.borderColor = color;
+            iContent.style.boxShadow = `0 0 30px ${color}44`;
+            iDesc.innerText = desc;
+            
+            iModal.style.display = 'flex';
+            anime({ targets: iModal, opacity: 1, duration: 300 });
+        }
+
+        function closeInfoModal() {
+            sfxHover.currentTime = 0; sfxHover.play().catch(e=>{});
+            const iModal = document.getElementById('info-modal');
+            anime({ targets: iModal, opacity: 0, duration: 300, complete: () => { iModal.style.display = 'none'; } });
+        }
+
         // --- UPLOAD FLOW ---
         function openPatientModal() {
             if(isAnimating) return;
@@ -1552,6 +1674,8 @@
                     currentImageBase64 = e.target.result;
                     document.getElementById('live-img').src = e.target.result;
                     document.getElementById('result-thumbnail').src = e.target.result;
+                    document.getElementById('heatmap-toggle-btn').style.display = 'none'; // Hide heatmap initially
+                    isHeatmapOn = false;
                     startProcessingSequence();
                 }
                 reader.readAsDataURL(input.files[0]);
@@ -1905,11 +2029,13 @@
                             const detailBtn = document.getElementById('detail-report-btn');
 
                             // Show angiography warning if detected
+                            const angioWarning = document.getElementById('angio-warning');
                             if (apiResult.is_angiography) {
-                                const angioWarning = document.getElementById('angio-warning');
                                 const angioWarningText = document.getElementById('angio-warning-text');
                                 angioWarning.style.display = 'block';
                                 angioWarningText.textContent = `Analysis results may be less reliable. This system is optimized for color fundus photography. (Confidence: ${apiResult.angiography_confidence}%)`;
+                            } else {
+                                angioWarning.style.display = 'none';
                             }
 
                             // USE verdict_code to determine display (not broken text matching)
@@ -1962,14 +2088,52 @@
 
                             verdictText.textContent = verdictDisplay;
                             
-                            // Display the clinical stage in the diagnosis card for explainable AI
+                            // Display the clinical stage and Differential Diagnosis in the diagnosis card
                             if (apiResult.rp_stage && apiResult.rp_stage !== 'N/A') {
+                                let diffHtml = "";
+                                let featuresHtml = "";
+                                if (apiResult.differential_diagnosis) {
+                                    if (apiResult.differential_diagnosis.differential && apiResult.differential_diagnosis.differential.length > 0) {
+                                        const diffs = apiResult.differential_diagnosis.differential.slice(0, 5);
+                                        diffHtml = `<div style="margin-top: 15px; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,243,255,0.3); padding: 10px; border-radius: 4px; font-size: 11px; text-align: left; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+                                            <div style="color: #00f3ff; margin-bottom: 6px; font-family: Orbitron; letter-spacing: 1px; border-bottom: 1px solid rgba(0,243,255,0.2); padding-bottom: 4px;">DIFFERENTIAL DIAGNOSIS:</div>
+                                            ${diffs.map((d, i) => `<div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-family: 'Inter', sans-serif;"><span style="color: #ddd;">${i+1}. ${d.disease}</span><span style="color: ${i===0 ? '#ffcc00' : '#88ccff'}; font-family: Orbitron;">${(d.confidence_pct || d.confidence).toFixed(1)}%</span></div>`).join('')}
+                                        </div>`;
+                                    }
+                                    if (apiResult.differential_diagnosis.features) {
+                                        const feats = apiResult.differential_diagnosis.features;
+                                        const sortedFeats = Object.entries(feats).filter(([_, val]) => val > 0.1).sort((a, b) => b[1] - a[1]).slice(0, 4);
+                                        if (sortedFeats.length > 0) {
+                                            featuresHtml = `<div style="margin-top: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,243,255,0.3); padding: 10px; border-radius: 4px; font-size: 10px; text-align: left; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+                                                <div style="color: #00f3ff; margin-bottom: 6px; font-family: Orbitron; letter-spacing: 1px; border-bottom: 1px solid rgba(0,243,255,0.2); padding-bottom: 4px;">BIOMARKER EXTRACTION:</div>
+                                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                                                    ${sortedFeats.map(([name, val]) => {
+                                                        const formattedName = name.replace(/_/g, ' ').toUpperCase();
+                                                        return `<div style="display: flex; justify-content: space-between; font-family: 'Inter', sans-serif;"><span style="color: #bbb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 80%;" title="${formattedName}">${formattedName}</span><span style="color: ${val > 0.6 ? '#ff4444' : '#ffcc00'}; font-family: Orbitron;">${val.toFixed(2)}</span></div>`;
+                                                    }).join('')}
+                                                </div>
+                                            </div>`;
+                                        }
+                                    }
+                                }
+
+                                let treatmentsHtml = "";
+                                if (apiResult.treatments && apiResult.treatments.length > 0) {
+                                    treatmentsHtml = `<div style="margin-top: 8px; background: rgba(255,0,85,0.05); border: 1px solid rgba(255,0,85,0.3); padding: 10px; border-radius: 4px; font-size: 11px; text-align: left; box-shadow: inset 0 0 10px rgba(0,0,0,0.3);">
+                                        <div style="color: #ff0055; margin-bottom: 6px; font-family: Orbitron; letter-spacing: 1px; border-bottom: 1px solid rgba(255,0,85,0.2); padding-bottom: 4px;">RECOMMENDED ACTION:</div>
+                                        ${apiResult.treatments.slice(0, 2).map((t, i) => `<div style="display: flex; margin-bottom: 4px; font-family: 'Inter', sans-serif;"><span style="color: #ff0055; margin-right:5px;">•</span><span style="color: #ccc;">${t}</span></div>`).join('')}
+                                    </div>`;
+                                }
+
                                 confidenceText.innerHTML = `Confidence: ${apiResult.confidence} | Score: ${confidencePercent}%<br><span style="font-size: 13px; font-weight: bold; color: ${apiResult.verdict_code === 'HEALTHY' ? '#00ff88' : '#ffa500'}; margin-top: 6px; display: inline-block; letter-spacing: 1px; text-transform: uppercase;">Clinical Stage: ${apiResult.rp_stage}</span>
                                 <div style="margin-top: 15px;">
                                     <button onclick="showXAIModal()" style="background: rgba(0, 243, 255, 0.1); border: 1px solid #00f3ff; color: #00f3ff; padding: 6px 15px; cursor: pointer; font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: 1px; border-radius: 4px; transition: all 0.3s ease; box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);" onmouseover="this.style.background='rgba(0, 243, 255, 0.3)'" onmouseout="this.style.background='rgba(0, 243, 255, 0.1)'">
                                         <i class="fa-solid fa-brain"></i> WHY THIS RESULT?
                                     </button>
-                                </div>`;
+                                </div>
+                                ${diffHtml}
+                                ${featuresHtml}
+                                ${treatmentsHtml}`;
                             } else {
                                 confidenceText.textContent = `Confidence: ${apiResult.confidence} | Score: ${confidencePercent}%`;
                             }
@@ -2011,6 +2175,30 @@
                     }
                 }, idx * 300);
             });
+            
+            // Show Heatmap Toggle Button if Heatmap exists
+            const heatmapBtn = document.getElementById('heatmap-toggle-btn');
+            if (apiResult.heatmap_image && heatmapBtn) {
+                heatmapBtn.style.display = 'block';
+            }
+        }
+        
+        let isHeatmapOn = false;
+        function toggleHeatmap() {
+            if(!currentAnalysisResult || !currentAnalysisResult.heatmap_image) return;
+            const imgEl = document.getElementById('result-thumbnail');
+            const btnEl = document.getElementById('heatmap-toggle-btn');
+            isHeatmapOn = !isHeatmapOn;
+            
+            sfxHover.currentTime = 0; sfxHover.play().catch(e=>{});
+            
+            if(isHeatmapOn) {
+                imgEl.src = currentAnalysisResult.heatmap_image;
+                btnEl.innerHTML = '<i class="fa-solid fa-eye"></i> SHOW ORIGINAL SCAN';
+            } else {
+                imgEl.src = currentImageBase64;
+                btnEl.innerHTML = '<i class="fa-solid fa-fire"></i> TOGGLE AI HEATMAP';
+            }
         }
 
         // Add click handler to show detailed clinical report
@@ -2081,7 +2269,7 @@
                 if (diseases.length > 0) {
                     html += `<div style="background:rgba(255,153,0,0.05); border:1px solid rgba(255,153,0,0.3); padding:15px; margin-bottom:15px;">`;
                     html += `<div style="color:#ff9900; font-size:12px; margin-bottom:10px;">🧬 DIFFERENTIAL DIAGNOSIS:</div>`;
-                    diseases.slice(0, 3).forEach((disease, idx) => {
+                    diseases.slice(0, 5).forEach((disease, idx) => {
                         const percentile = disease.confidence || (disease.confidence_pct ? disease.confidence_pct : 0);
                         html += `<div style="font-size:12px; margin-bottom:5px;"><strong>${idx+1}. ${disease.disease}</strong>: ${percentile}%</div>`;
                         if (disease.clinical_note) {
@@ -2108,10 +2296,20 @@
 
             // Critical Findings
             if (currentAnalysisResult.critical_findings && currentAnalysisResult.critical_findings.length > 0) {
-                html += `<div style="background:rgba(255,153,0,0.05); border:1px solid rgba(255,153,0,0.3); padding:15px;">`;
+                html += `<div style="background:rgba(255,153,0,0.05); border:1px solid rgba(255,153,0,0.3); padding:15px; margin-bottom:15px;">`;
                 html += `<div style="color:#ff9900; font-size:12px; margin-bottom:10px;">🚨 KEY FINDINGS:</div>`;
                 currentAnalysisResult.critical_findings.forEach(finding => {
                     html += `<div style="font-size:12px; margin-bottom:5px;">• ${finding}</div>`;
+                });
+                html += `</div>`;
+            }
+
+            // NEW: Treatment Recommendations
+            if (currentAnalysisResult.treatments && currentAnalysisResult.treatments.length > 0) {
+                html += `<div style="background:rgba(255,0,85,0.05); border:1px solid rgba(255,0,85,0.3); padding:15px; margin-bottom:15px;">`;
+                html += `<div style="color:#ff0055; font-size:12px; margin-bottom:10px;">💊 RECOMMENDED TREATMENTS:</div>`;
+                currentAnalysisResult.treatments.forEach(treatment => {
+                    html += `<div style="font-size:12px; margin-bottom:5px;">• ${treatment}</div>`;
                 });
                 html += `</div>`;
             }

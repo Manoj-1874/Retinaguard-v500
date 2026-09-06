@@ -113,7 +113,25 @@ class MultiDiseaseClassifier:
                 'bone_spicules': 0.35,          # Pseudo-RP pigment
                 'optic_disc_pallor': 0.25       # Optic atrophy
             },
-            'exclusions': ['microaneurysms']
+            'exclusions': []  # Inflammatory lesions can mimic drusen/exudates, so no exclusions
+        },
+        'stargardt': {
+            'name': 'Stargardt Disease (Macular Dystrophy)',
+            'key_features': {
+                'abnormal_texture': 0.40,       # Yellow flecks in macula
+                'macular_edema': 0.30,          # Macular atrophy
+                'early_onset': 0.30             # Typically juvenile
+            },
+            'exclusions': ['bone_spicules', 'disc_cupping']  # Flecks mimic drusen
+        },
+        'myopia': {
+            'name': 'Pathologic Myopia (Myopic Degeneration)',
+            'key_features': {
+                'chorioretinal_atrophy': 0.50,  # Myopic atrophy
+                'peripheral_loss': 0.30,        # Thinning retina
+                'vessel_tortuosity': 0.20       # Stretched vessels
+            },
+            'exclusions': ['bone_spicules', 'exudates', 'cotton_wool_spots']
         }
     }
     
@@ -122,7 +140,7 @@ class MultiDiseaseClassifier:
         pass
     
     def classify(self, expert_results: Dict, patient_age: int = 40, 
-                patient_history: Dict = None) -> Dict:
+                patient_history: Dict = None, is_angiography: bool = False) -> Dict:
         """
         Perform differential diagnosis based on expert scann results
         
@@ -130,6 +148,7 @@ class MultiDiseaseClassifier:
             expert_results: Dictionary of all 10 expert scanner outputs
             patient_age: Patient age (for age-related diseases)
             patient_history: Optional patient history data
+            is_angiography: True if the image is a Fluorescein Angiography
             
         Returns:
             Dictionary with:
@@ -138,6 +157,19 @@ class MultiDiseaseClassifier:
                 - 'disease_scores': dict (all disease confidence scores)
                 - 'clinical_notes': list (important observations)
         """
+        if is_angiography:
+            print(f"\n      [D] DIFFERENTIAL DIAGNOSIS:")
+            print(f"         [!] Skipped: Color-based differential diagnosis is not supported for grayscale Angiography.")
+            print(f"      {'='*60}\n")
+            sys.stdout.flush()
+            return {
+                'top_diagnosis': 'Angiography (Differential Skipped)',
+                'top_confidence': 0.0,
+                'differential': [{'disease': 'Angiography (Color Features Unavailable)', 'confidence': 0.0}],
+                'disease_scores': {},
+                'clinical_notes': ['Differential diagnosis skipped: Color markers required for multi-disease classifier are invisible on angiograms.'],
+                'features': {}
+            }
         print(f"\n   [D] DIFFERENTIAL DIAGNOSIS")
         print(f"      {'='*60}")
         
@@ -163,8 +195,13 @@ class MultiDiseaseClassifier:
         if (vessel_att > 0.4 or ai_prob > 0.5) and bone_spic < 0.3:
             # Recalculate RP score without bone spicules requirement
             sine_pigmento_score = vessel_att * 0.45 + features.get('optic_disc_pallor', 0.0) * 0.25 + features.get('peripheral_loss', 0.0) * 0.10 + ai_prob * 0.20
+            
+            # Boost explicitly if AI shows concern but physical scanners fail due to extreme yellow/blonde fundus washouts
+            if ai_prob > 0.50 and vessel_att < 0.20 and features.get('abnormal_texture', 0.0) > 0.50 and features.get('drusen', 0.0) < 0.50:
+                sine_pigmento_score += (ai_prob * 0.50) + 0.30
+                
             if sine_pigmento_score > disease_scores['retinitis_pigmentosa']:
-                disease_scores['retinitis_pigmentosa'] = sine_pigmento_score
+                disease_scores['retinitis_pigmentosa'] = min(sine_pigmento_score, 0.95)
         
         # Sort diseases by confidence (descending)
         sorted_diseases = sorted(disease_scores.items(), key=lambda x: x[1], reverse=True)
@@ -208,7 +245,8 @@ class MultiDiseaseClassifier:
             'top_confidence': round(top_score * 100, 1),
             'differential': differential,
             'disease_scores': {k: round(v * 100, 1) for k, v in disease_scores.items()},
-            'clinical_notes': clinical_notes
+            'clinical_notes': clinical_notes,
+            'features': {k: round(v, 2) for k, v in features.items()}
         }
     
     def _extract_features(self, expert_results: Dict, patient_age: int,
@@ -240,16 +278,21 @@ class MultiDiseaseClassifier:
         spatial = expert_results.get('spatial_result') or expert_results.get('spatial') or {}
         features['peripheral_loss'] = spatial.get('degradation_score', 0.0)
         
-        # DIABETIC RETINOPATHY features (simplified - needs dedicated detectors)
-        # For now, use texture and bright lesions as proxies
-        texture = expert_results.get('texture_result') or expert_results.get('texture') or {}
-        features['microaneurysms'] = 0.0  # Placeholder - needs dot-hemorrhage detector
-        features['hemorrhages'] = 0.0     # Placeholder
+        # DIABETIC RETINOPATHY features
+        # Use new dedicated dot-hemorrhage detector
+        hemorrhage = expert_results.get('hemorrhage_result') or expert_results.get('hemorrhage') or {}
+        
+        # Microaneurysms typically > 10 is severe. Cap at 30.
+        features['microaneurysms'] = min(hemorrhage.get('microaneurysms', 0) / 30.0, 1.0)
+        # Hemorrhages typically > 5 is severe. Cap at 15.
+        features['hemorrhages'] = min(hemorrhage.get('hemorrhages', 0) / 15.0, 1.0)
+        
         # Exudates are bright lesions (use local_variation as signal + fleck_count)
+        texture = expert_results.get('texture_result') or expert_results.get('texture') or {}
         local_var = texture.get('local_variation', 0)
         features['exudates'] = min(local_var / 6.0, 1.0)  # Improved sensitivity
         features['cotton_wool_spots'] = features['exudates'] * 0.7  # Similar to exudates
-        features['neovascularization'] = 0.0  # Placeholder
+        features['neovascularization'] = 0.0  # Placeholder (requires OCT/Angio)
         
         # AMD features
         bright_lesion = expert_results.get('bright_lesion_result') or expert_results.get('bright_lesion') or {}
@@ -353,7 +396,7 @@ class MultiDiseaseClassifier:
 
 # Convenience function for external use
 def classify_diseases(expert_results: Dict, patient_age: int = 40, 
-                     patient_history: Dict = None) -> Dict:
+                     patient_history: Dict = None, is_angiography: bool = False) -> Dict:
     """
     Perform multi-disease differential diagnosis
     
@@ -361,12 +404,13 @@ def classify_diseases(expert_results: Dict, patient_age: int = 40,
         expert_results: Expert scanner panel results
         patient_age: Patient age
         patient_history: Optional patient history
+        is_angiography: True if the image is a Fluorescein Angiography
         
     Returns:
         Differential diagnosis results
     """
     classifier = MultiDiseaseClassifier()
-    return classifier.classify(expert_results, patient_age, patient_history)
+    return classifier.classify(expert_results, patient_age, patient_history, is_angiography)
 
 
 # Testing harness

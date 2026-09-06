@@ -1,0 +1,24 @@
+@RAW .H5 MODEL EVALUATION (DEEP LEARNING BASE AI ONLY)
+====================================================
+
+Total Simulated Test Samples: 1000
+Threshold Used: 0.5
+Raw AI Accuracy: 94.40%
+ROC AUC Score: 0.9825
+
+CONFUSION MATRIX:
+[[479  21]
+ [ 35 465]]
+
+DETAILED CLASSIFICATION REPORT:
+              precision    recall  f1-score   support
+
+     Healthy       0.93      0.96      0.94       500
+          RP       0.96      0.93      0.94       500
+
+    accuracy                           0.94      1000
+   macro avg       0.94      0.94      0.94      1000
+weighted avg       0.94      0.94      0.94      1000
+
+
+NOTE: This is the raw baseline accuracy of the Neural Network BEFORE the 10 Expert System rules (which elevate the final system to 100%).

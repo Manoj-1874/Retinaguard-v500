@@ -5,14 +5,14 @@ def log_print(*args, **kwargs):
     # Remove kwargs that print doesn't support if any slipped through
     kwargs.pop('flush', None)
     msg = " ".join(str(a) for a in args)
-    
+
     # Also log to file for history
     try:
         with open('retinaguard_analysis.log', 'a', encoding='utf-8') as f:
             f.write(msg + '\n')
     except Exception:
         pass
-        
+
     print(msg, file=sys.stderr, flush=True)
 
 """
@@ -28,7 +28,7 @@ ARCHITECTURE:
   - Complication Detection: Cystoid Macular Edema (CME)
   - Weighted Voting System
   - Significance Multipliers for Critical Findings
-  
+
 Version: 5.2.0 Flask Edition - AI+Consensus Decision Logic
 ================================================================================
 """
@@ -89,14 +89,14 @@ class LoggerWriter:
         self.logger_func = logger_func
         self.buf = []
         self.encoding = 'utf-8'
-        
+
     def write(self, msg):
         if isinstance(msg, bytes):
             try:
                 msg = msg.decode(self.encoding)
             except Exception:
                 msg = str(msg)
-                
+
         if msg == '\n':
             if self.buf:
                 self.logger_func("".join(self.buf))
@@ -105,12 +105,12 @@ class LoggerWriter:
                 self.logger_func("")
         else:
             self.buf.append(msg)
-            
+
     def flush(self):
         if self.buf:
             self.logger_func("".join(self.buf))
             self.buf = []
-            
+
     @property
     def buffer(self):
         return self
@@ -167,45 +167,45 @@ CONFIG = {
     # CLINICAL SEVERITY THRESHOLDS - CONSTANT VALUES FOR REPRODUCIBILITY
     # Based on peer-reviewed literature and clinical guidelines
     # =========================================================================
-    
+
     # VESSEL ATTENUATION (TRIAD #2) - Vessel density as % of retinal area
     "VESSEL_CRITICAL": 0.08,        # <8% = Severe attenuation (late-stage RP)
     "VESSEL_MODERATE": 0.15,        # <15% = Moderate attenuation (progressive RP)
     "VESSEL_MILD": 0.25,            # <25% = Mild attenuation (borderline/early)
     # Normal range: 25-40% vessel density in healthy retina
-    
+
     # PIGMENT BONE SPICULES (TRIAD #1) - Number of pigment clusters
     "PIGMENT_CRITICAL": 30,         # ≥30 clusters = Extensive pigmentation
     "PIGMENT_MODERATE": 18,         # ≥18 clusters = Moderate pigmentation
     "PIGMENT_MILD": 8,              # ≥8 clusters = Mild pigmentation
     # Normal range: <8 scattered pigment deposits
-    
+
     # OPTIC DISC PALLOR (TRIAD #3) - Normalized brightness (0-255)
     "DISC_CRITICAL": 210,           # >210 = Severe waxy pallor
     "DISC_MODERATE": 195,           # >195 = Moderate pallor
     "DISC_MILD": 180,               # >180 = Mild pallor
     "DISC_NORMAL_MIN": 140,         # <140 = Too dark (image quality issue)
     "DISC_NORMAL_MAX": 180,         # 140-180 = Normal disc brightness
-    
+
     # VESSEL TORTUOSITY - Arc-to-chord ratio
     "TORTUOSITY_CRITICAL": 1.6,     # >1.6 = Severe tortuosity
     "TORTUOSITY_MODERATE": 1.4,     # >1.4 = Moderate tortuosity
     "TORTUOSITY_MILD": 1.3,         # >1.3 = Mild tortuosity
     # Normal range: 1.0-1.3 (straight to mildly curved)
-    
+
     # TEXTURE DEGENERATION - Entropy and local variation
     "TEXTURE_ENTROPY_CRITICAL": 6.8,    # >6.8 = High irregularity
     "TEXTURE_ENTROPY_MILD": 6.4,        # >6.4 = Moderate changes
     "TEXTURE_LOCAL_CRITICAL": 35,       # >35 = Severe atrophy
     "TEXTURE_LOCAL_MILD": 7.0,          # >7.0 = Mild atrophy
     # Normal: entropy <6.4, local variation <7.0
-    
+
     # SPATIAL PATTERN - Peripheral degradation ratio
     "SPATIAL_CRITICAL": 0.60,       # >60% = Marked peripheral loss
     "SPATIAL_MODERATE": 0.50,       # >50% = Moderate peripheral loss
     "SPATIAL_MILD": 0.40,           # >40% = Mild peripheral changes
     # Normal: <40% degradation (uniform retina)
-    
+
     # BRIGHT LESIONS (RPA VARIANT) - Fleck count and density
     "RPA_FLECKS_CRITICAL": 80,      # ≥80 flecks = RPA pattern
     "RPA_FLECKS_MODERATE": 50,      # ≥50 flecks = Significant lesions
@@ -213,7 +213,7 @@ CONFIG = {
     "RPA_DENSITY_CRITICAL": 0.03,   # ≥3% retinal area
     "RPA_DENSITY_MODERATE": 0.02,   # ≥2% retinal area
     "RPA_DENSITY_MILD": 0.01,       # ≥1% retinal area
-    
+
     # MACULA CME DETECTION - CME score and irregularity
     "CME_CRITICAL": 0.60,           # >0.60 = CME suspected
     "CME_MODERATE": 0.40,           # >0.40 = Macular abnormality
@@ -222,30 +222,30 @@ CONFIG = {
     "CME_ANGIO_CRITICAL": 0.90,
     "CME_ANGIO_MODERATE": 0.65,
     "CME_ANGIO_MILD": 0.45,
-    
+
     # QUADRANT ASYMMETRY (SECTORAL RP)
     "SECTORAL_CRITICAL_DEGRADATION": 0.35,  # >35% degradation in worst quadrant
     "SECTORAL_MODERATE_DEGRADATION": 0.28,  # >28% degradation
     "SECTORAL_MILD_ASYMMETRY": 0.20,        # >20% asymmetry between quadrants
     "SECTORAL_MIN_ASYMMETRY": 0.25,         # Minimum asymmetry to flag sectoral
-    
+
     # AI PATTERN RECOGNITION - Neural network confidence
     "AI_CRITICAL": 0.70,            # ≥70% = High confidence RP
     "AI_MODERATE": 0.55,            # ≥55% = Moderate confidence
     "AI_MILD": 0.25,                # ≥25% = Mild changes
     "AI_POSITIVE_THRESHOLD": 0.60,  # ≥60% = AI says "RP detected"
     "AI_UNCERTAIN_THRESHOLD": 0.50, # 50-60% = Uncertain zone
-    
+
     # IMAGE QUALITY THRESHOLDS
     "BRIGHTNESS_CORRECTION_HIGH": 140,      # Apply correction if mean > 140
     "BRIGHTNESS_CORRECTION_MODERATE": 120,  # Apply correction if mean > 120
-    
+
     # DECISION ENGINE THRESHOLDS
     "SINE_PIGMENTO_AI_MIN": 0.40,           # AI confidence for Sine Pigmento pathway
     "SINE_PIGMENTO_PIGMENT_MAX": 0.35,      # Max pigment confidence for Sine Pigmento
     "SECTORAL_AI_MIN": 0.50,                # AI agreement required for Sectoral RP
     "RPA_PIGMENT_MAX": 0.30,                # Max pigment for RPA pathway
-    
+
     # SIGNIFICANCE MULTIPLIERS (applied to critical/moderate findings)
     "SIGNIFICANCE_MULTIPLIERS": {
         "vessel_severe": 2.5,
@@ -274,7 +274,7 @@ if TENSORFLOW_AVAILABLE:
     try:
         import tensorflow as tf
         from tensorflow import keras
-        
+
         # MEMORY FIX: Force GPU memory growth to prevent OOM
         gpus = tf.config.experimental.list_physical_devices('GPU')
         if gpus:
@@ -283,10 +283,10 @@ if TENSORFLOW_AVAILABLE:
                     tf.config.experimental.set_memory_growth(gpu, True)
             except RuntimeError as e:
                 log_print(f"[!] GPU Memory Growth error: {e}")
-                
+
         # MEMORY FIX: Clear any zombie Keras sessions
         keras.backend.clear_session()
-        
+
         if os.path.exists(CONFIG["MODEL_PATH"]):
             try:
                 # Use Keras 3.x directly - model was saved with Keras 3.10
@@ -327,7 +327,7 @@ def extract_vessel_features(img, fov_mask, is_angiography=False):
     b, g, r = cv2.split(img)
     clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
     enhanced = clahe.apply(g)
-    
+
     # ANGIOGRAPHY FIX: Vessels are bright in angiography, dark in color fundus
     if is_angiography:
         # Don't invert - detect bright structures directly
@@ -335,27 +335,27 @@ def extract_vessel_features(img, fov_mask, is_angiography=False):
     else:
         # Standard: invert to make dark vessels bright
         vessel_source = cv2.bitwise_not(enhanced)
-    
+
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
     opened = cv2.morphologyEx(vessel_source, cv2.MORPH_OPEN, kernel)
-    
+
     kernel_large = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
     tophat = cv2.morphologyEx(opened, cv2.MORPH_TOPHAT, kernel_large)
-    
+
     _, vessel_mask = cv2.threshold(tophat, 15, 255, cv2.THRESH_BINARY)
-    
+
     # APPLY FOV MASK to remove border noise
     vessel_mask = cv2.bitwise_and(vessel_mask, fov_mask)
-    
+
     # Correct density: divide by visible retinal area, not total pixels
     fov_area = cv2.countNonZero(fov_mask)
     raw_density = cv2.countNonZero(vessel_mask) / fov_area if fov_area > 0 else 0
-    
+
     # COLOR COMPENSATION: Bright/color-shifted images inflate vessel density
     # Detect if image is unusually bright (mean > 140 in grayscale)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     mean_brightness = np.mean(gray[fov_mask > 0]) if fov_area > 0 else 128
-    
+
     # Apply correction factor for bright images
     if mean_brightness > CONFIG["BRIGHTNESS_CORRECTION_HIGH"]:
         # Very bright: reduce density by 15%
@@ -366,95 +366,104 @@ def extract_vessel_features(img, fov_mask, is_angiography=False):
     else:
         # Normal brightness: no correction
         correction_factor = 1.0
-    
+
     density = raw_density * correction_factor
-    
+
     # DIAGNOSTIC: Log vessel density calculation
     log_print(f"   [VESSEL] Raw density: {raw_density*100:.1f}%, Brightness: {mean_brightness:.1f}, Correction: {correction_factor:.2f}, Final: {density*100:.1f}%")
     sys.stdout.flush()
-    
+
     # ADJUST FOR ANGIOGRAPHY: Vessels glow bright white against black, creating massive artificial density.
     # ADJUST FOR ANGIOGRAPHY: Vessels glow bright white against black.
     if is_angiography:
         density = density * 0.25
-        
+
     return {'density': density, 'mask': vessel_mask, 'brightness_corrected': correction_factor < 1.0}
 
 def extract_pigment_features(img, fov_mask, is_angiography=False):
     """TRIAD #1: Bone Spicule Pigmentation Detection
     BUG FIX #2: Apply FOV mask so black borders aren't counted as pigment.
-    BUG FIX #13: ADAPTIVE threshold for different imaging modalities (autofluorescence, color shifts).
-    BUG FIX #15: Tightened thresholds to reduce false positives on noisy/low-quality images."""
+    BUG FIX #13: ADAPTIVE threshold for different imaging modalities.
+    BUG FIX #15: Tightened thresholds to reduce false positives."""
+
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     l_channel = lab[:, :, 0]
-    
-    # ADAPTIVE THRESHOLD: Calculate based on retinal L-channel distribution
+
+    # -------------------------------------------------------------
+    # NEW: ANGIO-VISION OVERRIDE FOR BONE SPICULES
+    # -------------------------------------------------------------
+    if is_angiography:
+        # In Angio, the background between vessels is naturally dark.
+        # Standard adaptive percentiles will falsely flag these natural gaps.
+        # Instead, true bone spicules in Angio create "Hypo-fluorescent Blockages"
+        # which are profound, absolute black voids blocking the dye.
+        final_threshold = 25.0  # Absolute strict dark threshold
+        log_print(f"   [PIGMENT] ANGIO-VISION ACTIVATED: Looking for Hypo-fluorescent blockages (Threshold={final_threshold})")
+        sys.stdout.flush()
+
+        _, dark_mask = cv2.threshold(l_channel, final_threshold, 255, cv2.THRESH_BINARY_INV)
+        dark_mask = cv2.bitwise_and(dark_mask, fov_mask)
+
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4, 4))
+        dark_mask = cv2.morphologyEx(dark_mask, cv2.MORPH_OPEN, kernel, iterations=2)
+
+        num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(dark_mask, connectivity=8)
+
+        valid_clusters = 0
+        for i in range(1, num_labels):
+            area = stats[i, cv2.CC_STAT_AREA]
+            if 20 < area < 500:
+                valid_clusters += 1
+
+        return {'num_clusters': valid_clusters, 'mask': dark_mask}
+    # -------------------------------------------------------------
+
+    # ADAPTIVE THRESHOLD (FOR COLOR FUNDUS IMAGES): Calculate based on L-channel distribution
     retinal_l = l_channel[fov_mask > 0]
     l_mean = np.mean(retinal_l)
     l_std = np.std(retinal_l)
-    l_median = np.median(retinal_l)
-    
-    # Adaptive approach for bright/color-shifted images
+
     if l_mean > 80:
-        # BRIGHT images (autofluorescence, color-shifted): More conservative to avoid false positives
-        dark_threshold = np.percentile(retinal_l, 18)  # Lower percentile (was 25) = more conservative
-        relative_threshold = max(l_mean - 2.2 * l_std, 35)  # Tighter statistical threshold
-        # Reduced brightness compensation for less aggressive detection
-        brightness_comp = -8  # Was -15, now less aggressive
+        dark_threshold = np.percentile(retinal_l, 18)
+        relative_threshold = max(l_mean - 2.2 * l_std, 35)
+        brightness_comp = -8
     else:
-        # NORMAL images: Bottom 12% (was 15%)
         dark_threshold = np.percentile(retinal_l, 12)
         relative_threshold = max(l_mean - 1.5 * l_std, 30)
         brightness_comp = 0
-    
-    # Use the HIGHER of the two (more conservative, less noise)
+
     final_threshold = max(dark_threshold, relative_threshold) + brightness_comp
-    final_threshold = min(final_threshold, 65)  # Lower cap (was 70) for bright images
-    
-    # DIAGNOSTIC: Log adaptive thresholds
+    final_threshold = min(final_threshold, 65)
+
     log_print(f"   [PIGMENT] L-channel: mean={l_mean:.1f}, std={l_std:.1f}, percentile={dark_threshold:.1f}, statistical={relative_threshold:.1f}, brightness_comp={brightness_comp}, final_threshold={final_threshold:.1f}")
     sys.stdout.flush()
-    
+
     _, dark_mask = cv2.threshold(l_channel, final_threshold, 255, cv2.THRESH_BINARY_INV)
-    
-    # APPLY FOV MASK to ignore the black background entirely
     dark_mask = cv2.bitwise_and(dark_mask, fov_mask)
-    
-    # NEW FIX: Filter out Diabetic Hemorrhages!
-    # Blood is dark, but it is RED. True pigment is black (low across all channels).
-    # If the Red channel is significantly brighter than Blue/Green, it's blood, not a bone spicule!
+
+    # Filter out Diabetic Hemorrhages (blood is red, bone spicules are black)
     b_channel = img[:, :, 0]
     g_channel = img[:, :, 1]
     r_channel = img[:, :, 2]
-    
-    # Convert arrays to int16 to prevent overflow when subtracting
+
     r_int = r_channel.astype(np.int16)
     g_int = g_channel.astype(np.int16)
     b_int = b_channel.astype(np.int16)
-    
-    # Create mask where Red is dominant (Blood)
+
     blood_mask = ((r_int > g_int + 15) & (r_int > b_int + 15)).astype(np.uint8) * 255
-    
-    # Remove the blood from the dark_mask so it doesn't get counted as pigment
     dark_mask = cv2.bitwise_and(dark_mask, cv2.bitwise_not(blood_mask))
-    
-    # Stronger noise removal for cleaner detection
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4, 4))  # Larger kernel (was 3x3)
-    dark_mask = cv2.morphologyEx(dark_mask, cv2.MORPH_OPEN, kernel, iterations=2)  # 2 iterations
-    
+
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4, 4))
+    dark_mask = cv2.morphologyEx(dark_mask, cv2.MORPH_OPEN, kernel, iterations=2)
+
     num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(dark_mask, connectivity=8)
-    
+
     valid_clusters = 0
     for i in range(1, num_labels):
         area = stats[i, cv2.CC_STAT_AREA]
-        # Tighter size range: 20-500 pixels (was 10-800) to filter noise and large shadows
         if 20 < area < 500:
             valid_clusters += 1
-            
-    # ADJUST FOR ANGIOGRAPHY: Bone spicules appear black but so does the background.
-    if is_angiography:
-        valid_clusters = int(valid_clusters * 0.1)
-    
+
     return {'num_clusters': valid_clusters, 'mask': dark_mask}
 
 def extract_optic_disc_features(img, fov_mask, is_angiography=False):
@@ -466,35 +475,35 @@ def extract_optic_disc_features(img, fov_mask, is_angiography=False):
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     l_channel = lab[:, :, 0]
     l_channel_masked = cv2.bitwise_and(l_channel, fov_mask)  # Ignore background
-    
+
     # Calculate overall image brightness for normalization
     fov_pixels = l_channel[fov_mask > 0]
     overall_brightness = float(np.mean(fov_pixels)) if len(fov_pixels) > 0 else 128.0
-    
+
     # Look for the brightest 1% of the image (the Optic Disc) anywhere in the FOV
     max_val = np.max(l_channel_masked)
     _, disc_mask = cv2.threshold(l_channel_masked, max_val - 25, 255, cv2.THRESH_BINARY)
-    
+
     # Dilate to capture full disc region
     kernel_small = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
     disc_mask = cv2.dilate(disc_mask, kernel_small, iterations=2)
-    
+
     disc_area = cv2.countNonZero(disc_mask)
     fov_area = cv2.countNonZero(fov_mask)
-    
+
     # Optic disc must be a reasonable size: not noise (>50px) and not a giant flash artifact (<5% of FOV)
     if 50 < disc_area < (fov_area * 0.05):
         disc_pixels_l = l_channel[disc_mask > 0]
         raw_disc_brightness = float(np.mean(disc_pixels_l))
         disc_std = float(np.std(disc_pixels_l))
         disc_uniformity = 1.0 / (1.0 + disc_std / 10.0)
-        
+
         # Normalize disc brightness relative to overall image brightness
         # This reduces false positives from overexposed images
         # Subtract overall brightness, then add back a standard baseline (140)
         disc_brightness = raw_disc_brightness - overall_brightness + 140.0
         disc_brightness = max(80.0, min(255.0, disc_brightness))  # Clamp to valid range
-        
+
         # Check color saturation for waxy pallor detection
         img_bgr = cv2.bitwise_and(img, img, mask=disc_mask)
         disc_color = img_bgr[disc_mask > 0]
@@ -507,17 +516,17 @@ def extract_optic_disc_features(img, fov_mask, is_angiography=False):
         disc_std = 20.0
         disc_uniformity = 0.5
         color_saturation = 1.0
-    
+
     is_pale = disc_brightness > 195
     is_waxy = disc_brightness > 210 and disc_uniformity > 0.7
-    
+
     # ADJUST FOR ANGIOGRAPHY: Optic disc is intensely hyper-fluorescent (bright) in FA.
     # We force it to normal brightness so it doesn't trigger "Optic Disc Pallor".
     if is_angiography:
         disc_brightness = 160.0
         is_pale = False
         is_waxy = False
-    
+
     return {
         'disc_brightness': disc_brightness,
         'disc_uniformity': disc_uniformity,
@@ -532,13 +541,13 @@ def extract_texture_features(img, fov_mask, is_angiography=False):
     BUG FIX: Apply FOV mask to histogram so black background doesn't skew entropy.
     BUG FIX #14: Add local texture variation to detect atrophy on color-shifted images."""
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    
+
     # Only analyze pixels inside the FOV
     hist, _ = np.histogram(gray[fov_mask > 0], bins=256, range=(0, 256))
     hist = hist / hist.sum()
     hist = hist[hist > 0]
     entropy = -np.sum(hist * np.log2(hist))
-    
+
     # Add local texture variation (atrophy creates irregular patches)
     # Use standard deviation in local neighborhoods
     kernel_size = 15
@@ -548,22 +557,24 @@ def extract_texture_features(img, fov_mask, is_angiography=False):
     local_variance = local_sq_mean - local_mean**2
     local_variance = np.maximum(local_variance, 0)  # Numerical stability
     local_std = np.sqrt(local_variance)
-    
+
     # Only measure within FOV
     fov_local_std = local_std[fov_mask > 0]
     texture_variation = np.mean(fov_local_std)
-    
+
     # DIAGNOSTIC: Log texture metrics
     log_print(f"[TEXTURE] Global entropy={entropy:.2f}, Local variation={texture_variation:.2f}, Mean brightness={np.mean(gray_float):.1f}")
     sys.stdout.flush()
-    
-    # ADJUST FOR ANGIOGRAPHY: The bright capillaries against dark background
-    # create massive natural entropy and texture variation.
+
     # ADJUST FOR ANGIOGRAPHY: The bright capillaries against dark background
     if is_angiography:
-        entropy = max(4.0, entropy - 0.2)
-        texture_variation = max(2.0, texture_variation - 0.5)
-        
+        # ANGIO-VISION: Glowing dye naturally creates massive entropy/variation.
+        # We scale the variation down proportionally to map normal angio-texture back to normal color-texture baselines.
+        # Normal color variation is ~3.0. Normal Angio variation is ~15.0. Scale = 1/5.
+        entropy = max(4.0, entropy * 0.75)
+        texture_variation = max(2.0, texture_variation * 0.25)
+        log_print(f"   [TEXTURE] ANGIO-VISION: Normalizing extreme contrast. Scaled entropy={entropy:.2f}, scaled variation={texture_variation:.2f}")
+
     return {'entropy': entropy, 'local_variation': texture_variation}
 
 def extract_spatial_features(img, fov_mask, is_angiography=False):
@@ -573,34 +584,36 @@ def extract_spatial_features(img, fov_mask, is_angiography=False):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     h, w = gray.shape
     center_y, center_x = h // 2, w // 2
-    
+
     Y, X = np.ogrid[:h, :w]
     distances = np.sqrt((X - center_x)**2 + (Y - center_y)**2)
     max_dist = np.sqrt(center_x**2 + center_y**2)
-    
+
     # Create center and peripheral masks WITHIN the FOV only
     center_mask = (distances < (max_dist * 0.4)) & (fov_mask > 0)
     peripheral_mask = (distances > (max_dist * 0.6)) & (fov_mask > 0)
-    
+
     # Only calculate if we have valid pixels in both regions
     center_mean = 0.0
     periphery_mean = 0.0
     peripheral_degradation = 0.0
-    
+
     if np.count_nonzero(center_mask) > 100 and np.count_nonzero(peripheral_mask) > 100:
         center_mean = np.mean(gray[center_mask])
         periphery_mean = np.mean(gray[peripheral_mask])
-        
+
         if center_mean > 0:
             peripheral_degradation = (center_mean - periphery_mean) / center_mean
             # Clamp to [0.0, 1.0] - negative means peripheral is brighter (artifact/angio)
             peripheral_degradation = max(0.0, min(1.0, peripheral_degradation))
-    
-    # ADJUST FOR ANGIOGRAPHY: The periphery of an FA is naturally dark.
+
     # ADJUST FOR ANGIOGRAPHY: The periphery of an FA is naturally dark.
     if is_angiography:
-        peripheral_degradation = max(0.0, peripheral_degradation - 0.1)
-        
+        # ANGIO-VISION: The periphery of an FA is naturally dark due to dye decay.
+        # We scale it down proportionally to map normal angio decay to normal color baselines.
+        peripheral_degradation = peripheral_degradation * 0.5
+        log_print(f"   [SPATIAL] ANGIO-VISION: Calibrating peripheral decay. Scaled degradation={peripheral_degradation:.2f}")
+
     return {
         'center_intensity': float(center_mean),
         'periphery_intensity': float(periphery_mean),
@@ -613,45 +626,49 @@ def extract_bright_lesion_features(img, fov_mask, is_angiography=False):
     This scanner specifically looks for abnormal bright lesions in the retina."""
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     l_channel, a_channel, b_channel = cv2.split(lab)
-    
-    # Look for bright pixels (L > 200) that are INSIDE the FOV
-    bright_mask = (l_channel > 200) & (fov_mask > 0)
-    
-    # Also check for yellowish tint (positive b channel = yellow)
-    yellow_mask = (b_channel > 135) & (fov_mask > 0)
-    
-    # Drusen/flecks are small bright spots, not large areas like optic disc
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-    bright_cleaned = cv2.morphologyEx(bright_mask.astype(np.uint8), cv2.MORPH_OPEN, kernel)
-    
+
+    # USE TOP-HAT TRANSFORM to find small bright spots (Drusen/Flecks) regardless of global lighting/color cast
+    # This prevents false positives on naturally yellow/blonde fundus images.
+    # Increased kernel size and threshold to avoid triggering on normal inter-vessel spaces
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (35, 35))
+
+    # Apply Top-Hat to L channel (brightness)
+    tophat_l = cv2.morphologyEx(l_channel, cv2.MORPH_TOPHAT, kernel)
+    _, bright_mask = cv2.threshold(tophat_l, 45, 255, cv2.THRESH_BINARY)
+    bright_mask = bright_mask & (fov_mask > 0)
+
+    # Apply Top-Hat to B channel (yellowness)
+    tophat_b = cv2.morphologyEx(b_channel, cv2.MORPH_TOPHAT, kernel)
+    _, yellow_mask = cv2.threshold(tophat_b, 30, 255, cv2.THRESH_BINARY)
+    yellow_mask = yellow_mask & (fov_mask > 0)
+
     # Count bright lesion clusters
-    contours, _ = cv2.findContours(bright_cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-    # Filter: lesions should be small (drusen are 50-300 pixels), not optic disc (>2000px)
+    contours, _ = cv2.findContours(bright_mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Filter: lesions should be small (drusen are 20-2000 pixels)
     lesion_count = 0
     total_lesion_area = 0
     for cnt in contours:
         area = cv2.contourArea(cnt)
-        if 20 < area < 2000:  # Drusen/fleck size range
+        if 30 < area < 2000:  # Drusen/fleck size range
             lesion_count += 1
             total_lesion_area += area
-    
+
     fov_area = np.sum(fov_mask > 0)
     lesion_density = total_lesion_area / fov_area if fov_area > 0 else 0
-    
-    # Also check yellow fleck count
-    yellow_cleaned = cv2.morphologyEx(yellow_mask.astype(np.uint8), cv2.MORPH_OPEN, kernel)
-    yellow_contours, _ = cv2.findContours(yellow_cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    yellow_fleck_count = sum(1 for cnt in yellow_contours if 20 < cv2.contourArea(cnt) < 2000)
-    
+
+    # Count yellow fleck clusters
+    yellow_contours, _ = cv2.findContours(yellow_mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    yellow_fleck_count = sum(1 for cnt in yellow_contours if 15 < cv2.contourArea(cnt) < 2000)
+
     combined_flecks = lesion_count + yellow_fleck_count
-    
-    # ADJUST FOR ANGIOGRAPHY: Everything glows in FA. 
+
+    # ADJUST FOR ANGIOGRAPHY: Everything glows in FA.
     # Don't flag normal dye as RPA "bright lesions".
     if is_angiography:
         combined_flecks = int(combined_flecks * 0.1)
         lesion_density = lesion_density * 0.1
-    
+
     return {
         'lesion_count': lesion_count,
         'lesion_density': lesion_density,
@@ -666,44 +683,44 @@ def extract_macula_features(img, fov_mask, is_angiography=False):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     l_channel = lab[:, :, 0]
-    
+
     h, w = gray.shape
     center_y, center_x = h // 2, w // 2
     macula_radius = int(min(h, w) * 0.15)  # Central 15% = macular region
-    
+
     # Create macular mask (circle in center)
     Y, X = np.ogrid[:h, :w]
     macula_mask = np.sqrt((X - center_x)**2 + (Y - center_y)**2) < macula_radius
     macula_mask = macula_mask & (fov_mask > 0)
-    
+
     if np.sum(macula_mask) < 100:
         return {'cme_score': 0, 'macula_irregularity': 0, 'edema_likelihood': 0}
-    
+
     # CME shows irregular texture/cystic spaces in macula
     macula_region = gray[macula_mask]
     macula_std = np.std(macula_region)
     macula_mean = np.mean(macula_region)
-    
+
     # Cysts appear as dark spots in color fundus, but BRIGHT glowing spots in Angiography!
     l_macula = l_channel[macula_mask]
     if is_angiography:
         cyst_ratio = np.sum(l_macula > (np.mean(l_macula) + 20)) / len(l_macula)
     else:
         cyst_ratio = np.sum(l_macula < (np.mean(l_macula) - 20)) / len(l_macula)
-    
+
     # Calculate Local Binary Pattern variance for texture irregularity
     # High variance in the macula = potential CME
     macula_img = gray.copy()
     macula_img[~macula_mask] = 0
-    
+
     # Edge detection in macular region (cysts have internal edges)
     edges = cv2.Canny(macula_img, 30, 100)
     edge_density = np.sum(edges[macula_mask]) / (np.sum(macula_mask) * 255)
-    
+
     # CME score: combines irregularity + cyst ratio + edge density
     cme_score = (macula_std / 50) * 0.4 + cyst_ratio * 0.3 + edge_density * 0.3
     irregularity = macula_std
-        
+
     return {
         'cme_score': min(cme_score, 1.0),
         'macula_irregularity': irregularity,
@@ -720,7 +737,7 @@ def extract_quadrant_features(img, fov_mask, is_angiography=False):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     h, w = gray.shape
     center_y, center_x = h // 2, w // 2
-    
+
     # Define 4 quadrants: Superior, Inferior, Nasal, Temporal
     # For right eye: Nasal = left side, Temporal = right side
     quadrants = {
@@ -729,7 +746,7 @@ def extract_quadrant_features(img, fov_mask, is_angiography=False):
         'nasal': (slice(0, h), slice(0, center_x)),              # Left half (right eye)
         'temporal': (slice(0, h), slice(center_x, w)),           # Right half (right eye)
     }
-    
+
     # Also check diagonal quadrants (superior-nasal, inferior-temporal, etc.)
     diagonal_quadrants = {
         'sup_nasal': (slice(0, center_y), slice(0, center_x)),
@@ -737,49 +754,49 @@ def extract_quadrant_features(img, fov_mask, is_angiography=False):
         'inf_nasal': (slice(center_y, h), slice(0, center_x)),
         'inf_temporal': (slice(center_y, h), slice(center_x, w)),
     }
-    
+
     quadrant_scores = {}
-    
+
     for name, (y_slice, x_slice) in {**quadrants, **diagonal_quadrants}.items():
         quad_gray = gray[y_slice, x_slice]
         quad_fov = fov_mask[y_slice, x_slice]
-        
+
         # Only analyze inside FOV
         valid_pixels = quad_gray[quad_fov > 0]
         if len(valid_pixels) < 100:
             quadrant_scores[name] = {'brightness': 0, 'degradation': 0}
             continue
-        
+
         brightness = np.mean(valid_pixels)
         std = np.std(valid_pixels)
-        
+
         # Dark regions indicate degeneration
         dark_ratio = np.sum(valid_pixels < 80) / len(valid_pixels)
-        
+
         quadrant_scores[name] = {
             'brightness': brightness,
             'std': std,
             'dark_ratio': dark_ratio,
             'degradation': dark_ratio * (1 - brightness/255)
         }
-    
+
     # Find the WORST quadrant (highest degradation)
     degradations = [q['degradation'] for q in quadrant_scores.values()]
     max_degradation = max(degradations) if degradations else 0
     min_degradation = min(degradations) if degradations else 0
-    
+
     # Sectoral RP: BIG difference between worst and best quadrant
     quadrant_asymmetry = max_degradation - min_degradation
-    
+
     # Find which quadrant is affected
     worst_quadrant = max(quadrant_scores.keys(), key=lambda k: quadrant_scores[k]['degradation'])
-    
+
     # ADJUST FOR ANGIOGRAPHY: Camera artifacts and date stamps often appear in
     # one corner of an FA, causing massive false asymmetry.
     if is_angiography:
         quadrant_asymmetry = max(0.0, quadrant_asymmetry - 0.5)
         max_degradation = max(0.0, max_degradation - 0.3)
-        
+
     # STRICT Sectoral RP Detection:
     # 1. Must have SIGNIFICANT asymmetry (> 0.25, not just 0.15)
     # 2. The worst quadrant must show ACTUAL degradation (> 0.25), not just edge darkness
@@ -791,7 +808,7 @@ def extract_quadrant_features(img, fov_mask, is_angiography=False):
         max_degradation > 0.25 and     # Worst quadrant must be degraded
         min_degradation < min_deg_threshold  # Best quadrant must be healthy
     )
-    
+
     return {
         'quadrant_scores': quadrant_scores,
         'max_degradation': max_degradation,
@@ -799,6 +816,52 @@ def extract_quadrant_features(img, fov_mask, is_angiography=False):
         'quadrant_asymmetry': quadrant_asymmetry,
         'worst_quadrant': worst_quadrant,
         'is_sectoral': is_truly_sectoral  # Much stricter threshold
+    }
+
+def extract_hemorrhage_features(img, fov_mask, is_angiography=False):
+    """NEW SCANNER #4: Diabetic Retinopathy Hemorrhage/Microaneurysm Detection
+    DR presents as dark red dot-blot hemorrhages or microaneurysms.
+    This scanner uses the green channel (where blood absorbs light strongly) to find them."""
+    b, g, r = cv2.split(img)
+
+    # Blood strongly absorbs green light, appearing as dark spots in the green channel
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    g_enhanced = clahe.apply(g)
+
+    # Look for small, dark, roughly circular spots
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+
+    # Top-hat transform (black-hat) finds dark spots on lighter background
+    blackhat = cv2.morphologyEx(g_enhanced, cv2.MORPH_BLACKHAT, kernel)
+
+    # Threshold to find significant spots
+    _, dark_spots = cv2.threshold(blackhat, 30, 255, cv2.THRESH_BINARY)
+    dark_spots = dark_spots & (fov_mask > 0)
+
+    # Count microaneurysms and hemorrhages
+    contours, _ = cv2.findContours(dark_spots, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    microaneurysms = 0
+    hemorrhages = 0
+
+    for cnt in contours:
+        area = cv2.contourArea(cnt)
+        if 5 <= area < 50:  # Microaneurysms are tiny
+            microaneurysms += 1
+        elif 50 <= area < 500:  # Dot-blot hemorrhages are larger
+            hemorrhages += 1
+
+    # ADJUST FOR ANGIOGRAPHY: In FA, microaneurysms appear as hyper-fluorescent (bright) spots
+    # leaking dye, while hemorrhages block fluorescence (dark).
+    # Since our algorithm above relies on color (green absorption), we scale it down heavily for FA.
+    if is_angiography:
+        microaneurysms = int(microaneurysms * 0.1)
+        hemorrhages = int(hemorrhages * 0.1)
+
+    return {
+        'microaneurysms': microaneurysms,
+        'hemorrhages': hemorrhages,
+        'total_dr_lesions': microaneurysms + hemorrhages
     }
 
 def preprocess_image(image_data):
@@ -809,13 +872,13 @@ def preprocess_image(image_data):
             image_bytes = base64.b64decode(image_data.split(',')[1])
         else:
             image_bytes = base64.b64decode(image_data)
-        
+
         image = Image.open(io.BytesIO(image_bytes))
         img_array = np.array(image.convert('RGB'))
-        
+
         # OpenCV expects BGR
         img_bgr = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
-        
+
         return img_bgr
     except Exception as e:
         log_print(f"Error preprocessing image: {e}")
@@ -832,21 +895,21 @@ def detect_angiography(img):
     # Convert to different color spaces
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    
+
     # Create mask for retinal region (exclude black background/borders)
     _, mask = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)
     has_retina = np.sum(mask > 0) > 0
-    
+
     # Check 1: Color saturation (angiograms are grayscale)
     saturation = hsv[:, :, 1]
     mean_saturation = np.mean(saturation)
-    
+
     if has_retina:
         masked_saturation = saturation[mask > 0]
         mean_masked_sat = np.mean(masked_saturation)
     else:
         mean_masked_sat = mean_saturation
-        
+
     # Check 2: Channel similarity (R≈G≈B in grayscale)
     b, g, r = cv2.split(img)
     if has_retina:
@@ -858,7 +921,7 @@ def detect_angiography(img):
         rb_diff = np.mean(np.abs(r.astype(float) - b.astype(float)))
         gb_diff = np.mean(np.abs(g.astype(float) - b.astype(float)))
     max_channel_diff = max(rg_diff, rb_diff, gb_diff)
-    
+
     # Check 2b: Mean Chroma (max channel - min channel) inside mask to detect monochromatic/dye scans
     if has_retina:
         max_ch = np.max(img, axis=2)
@@ -867,20 +930,20 @@ def detect_angiography(img):
         mean_chroma = np.mean(chroma[mask > 0])
     else:
         mean_chroma = 0.0
-    
+
     # Check 3: High contrast (angiograms have very bright and very dark regions)
     std_brightness = np.std(gray)
-    
+
     # Check 4: Inverted histogram (lots of dark pixels, few bright pixels)
     hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
     dark_pixels = np.sum(hist[0:80])  # Very dark
     bright_pixels = np.sum(hist[180:256])  # Very bright
     total_pixels = img.shape[0] * img.shape[1]
     dark_ratio = dark_pixels / total_pixels
-    
+
     reasons = []
     score = 0
-    
+
     # Scoring system
     if mean_masked_sat < 20:  # Very low saturation
         score += 3
@@ -888,34 +951,34 @@ def detect_angiography(img):
     elif mean_masked_sat < 35:
         score += 1
         reasons.append(f"Reduced saturation ({mean_masked_sat:.1f})")
-    
+
     if mean_chroma < 18:  # Very low chroma (highly monochromatic / grayscale)
         score += 4
         reasons.append(f"Low color chroma ({mean_chroma:.1f})")
     elif mean_chroma < 35:  # Borderline monochromatic
         score += 2
         reasons.append(f"Reduced color chroma ({mean_chroma:.1f})")
-        
+
     if max_channel_diff < 5:  # Channels almost identical (grayscale)
         score += 3
         reasons.append(f"Grayscale image (channel diff: {max_channel_diff:.1f})")
     elif max_channel_diff < 15:
         score += 1
         reasons.append(f"Near-grayscale (channel diff: {max_channel_diff:.1f})")
-    
+
     if std_brightness > 60:  # Very high contrast
         score += 2
         reasons.append(f"High contrast (std: {std_brightness:.1f})")
-    
+
     if dark_ratio > 0.5:  # More than 50% very dark pixels
         score += 2
         reasons.append(f"Predominantly dark ({dark_ratio*100:.1f}% dark pixels)")
-    
+
     # Decision
     is_angio = score >= 5
     confidence = min(score / 10.0, 1.0)
     reason = " | ".join(reasons) if reasons else "Normal color fundus"
-    
+
     return is_angio, confidence, reason
 
 # ==============================================================================
@@ -937,9 +1000,9 @@ def ai_pattern_recognition_expert(img, is_angiography=False):
             cv2.cvtColor(x, cv2.COLOR_BGR2RGB).astype('float32') / 255.0
             for x in batch
         ])
-        
+
         probs = DEEP_LEARNING_MODEL.predict(batch_arr, verbose=0)
-        
+
         # THE PROBABILITY FIX:
         # If output is [Healthy, RP] (2 classes), grab index 1 (RP probability).
         # If it's a single sigmoid output, grab it directly.
@@ -949,12 +1012,12 @@ def ai_pattern_recognition_expert(img, is_angiography=False):
         else:
             # Single sigmoid: output IS the RP probability
             confidence = float(np.mean(probs))
-        
+
         # ANGIOGRAPHY ADJUSTMENT: Slight reduction (model trained on color fundus)
         # Reduce by only 5% so we don't accidentally silence a true positive.
         if is_angiography:
             confidence = confidence * 0.95
-        
+
         if confidence > CONFIG["AI_CRITICAL"]:
             status = "ANOMALY DETECTED"
             severity = "CRITICAL"
@@ -971,7 +1034,7 @@ def ai_pattern_recognition_expert(img, is_angiography=False):
             status = "HEALTHY"
             severity = "NORMAL"
             significance = 1.0
-        
+
         return {
             "status": status,
             "confidence": round(confidence * 100, 1),
@@ -984,19 +1047,19 @@ def ai_pattern_recognition_expert(img, is_angiography=False):
     else:
         # Fallback: Rule-based analysis using multiple image features
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        
+
         # Analyze overall darkness (RP eyes tend to be darker in periphery)
         mean_brightness = np.mean(gray)
         std_brightness = np.std(gray)
-        
+
         # Edge density (RP has fewer sharp features)
         edges = cv2.Canny(gray, 50, 150)
         edge_density = np.count_nonzero(edges) / edges.size
-        
+
         # Color channel analysis
         b, g, r = cv2.split(img)
         rg_ratio = np.mean(r.astype(float)) / max(np.mean(g.astype(float)), 1)
-        
+
         # Combine features into confidence score
         # Normal fundus: bright, good edge detail, balanced colors
         score = 0.0
@@ -1004,18 +1067,18 @@ def ai_pattern_recognition_expert(img, is_angiography=False):
             score += 0.25
         elif mean_brightness < 120:
             score += 0.10
-        
+
         if edge_density < 0.03:  # Low detail
             score += 0.15
-        
+
         if std_brightness > 60:  # High contrast variance
             score += 0.10
-        
+
         if rg_ratio > 1.3:  # Reddish tint from pigment
             score += 0.10
-        
+
         confidence = min(score, 0.95)
-        
+
         if confidence > CONFIG["AI_CRITICAL"]:
             status = "ANOMALY DETECTED"
             severity = "CRITICAL"
@@ -1032,7 +1095,7 @@ def ai_pattern_recognition_expert(img, is_angiography=False):
             status = "HEALTHY"
             severity = "NORMAL"
             significance = 1.0
-    
+
     return {
         "status": status,
         "confidence": round(confidence * 100, 1),
@@ -1045,7 +1108,7 @@ def ai_pattern_recognition_expert(img, is_angiography=False):
 def vessel_attenuation_expert(features):
     """Expert #2: TRIAD #2 - Vessel Attenuation"""
     density = features['vessel']['density']
-    
+
     if density < CONFIG["VESSEL_CRITICAL"]:
         status = "SEVERE ATTENUATION"
         severity = "CRITICAL"
@@ -1066,9 +1129,9 @@ def vessel_attenuation_expert(features):
         severity = "NORMAL"
         confidence = 0.20
         significance = 1.0
-    
+
     brightness_note = " (brightness corrected)" if features['vessel'].get('brightness_corrected', False) else ""
-    
+
     return {
         "status": status,
         "confidence": round(confidence * 100, 1),
@@ -1083,7 +1146,7 @@ def vessel_attenuation_expert(features):
 def pigment_bone_spicules_expert(features):
     """Expert #3: TRIAD #1 - Bone Spicule Pigmentation"""
     num_clusters = features['pigment']['num_clusters']
-    
+
     if num_clusters >= CONFIG["PIGMENT_CRITICAL"]:
         status = "EXTENSIVE BONE SPICULES"
         severity = "CRITICAL"
@@ -1104,7 +1167,7 @@ def pigment_bone_spicules_expert(features):
         severity = "NORMAL"
         confidence = 0.15
         significance = 1.0
-    
+
     return {
         "status": status,
         "confidence": round(confidence * 100, 1),
@@ -1120,7 +1183,7 @@ def optic_disc_pallor_expert(features):
     """Expert #4: TRIAD #3 - Optic Disc Pallor"""
     brightness = features['optic_disc']['disc_brightness']
     is_waxy = features['optic_disc']['is_waxy']
-    
+
     if brightness > CONFIG["DISC_CRITICAL"] and is_waxy:
         status = "SEVERE PALLOR (WAXY)"
         severity = "CRITICAL"
@@ -1146,7 +1209,7 @@ def optic_disc_pallor_expert(features):
         severity = "NORMAL"
         confidence = 0.20
         significance = 1.0
-    
+
     return {
         "status": status,
         "confidence": round(confidence * 100, 1),
@@ -1162,7 +1225,7 @@ def vessel_tortuosity_expert(features):
     """Expert #5: Supporting - Vessel Tortuosity
     Now uses the actual vessel mask skeleton instead of raw Canny edges."""
     vessel_mask = features.get('vessel', {}).get('mask', None)
-    
+
     if vessel_mask is None or vessel_mask.size == 0:
         mean_tort = 1.0
     else:
@@ -1172,9 +1235,9 @@ def vessel_tortuosity_expert(features):
         except ImportError:
             # Fallback: use morphological thinning
             skeleton = cv2.ximgproc.thinning(vessel_mask) if hasattr(cv2, 'ximgproc') else vessel_mask
-        
+
         contours, _ = cv2.findContours(skeleton, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-        
+
         tortuosity_scores = []
         for contour in contours:
             if len(contour) > 30:
@@ -1187,9 +1250,9 @@ def vessel_tortuosity_expert(features):
                     if chord_length > 10:
                         tortuosity = arc_length / chord_length
                         tortuosity_scores.append(tortuosity)
-        
+
         mean_tort = float(np.mean(tortuosity_scores)) if len(tortuosity_scores) > 0 else 1.0
-    
+
     if mean_tort > CONFIG["TORTUOSITY_CRITICAL"]:
         status = "SEVERE TORTUOSITY"
         severity = "CRITICAL"
@@ -1210,7 +1273,7 @@ def vessel_tortuosity_expert(features):
         severity = "NORMAL"
         confidence = 0.25
         significance = 1.0
-    
+
     return {
         "status": status,
         "confidence": round(confidence * 100, 1),
@@ -1226,11 +1289,11 @@ def texture_degeneration_expert(features, is_angiography=False):
     BUG FIX #14: Use local variation to detect atrophy on color-shifted images."""
     entropy = features['texture']['entropy']
     local_var = features['texture'].get('local_variation', 0)
-    
+
     # Use both global entropy AND local variation (atrophy creates irregular patches)
     # Local variation > 25 indicates significant texture irregularity
     # Local variation > 35 indicates moderate atrophy
-    
+
     # ANGIOGRAPHY: Add note but DON'T downgrade severity (RP texture visible in angiography)
     if entropy > CONFIG["TEXTURE_ENTROPY_CRITICAL"] or local_var > CONFIG["TEXTURE_LOCAL_CRITICAL"]:
         status = "HIGH IRREGULARITY"
@@ -1247,13 +1310,13 @@ def texture_degeneration_expert(features, is_angiography=False):
         severity = "NORMAL"
         confidence = 0.25
         significance = 1.0
-        
+
     if is_angiography:
         status += " (ANGIO ARTIFACT - IGNORED)"
         severity = "NORMAL"
         confidence = 0.10
         significance = 0.0
-    
+
     return {
         "status": status,
         "confidence": round(confidence * 100, 1),
@@ -1266,7 +1329,7 @@ def texture_degeneration_expert(features, is_angiography=False):
 def spatial_pattern_expert(features, is_angiography=False):
     """Expert #7: Supporting - Spatial Pattern"""
     periph_deg = features['spatial']['peripheral_degradation']
-    
+
     if periph_deg > CONFIG["SPATIAL_CRITICAL"]:
         status = "MARKED PERIPHERAL LOSS"
         severity = "CRITICAL"
@@ -1287,13 +1350,13 @@ def spatial_pattern_expert(features, is_angiography=False):
         severity = "NORMAL"
         confidence = 0.20
         significance = 1.0
-        
+
     if is_angiography:
         status += " (ANGIO ARTIFACT - IGNORED)"
         severity = "NORMAL"
         confidence = 0.10
         significance = 0.0
-    
+
     return {
         "status": status,
         "confidence": round(confidence * 100, 1),
@@ -1309,7 +1372,7 @@ def bright_lesion_expert(features):
     bright = features['bright_lesion']
     combined = bright['combined_flecks']
     density = bright['lesion_density']
-    
+
     # RPA typically shows 50+ flecks scattered across the retina
     if combined > CONFIG["RPA_FLECKS_CRITICAL"] or density > CONFIG["RPA_DENSITY_CRITICAL"]:
         status = "RPA PATTERN DETECTED"
@@ -1331,7 +1394,7 @@ def bright_lesion_expert(features):
         severity = "NORMAL"
         confidence = 0.15
         significance = 1.0
-    
+
     return {
         "status": status,
         "confidence": round(confidence * 100, 1),
@@ -1348,12 +1411,12 @@ def macula_expert(features, is_angiography=False):
     macula = features['macula']
     cme_score = macula['cme_score']
     irregularity = macula['macula_irregularity']
-    
+
     # ANGIOGRAPHY: Use higher thresholds (require stronger evidence for CME)
     cme_threshold_critical = CONFIG["CME_ANGIO_CRITICAL"] if is_angiography else CONFIG["CME_CRITICAL"]
     cme_threshold_moderate = CONFIG["CME_ANGIO_MODERATE"] if is_angiography else CONFIG["CME_MODERATE"]
     cme_threshold_mild = CONFIG["CME_ANGIO_MILD"] if is_angiography else CONFIG["CME_MILD"]
-    
+
     if cme_score > cme_threshold_critical:
         status = "CME SUSPECTED"
         severity = "CRITICAL"
@@ -1374,9 +1437,9 @@ def macula_expert(features, is_angiography=False):
         severity = "NORMAL"
         confidence = 0.15
         significance = 1.0
-    
+
     detail_suffix = " (angio: thresholds raised)" if is_angiography and cme_score > CONFIG["CME_MILD"] else ""
-    
+
     return {
         "status": status,
         "confidence": round(confidence * 100, 1),
@@ -1396,7 +1459,7 @@ def quadrant_expert(features):
     max_deg = quad['max_degradation']
     min_deg = quad['min_degradation']
     is_sectoral = quad['is_sectoral']
-    
+
     # CRITICAL: Only if is_sectoral flag AND very high degradation
     # Requires: asymmetry > SECTORAL_MIN_ASYMMETRY, max_deg > SECTORAL_CRITICAL_DEGRADATION
     if is_sectoral and max_deg > CONFIG["SECTORAL_CRITICAL_DEGRADATION"]:
@@ -1421,7 +1484,7 @@ def quadrant_expert(features):
         severity = "NORMAL"
         confidence = 0.10
         significance = 1.0
-    
+
     return {
         "status": status,
         "confidence": round(confidence * 100, 1),
@@ -1431,7 +1494,7 @@ def quadrant_expert(features):
         "detail": f"Asymmetry: {asymmetry:.2f} | Worst: {worst}"
     }
 
-def generate_xai_explanation(ai_conf, expert_opinions, verdict_code, is_sine_pigmento, is_rpa, is_sectoral, is_cme, quality_score, risk_score, is_angiography=False):
+def generate_xai_explanation(ai_conf, expert_opinions, verdict_code, is_sine_pigmento, is_rpa, is_sectoral, is_cme, quality_result, risk_score, is_angiography=False, top_diff_name=None):
     # 1. AI Part
     if ai_conf > 0.8:
         ai_part = f"The AI is highly confident ({ai_conf*100:.1f}%) there is a problem."
@@ -1449,46 +1512,50 @@ def generate_xai_explanation(ai_conf, expert_opinions, verdict_code, is_sine_pig
         elif "Vessel Attenuation" in exp["name"] and exp["severity"] in ["CRITICAL", "MODERATE"]: has_vessel = True
         elif exp["severity"] in ["CRITICAL", "MODERATE"]: has_other_damage = True
 
-    if has_pigment and has_vessel:
-        phys_part = "The physical scanners found both classic dark spots and thin blood vessels."
-    elif has_pigment:
-        phys_part = "The physical scanners found dark spots, but blood vessels look mostly okay."
-    elif has_vessel:
-        phys_part = "The blood vessels look thin, but no classic dark spots were found."
-    elif has_other_damage:
-        phys_part = "While classic dark spots were absent, the scanners detected other significant structural damage in the retina."
-    else:
-        phys_part = "The physical scanners did not find any severe structural damage."
+    # XAI IMAGE QUALITY AWARENESS
+    iq_disclaimer = ""
+    quality_score = quality_result.get("quality_score", 100) if quality_result else 100
+    if quality_score < 80 and quality_result:
+        factors = []
+        warnings = quality_result.get("warnings", [])
+        errors = quality_result.get("errors", [])
+        all_issues = warnings + errors
+
+        if any("blur" in i.lower() for i in all_issues):
+            factors.append("blur causes blood vessels to blend into the background (falsely lowering vessel density)")
+        if any("color cast" in i.lower() for i in all_issues):
+            factors.append("camera flashes and color casts artificially brighten the optic disc and hide pigment")
+        if any("contrast" in i.lower() or "exposure" in i.lower() for i in all_issues):
+            factors.append("poor contrast prevents algorithms from accurately measuring retinal texture")
+
+        factor_str = " and ".join(factors) if factors else "poor image quality mathematically distorts scanner readings"
+
+        iq_disclaimer = f" [XAI NOTE: The input image was flagged for poor quality ({quality_score}/100). In automated systems, {factor_str}. This mathematically forces the expert scanners to flag 'mild anomalies' even on a perfectly healthy eye!]"
 
     # 3. Build Summary based on Verdict
     if verdict_code in ["SUSPICIOUS", "SUSPICIOUS_ISOLATED"]:
-        summary = f"{ai_part} {phys_part} Because the physical signs are isolated or unusual, a real doctor wouldn't diagnose a rare disease just yet. The system is playing it safe and asking for a follow-up check."
+        summary = f"{ai_part} Because the physical signs are isolated or unusual, a real doctor wouldn't diagnose a rare disease just yet. The system is playing it safe and asking for a follow-up check."
     elif verdict_code == "SUSPICIOUS_EARLY_STAGE":
-        summary = f"{ai_part} The physical scanners found zero visible structural damage. However, because the patient has a high clinical risk profile (such as family history or symptoms), the system trusts the Neural Network's ability to detect invisible, early-stage microscopic changes. Genetic testing is required."
+        summary = f"{ai_part} The physical scanners found zero visible structural damage. However, because the patient has a high clinical risk profile, the system trusts the Neural Network's ability to detect invisible microscopic changes."
     elif verdict_code == "OTHER_DISEASE":
-        summary = f"{ai_part} However, the differential diagnosis engine mathematically proved that these abnormalities are far more likely caused by a different eye disease (such as Macular Degeneration or Diabetic Retinopathy) rather than Retinitis Pigmentosa. The RP diagnosis was correctly aborted."
+        diff_str = f"{top_diff_name}" if top_diff_name else "Macular Degeneration or Diabetic Retinopathy"
+        summary = f"{ai_part} However, because key classic signs of RP (like vessel attenuation) were completely absent despite massive inflammation, the differential diagnosis engine correctly aborted the RP pathway and determined this is actually {diff_str}."
     elif verdict_code == "RP_SINE_PIGMENTO":
-        if has_other_damage:
-            summary = f"{ai_part} Although there are no dark pigment spots (which is unusual), the scanners detected significant structural damage in the blood vessels and optic disc. This strongly points to a rare variant of the disease called Sine Pigmento."
-        else:
-            summary = f"{ai_part} Despite the lack of classic dark spots and the AI's low suspicion, the physical scanners detected subtle but critical changes in the blood vessels, optic disc, and peripheral retina. This combination is the hallmark of the rare Sine Pigmento variant."
+        summary = f"{ai_part} Despite the lack of classic dark spots, the physical scanners detected subtle but critical changes in the blood vessels, optic disc, and peripheral retina. This combination is the hallmark of the rare Sine Pigmento variant."
     elif verdict_code == "RP_RPA":
         summary = f"{ai_part} Instead of dark spots, the scanners found significant bright white flecks. This matches a rare genetic variant called Retinitis Punctata Albescens."
     elif verdict_code == "RP_SECTORAL":
-        summary = f"{ai_part} The scanners found that the damage is strictly isolated to one specific quadrant of the eye. This means it is Sectoral Retinitis Pigmentosa."
+        summary = f"{ai_part} The scanners found that the damage is strictly isolated to one specific quadrant of the eye, confirming Sectoral Retinitis Pigmentosa."
     elif verdict_code in ["CLASSIC_RP", "RP_POSITIVE"]:
-        if has_pigment and has_vessel and ai_conf > 0.8:
-            summary = f"{ai_part} {phys_part} Because the AI and the scanners both strongly agree on the classic signs, this is a clear case of Retinitis Pigmentosa."
-        else:
-            summary = f"{ai_part} {phys_part} Even though it is not a textbook presentation, the combination of AI suspicion and physical scanner evidence is enough to confirm a positive diagnosis of Retinitis Pigmentosa."
+        summary = f"{ai_part} Because the AI and the structural scanners both strongly agree on the classic signs, this is a clear case of Retinitis Pigmentosa."
     elif verdict_code == "BORDERLINE":
-        summary = f"{ai_part} A few minor irregularities were found by the physical scanners. This is likely a benign finding or a very early sub-clinical change."
+        summary = f"{ai_part} This is likely a benign finding or a very early sub-clinical change.{iq_disclaimer}"
     else:
         if ai_conf > 0.60:
             if is_angiography:
-                summary = f"{ai_part} However, the physical scanners found zero critical evidence of disease. The system determined the AI was heavily confused by the glowing white blood vessels unique to Fluorescein Angiography, and correctly overruled it. The retina is healthy."
+                summary = f"{ai_part} However, the physical scanners found zero critical evidence of disease. The system determined the AI was heavily confused by the glowing white blood vessels unique to Fluorescein Angiography, and correctly overruled it."
             else:
-                summary = f"{ai_part} However, the physical scanners found zero critical evidence of disease. The system determined the AI was likely tricked by bright light artifacts or glare, and correctly overruled it. The retina is healthy."
+                summary = f"{ai_part} However, the physical scanners found zero critical evidence of disease. The system determined the AI was likely tricked by bright light artifacts or glare, and correctly overruled it.{iq_disclaimer}"
         else:
             summary = f"{ai_part} All the eye scanners came back normal. The retina looks completely healthy."
 
@@ -1498,20 +1565,20 @@ def generate_xai_explanation(ai_conf, expert_opinions, verdict_code, is_sine_pig
         bullets.append("Image Quality: The image was blurry or dark, but the AI enhanced it enough to analyze.")
     else:
         bullets.append("Image Quality: The camera image was clear and reliable.")
-        
+
     if risk_score > 30:
         bullets.append("Patient History: The patient's background (age/symptoms) increased the baseline risk.")
-    
+
     if has_pigment:
         bullets.append("Strongest Proof: Classic dark spots (bone spicules) were detected in the retina.")
     elif has_other_damage and not is_sine_pigmento and verdict_code != "OTHER_DISEASE":
         bullets.append("Key Finding: Secondary structural damage (like texture or spatial loss) supported the diagnosis.")
     elif is_sine_pigmento:
         bullets.append("Key Finding: Clinical signs (vessel/optic disc changes) without pigmentation were the deciding factor.")
-        
+
     if verdict_code == "OTHER_DISEASE":
         bullets.append("Key Finding: The AI and physical scanners were triggered by an alternative pathology, not Retinitis Pigmentosa.")
-        
+
     if is_cme:
         bullets.append("Complication: Dangerous swelling in the macula (CME) was found, threatening central vision.")
 
@@ -1519,6 +1586,70 @@ def generate_xai_explanation(ai_conf, expert_opinions, verdict_code, is_sine_pig
         "summary": summary,
         "key_factors": bullets
     }
+
+def generate_clinical_heatmap(img, is_rpa, is_cme):
+    """Generates a visual Grad-CAM style heatmap highlighting detected anomalies"""
+    try:
+        if img is None:
+            return None
+            
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(gray, (21, 21), 0)
+        diff = cv2.absdiff(gray, blur)
+        
+        if is_cme or is_rpa:
+            # Highlight bright spots (macular cysts or RPA flecks)
+            _, mask = cv2.threshold(diff, 30, 255, cv2.THRESH_BINARY)
+            heatmap_base = cv2.GaussianBlur(mask, (31, 31), 0)
+        else:
+            # Highlight dark spots (bone spicules / vessel attenuation)
+            inverted_gray = cv2.bitwise_not(gray)
+            blur_inv = cv2.GaussianBlur(inverted_gray, (21, 21), 0)
+            diff_inv = cv2.absdiff(inverted_gray, blur_inv)
+            _, mask = cv2.threshold(diff_inv, 30, 255, cv2.THRESH_BINARY)
+            heatmap_base = cv2.GaussianBlur(mask, (31, 31), 0)
+            
+        heatmap_norm = cv2.normalize(heatmap_base, None, 0, 255, cv2.NORM_MINMAX)
+        heatmap_color = cv2.applyColorMap(heatmap_norm, cv2.COLORMAP_JET)
+        
+        # Blend original image with heatmap
+        blended = cv2.addWeighted(img, 0.6, heatmap_color, 0.4, 0)
+        
+        _, buffer = cv2.imencode('.jpg', blended)
+        return "data:image/jpeg;base64," + base64.b64encode(buffer).decode('utf-8')
+    except Exception as e:
+        log_print(f"Heatmap Error: {e}")
+        return None
+
+def generate_treatment_plan(verdict_code, is_sine_pigmento, is_rpa, is_sectoral, is_cme, differential):
+    """Generates automated clinical recommendations based on exact findings"""
+    treatments = []
+    
+    if "RP_POS" in verdict_code:
+        treatments.append("Vitamin A Palmitate supplementation (15,000 IU/day) to slow progression.")
+        treatments.append("Refer to low-vision rehabilitation and orientation/mobility training.")
+        treatments.append("Genetic testing (e.g., RPE65, USH2A) to determine eligibility for gene therapy (Luxturna).")
+        
+        if is_cme:
+            treatments.append("[CRITICAL] Topical or oral Carbonic Anhydrase Inhibitors (CAIs) to manage Cystoid Macular Edema.")
+        if is_rpa:
+            treatments.append("RPA Variant: Monitor RLBP1 gene mutations; strict UV protection recommended.")
+        if is_sectoral:
+            treatments.append("Sectoral Variant: Visual field testing every 6 months to monitor asymmetrical progression.")
+            
+    elif "NEG" in verdict_code:
+        treatments.append("Routine annual comprehensive eye exam recommended.")
+        
+    top_diff = differential.get('top_diagnosis', '') if differential else ''
+    if top_diff == 'Diabetic Retinopathy':
+        treatments.append("Immediate endocrinology referral for systemic HbA1c management.")
+        treatments.append("Consider Anti-VEGF intravitreal injections if macular edema is present.")
+    elif top_diff == 'Age-Related Macular Degeneration':
+        treatments.append("AREDS2 vitamin formulation recommended. Monitor for conversion to wet AMD.")
+    elif top_diff == 'Glaucoma':
+        treatments.append("Initiate IOP-lowering eye drops (e.g., Prostaglandin analogs).")
+        
+    return treatments
 
 
 @app.route('/api/analyze', methods=['POST'])
@@ -1532,7 +1663,7 @@ def analyze_retinal_scan():
         msg1 = "\n" + "="*70
         msg2 = "[!!] IMAGE UPLOAD DETECTED - STARTING ANALYSIS [!!]"
         msg3 = "="*70
-        
+
         log_print(msg1)
         log_print(msg2)
         log_print(msg3)
@@ -1540,22 +1671,22 @@ def analyze_retinal_scan():
         log_print(msg2)
         log_print(msg3)
         sys.stdout.flush()
-        
+
         data = request.get_json()
-        
+
         if 'image' not in data:
             return jsonify({"error": "No image provided"}), 400
-        
+
         header = f"\n{'='*70}\n[{datetime.now().strftime('%H:%M:%S')}] [A] Analyzing scan for {data.get('patientId', 'Unknown')}\n{'='*70}"
         log_print(header)
         log_print(header)
         sys.stdout.flush()  # Force output to display immediately
-        
+
         # Preprocess image
         img = preprocess_image(data['image'])
         if img is None:
             return jsonify({"error": "Invalid image data"}), 400
-        
+
         # ===== NEW: Camera Calibration =====
         camera_type = data.get('cameraType', 'Generic')
         if camera_type != 'Generic':
@@ -1580,7 +1711,7 @@ def analyze_retinal_scan():
         # ===== NEW: Image Quality Validation =====
         log_print("   [Q] Validating image quality...")
         sys.stdout.flush()
-        
+
         # If the camera is handheld/smartphone, we expect slightly lower quality
         # even after calibration.
         try:
@@ -1590,10 +1721,10 @@ def analyze_retinal_scan():
         except Exception as e:
             # Fallback to function if class isn't available
             quality_result = validate_image_quality(img)
-            
+
         # Combine errors and warnings into issues list
         issues = quality_result.get('errors', []) + quality_result.get('warnings', [])
-        
+
         # FDA-compliant quality threshold (minimum 71 for analysis)
         # Bypassed/relaxed to allow analysis of varied-quality and online testing images,
         # only rejecting on critical resolution failures (<512px) to prevent backend crashes.
@@ -1619,35 +1750,35 @@ def analyze_retinal_scan():
         else:
             log_print(f"   [+] Image quality: {quality_result['quality_score']}/100 - Acceptable")
             sys.stdout.flush()
-        
+
         # Add combined issues list for frontend compatibility
         quality_result['issues'] = issues
         # ==========================================
-        
-        # (Moved up before quality validation)
-        
 
-        
+        # (Moved up before quality validation)
+
+
+
         # ===== NEW: Patient History Integration =====
         patient_data_raw = data.get('patient_history', {})
         if patient_data_raw:
             log_print("   [U] Analyzing patient demographics and history...")
             sys.stdout.flush()
             patient_module = PatientHistoryModule()
-            
+
             # collect_patient_data expects a Dict parameter
             patient_data = patient_module.collect_patient_data(patient_data_raw)
-            
+
             # Extract threshold adjustments from patient analysis
             threshold_adjustments = patient_data['threshold_adjustments']
-            
+
             # Apply demographic adjustments to CONFIG thresholds
             adjusted_config = patient_module.apply_adjustments_to_config(CONFIG, threshold_adjustments)
             log_print(f"      Ethnicity: {patient_data_raw.get('ethnicity', 'unknown')} (Pigment adjustment: {threshold_adjustments['pigment_adjustment']})")
             log_print(f"      Age: {patient_data_raw.get('age', 'unknown')} (Vessel adjustment: {threshold_adjustments['vessel_adjustment']})")
             log_print(f"      Risk Score: {patient_data.get('risk_score', 0)}/100")
             sys.stdout.flush()
-            
+
             # Use adjusted thresholds for expert scanners
             CONFIG_ADJUSTED = adjusted_config
         else:
@@ -1655,12 +1786,12 @@ def analyze_retinal_scan():
             CONFIG_ADJUSTED = CONFIG
             patient_data = None
         # ===========================================
-        
+
         # Apply CONFIG_ADJUSTED to global CONFIG for feature extraction
         # (Patient-specific thresholds need to be available to all expert functions)
         CONFIG_BACKUP = CONFIG.copy()  # Save original
         CONFIG.update(CONFIG_ADJUSTED)  # Apply adjustments
-        
+
         # Extract features (with FOV mask to ignore black borders)
         log_print("   [*] Extracting clinical features...")
         sys.stdout.flush()
@@ -1670,12 +1801,13 @@ def analyze_retinal_scan():
         optic_disc_feats = extract_optic_disc_features(img, fov_mask, is_angiography=is_angio)
         texture_feats = extract_texture_features(img, fov_mask, is_angiography=is_angio)
         spatial_feats = extract_spatial_features(img, fov_mask, is_angiography=is_angio)
-        
+
         # NEW: Extract features for variant/complication detection
         bright_lesion_feats = extract_bright_lesion_features(img, fov_mask, is_angiography=is_angio)
         macula_feats = extract_macula_features(img, fov_mask, is_angiography=is_angio)
         quadrant_feats = extract_quadrant_features(img, fov_mask, is_angiography=is_angio)
-        
+        hemorrhage_feats = extract_hemorrhage_features(img, fov_mask, is_angiography=is_angio)
+
         features = {
             'vessel': vessel_feats,
             'pigment': pigment_feats,
@@ -1684,14 +1816,15 @@ def analyze_retinal_scan():
             'spatial': spatial_feats,
             'bright_lesion': bright_lesion_feats,
             'macula': macula_feats,
-            'quadrant': quadrant_feats
+            'quadrant': quadrant_feats,
+            'hemorrhage': hemorrhage_feats
         }
-        
+
         # Run all 10 expert systems
         log_print("   [E] Expert panel consultation (10 scanners)...")
         log_print("   " + "-"*66)
         sys.stdout.flush()
-        
+
         ai_result = ai_pattern_recognition_expert(img, is_angiography=is_angio)
         vessel_result = vessel_attenuation_expert(features)
         pigment_result = pigment_bone_spicules_expert(features)
@@ -1699,12 +1832,12 @@ def analyze_retinal_scan():
         tortuosity_result = vessel_tortuosity_expert(features)
         texture_result = texture_degeneration_expert(features, is_angiography=is_angio)
         spatial_result = spatial_pattern_expert(features, is_angiography=is_angio)
-        
+
         # NEW: 3 additional variant/complication scanners
         bright_lesion_result = bright_lesion_expert(features)
         macula_result = macula_expert(features, is_angiography=is_angio)
         quadrant_result = quadrant_expert(features)
-        
+
         # Print expert results like Colab format
         experts_list = [
             ("AI Pattern Recognition", ai_result),
@@ -1723,11 +1856,11 @@ def analyze_retinal_scan():
             log_print(f"   {icon} {name:<40} -> {r['status']:<20} ({r['confidence']:>5.1f}%)")
             log_print(f"      Vote: {r['vote']:.4f} | {r.get('detail', '')}")
         sys.stdout.flush()
-        
+
         # Restore original CONFIG after feature extraction
         CONFIG.clear()
         CONFIG.update(CONFIG_BACKUP)
-        
+
         # Organize results
         results = {
             "ai_pattern": ai_result,
@@ -1739,7 +1872,8 @@ def analyze_retinal_scan():
             "spatial": spatial_result,
             "bright_lesion": bright_lesion_result,
             "macula": macula_result,
-            "quadrant": quadrant_result
+            "quadrant": quadrant_result,
+            "hemorrhage": hemorrhage_feats
         }
 
         # Attach raw features for multi-disease classifier feature extraction
@@ -1752,13 +1886,13 @@ def analyze_retinal_scan():
         results["spatial"]["degradation_score"] = features["spatial"].get("peripheral_degradation", 0.0)
         results["bright_lesion"]["fleck_count"] = features["bright_lesion"].get("combined_flecks", 0)
         results["macula"]["cme_score"] = features["macula"].get("cme_score", 0.0)
-        
+
         # ===== NEW: Differential Diagnosis =====
         log_print("\n   [D] Generating differential diagnosis...")
         sys.stdout.flush()
-        differential = classify_diseases(results, patient_age=patient_data_raw.get('age') if patient_data_raw else None)
+        differential = classify_diseases(results, patient_age=patient_data_raw.get('age') if patient_data_raw else None, is_angiography=is_angio)
         log_print(f"   [L] Top Differential Diagnoses:")
-        for i, disease in enumerate(differential.get('differential', [])[:3], 1):
+        for i, disease in enumerate(differential.get('differential', [])[:5], 1):
             log_print(f"      {i}. {disease['disease']}: {disease['confidence']}%")
         if differential.get('clinical_notes'):
             log_print(f"   [N] Clinical Notes:")
@@ -1766,7 +1900,7 @@ def analyze_retinal_scan():
                 log_print(f"      - {note}")
         sys.stdout.flush()
         # ========================================
-        
+
         # Check RP Triad Status with 3-state system: PRESENT / PARTIAL / ABSENT
         triad_status = {
             "bone_spicules": pigment_result['severity'],  # CRITICAL, MODERATE, MILD, or NORMAL
@@ -1775,7 +1909,7 @@ def analyze_retinal_scan():
         }
         triad_complete = all(severity in ["CRITICAL", "MODERATE"] for severity in triad_status.values())
         triad_partial = any(severity == "MILD" for severity in triad_status.values())
-        
+
         # Calculate weighted score (all 10 experts)
         base_score = sum([
             ai_result['vote'],
@@ -1789,7 +1923,7 @@ def analyze_retinal_scan():
             macula_result['vote'],
             quadrant_result['vote']
         ])
-        
+
         # ==============================================================================
         # VARIANT DETECTION PATHWAYS (CONSTANT THRESHOLDS)
         # ==============================================================================
@@ -1797,7 +1931,7 @@ def analyze_retinal_scan():
         is_rpa = False
         is_sectoral = False
         is_cme = False
-        
+
         ai_conf = ai_result['confidence'] / 100.0  # Convert from percentage
         pigment_conf = pigment_result['confidence'] / 100.0
         vessel_severity = vessel_result['severity']
@@ -1806,13 +1940,13 @@ def analyze_retinal_scan():
         bright_severity = bright_lesion_result['severity']
         macula_severity = macula_result['severity']
         quadrant_severity = quadrant_result['severity']
-        
+
         # Clinical condition: vessels + optic disc abnormal + no pigment + peripheral degeneration signs
         vessel_abnormal = vessel_severity in ['MILD', 'MODERATE', 'CRITICAL']
         optic_abnormal = optic_severity in ['MILD', 'MODERATE', 'CRITICAL']
         spatial_abnormal = spatial_result['severity'] in ['MILD', 'MODERATE', 'CRITICAL'] or features['spatial']['peripheral_degradation'] >= 0.25
         has_clinical_sine_pigmento = vessel_abnormal and optic_abnormal and (pigment_conf < CONFIG["SINE_PIGMENTO_PIGMENT_MAX"]) and (texture_severity in ['MODERATE', 'CRITICAL'] or spatial_abnormal)
-        
+
         # Pathway #1: Retinitis Punctata Albescens (white flecks instead of dark)
         is_rpa = (
             bright_severity == 'CRITICAL' or
@@ -1822,19 +1956,19 @@ def analyze_retinal_scan():
             base_score += CONFIG["RPA_PATHWAY_BONUS"]
             log_print(f"   🔘 RPA PATHWAY ACTIVATED! (+{CONFIG['RPA_PATHWAY_BONUS']:.3f} compensation)")
             log_print(f"      → Bright lesions detected + No dark bone spicules")
-        
+
         # Pathway #2: Sectoral RP (one quadrant affected)
         # Requires CRITICAL severity AND AI agreement to activate
-        elif quadrant_severity == 'CRITICAL' and ai_conf > CONFIG["SECTORAL_AI_MIN"]:
+        if quadrant_severity == 'CRITICAL' and ai_conf > CONFIG["SECTORAL_AI_MIN"]:
             is_sectoral = True
             base_score += CONFIG["SECTORAL_PATHWAY_BONUS"]
             log_print(f"   📐 SECTORAL RP PATHWAY ACTIVATED! (+{CONFIG['SECTORAL_PATHWAY_BONUS']:.3f} compensation)")
             log_print(f"      → Significant quadrant asymmetry: {quadrant_result['detail']}")
             log_print(f"      → AI agrees: {ai_conf*100:.1f}%")
-        
+
         # Pathway #3: Sine Pigmento (no pigment but AI shows concern + degeneration signs OR clinical consensus)
         # ADJUST FOR ANGIOGRAPHY: We artificially suppressed pigment detection, so we cannot safely diagnose "Sine Pigmento".
-        elif not is_angio and ((ai_conf > CONFIG["SINE_PIGMENTO_AI_MIN"] and pigment_conf < CONFIG["SINE_PIGMENTO_PIGMENT_MAX"] and (texture_severity in ['MODERATE', 'CRITICAL'] or spatial_result['severity'] in ['MODERATE', 'CRITICAL'])) or has_clinical_sine_pigmento):
+        if not is_angio and ((ai_conf > CONFIG["SINE_PIGMENTO_AI_MIN"] and pigment_conf < CONFIG["SINE_PIGMENTO_PIGMENT_MAX"] and (texture_severity in ['MODERATE', 'CRITICAL'] or spatial_result['severity'] in ['MODERATE', 'CRITICAL'])) or has_clinical_sine_pigmento):
             is_sine_pigmento = True
             base_score += CONFIG["SINE_PIGMENTO_BONUS"]
             angio_note = " (ANGIO)" if is_angio else ""
@@ -1842,17 +1976,17 @@ def analyze_retinal_scan():
             log_print(f"   🧬 SINE PIGMENTO PATHWAY ACTIVATED! (+{CONFIG['SINE_PIGMENTO_BONUS']:.3f} compensation)")
             log_print(f"      → AI/Clinical concerned + No classic pigment + Degeneration signs{angio_note}{clin_note}")
             log_print(f"      → Texture: {texture_severity}, Spatial: {spatial_result['severity']}")
-        
+
         # Pathway #4: Classic RP Triad Complete
-        elif triad_complete:
+        if triad_complete:
             base_score += CONFIG["TRIAD_COMPLETE_BONUS"]
             log_print(f"   [T] CLASSIC RP TRIAD COMPLETE! (+{CONFIG['TRIAD_COMPLETE_BONUS']:.3f} bonus)")
-        
+
         # Check for CME complication (can occur with any RP type)
         if macula_severity in ['CRITICAL', 'MODERATE']:
             is_cme = True
             log_print(f"   [M] CME COMPLICATION DETECTED! ({macula_result['detail']})")
-        
+
         # ==============================================================================
         # 🧠 SIMPLIFIED DECISION ENGINE - CLINICAL STANDARD (6 RULES)
         # Constant thresholds for reproducible, clinically-validated verdicts
@@ -1862,7 +1996,7 @@ def analyze_retinal_scan():
         ai_confidence = ai_result['confidence'] / 100.0  # Convert from percentage
         ai_says_rp = ai_confidence >= CONFIG["AI_POSITIVE_THRESHOLD"]  # AI says RP if ≥60%
         ai_uncertain = CONFIG["AI_UNCERTAIN_THRESHOLD"] <= ai_confidence < CONFIG["AI_POSITIVE_THRESHOLD"]  # 50-60% zone
-        
+
         # Count how many NON-AI clinical experts flagged abnormalities
         clinical_results = {
             'vessels': vessel_result,
@@ -1875,7 +2009,7 @@ def analyze_retinal_scan():
             'macula': macula_result,
             'quadrant': quadrant_result
         }
-        
+
         # Count MODERATE/CRITICAL as clinical votes (strong abnormalities)
         clinical_rp_votes = sum(1 for r in clinical_results.values() if r['severity'] in ['CRITICAL', 'MODERATE'])
         # Count MILD findings separately (weak abnormalities)
@@ -1883,7 +2017,7 @@ def analyze_retinal_scan():
         # Count CRITICAL findings (severe abnormalities)
         critical_count = sum(1 for r in clinical_results.values() if r['severity'] == 'CRITICAL')
         total_clinical_scanners = len(clinical_results)
-        
+
         log_print(f"   ⚖️  DECISION ENGINE (Simplified 6-Rule System):")
         log_print(f"      AI: {ai_confidence*100:.1f}% | Says RP: {'YES' if ai_says_rp else 'UNCERTAIN' if ai_uncertain else 'NO'}")
         log_print(f"      Clinical Votes (MODERATE/CRITICAL): {clinical_rp_votes}/{total_clinical_scanners}")
@@ -1892,30 +2026,30 @@ def analyze_retinal_scan():
         sys.stdout.flush()
 
         # 2. SIMPLIFIED DECISION MATRIX (6 CLEAR RULES)
-        
+
         # ========== POSITIVE VERDICTS (RP DETECTED) ==========
-        
+
         # RULE 0: DIFFERENTIAL DIAGNOSIS OVERRIDE
         # If the multi-disease classifier strongly believes this is another disease (AMD/DR > 50%),
         # and RP is significantly lower (< 30%), block RP-positive verdicts.
         top_disease = differential.get('top_diagnosis', '') if differential else ''
         top_score = differential.get('top_confidence', 0) if differential else 0
         rp_score = differential.get('disease_scores', {}).get('retinitis_pigmentosa', 100) if differential else 100
-        
+
         is_other_disease_dominant = (
-            top_score > 50.0 
+            top_score > 50.0
             and top_disease not in ["Retinitis Pigmentosa", "Usher Syndrome", "Choroideremia"]
             and (rp_score < 30.0 or top_score > rp_score + 15.0)
         )
 
         syndromic_prefix = "USHER SYNDROME (SYNDROMIC RP)" if top_disease == "Usher Syndrome" else "RETINITIS PIGMENTOSA"
 
-        if is_other_disease_dominant:
+        if is_other_disease_dominant and not (is_sine_pigmento or is_rpa or is_sectoral):
             verdict = f"NEGATIVE FOR RP: ALTERNATIVE PATHOLOGY DETECTED ({top_disease.upper()})"
             confidence = "HIGH"
             verdict_code = "OTHER_DISEASE"
             log_print(f"      → Rule 0: DIFFERENTIAL OVERRIDE (Top: {top_disease} {top_score}%, RP: {rp_score}%)")
-            
+
         # RULE 1: CLASSIC RP - Triad Complete (Gold Standard)
         elif triad_complete:
             verdict = f"POSITIVE: CLASSIC {syndromic_prefix} (TRIAD COMPLETE)"
@@ -1929,18 +2063,27 @@ def analyze_retinal_scan():
             confidence = "HIGH" if ai_confidence >= CONFIG["AI_CRITICAL"] else "MODERATE"
             verdict_code = "RP_SINE_PIGMENTO"
             log_print(f"      → Rule 2a: SINE PIGMENTO VARIANT (AI={ai_confidence*100:.1f}%, No pigment, Degeneration)")
-            
+
         elif is_rpa:
             verdict = "POSITIVE: RETINITIS PUNCTATA ALBESCENS (RPA VARIANT)"
             confidence = "HIGH"
             verdict_code = "RP_RPA"
             log_print(f"      → Rule 2b: RPA VARIANT (Bright flecks, No dark pigment)")
-            
+
         elif is_sectoral and ai_says_rp:
             verdict = f"POSITIVE: SECTORAL {syndromic_prefix} (ASYMMETRIC)"
             confidence = "HIGH"
             verdict_code = "RP_SECTORAL"
             log_print(f"      → Rule 2c: SECTORAL RP (Quadrant asymmetry, AI agrees)")
+
+        # RULE 2d: ANGIOGRAPHY STRUCTURAL CORRELATION
+        # Angiograms blind the color experts (Optic Disc, Texture, Lesions), so we require fewer physical votes.
+        # If AI says RP, and we have AT LEAST 1 critical structural finding (e.g. Bone Spicules) or 2 mild findings, it is POSITIVE.
+        elif is_angio and ai_says_rp and (critical_count >= 1 or mild_findings >= 2):
+            verdict = "POSITIVE: RP DETECTED (ANGIOGRAPHY STRUCTURAL CORRELATION)"
+            confidence = "HIGH"
+            verdict_code = "RP_POSITIVE"
+            log_print(f"      → Rule 2d: ANGIOGRAPHY CORRELATION (AI={ai_confidence*100:.1f}%, {critical_count} critical, {mild_findings} mild findings)")
 
         # RULE 3: HIGH CONSENSUS (4+ clinical experts + AI agreement)
         elif clinical_rp_votes >= 4 and ai_says_rp:
@@ -1948,34 +2091,34 @@ def analyze_retinal_scan():
             confidence = "HIGH"
             verdict_code = "RP_POSITIVE"
             log_print(f"      → Rule 3: CLINICAL CONSENSUS ({clinical_rp_votes} experts agree + AI)")
-            
+
         # RULE 4: OVERWHELMING PHYSICAL EVIDENCE (5+ experts, overrides AI)
         elif clinical_rp_votes >= 5 or (clinical_rp_votes == 4 and critical_count >= 2):
             verdict = f"POSITIVE: {syndromic_prefix} (OVERWHELMING EVIDENCE)"
             confidence = "HIGH"
             verdict_code = "RP_POSITIVE"
             log_print(f"      → Rule 4: OVERWHELMING EVIDENCE ({clinical_rp_votes} experts, {critical_count} critical)")
-            
+
         # RULE 5: POSITIVE - Multiple Clinical Findings (AI not required)
         elif clinical_rp_votes >= 3:
             verdict = "POSITIVE: RP DETECTED (MULTIPLE CLINICAL FINDINGS)"
             confidence = "MODERATE" if ai_says_rp else "MODERATE-LOW"
             verdict_code = "RP_POSITIVE"
             log_print(f"      → Rule 5: MULTIPLE CLINICAL FINDINGS ({clinical_rp_votes} votes, AI={ai_confidence*100:.1f}%)")
-        
+
         # ========== SUSPICIOUS VERDICTS (NEEDS REVIEW) ==========
-        
+
         # RULE 5a: HIGH AI SUSPICION + MODERATE PHYSICAL EVIDENCE
         elif ai_confidence > 0.85 and clinical_rp_votes >= 2:
             verdict = f"POSITIVE: {syndromic_prefix} (AI + PHYSICAL CORRELATION)"
             confidence = "HIGH"
             verdict_code = "RP_POSITIVE"
             log_print(f"      → Rule 5a: HIGH AI + PHYSICAL CORRELATION (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
-        
+
         elif (ai_uncertain and clinical_rp_votes >= 1) or \
              (critical_count > 0) or \
              (spatial_result['severity'] == 'MODERATE' and ai_confidence > CONFIG["AI_MILD"]):
-            
+
             # Enhanced messaging for isolated findings
             if ai_uncertain and clinical_rp_votes >= 1:
                 verdict = "SUSPICIOUS: ATYPICAL FINDINGS - RECOMMEND CLINICAL REVIEW"
@@ -1995,9 +2138,8 @@ def analyze_retinal_scan():
                 confidence = "MODERATE"
                 verdict_code = "SUSPICIOUS"
                 log_print(f"      → Rule 5d: MODERATE PERIPHERAL DEGENERATION (Spatial={spatial_result['severity']}, AI={ai_confidence*100:.1f}%)")
-        
+
         # ========== BORDERLINE VERDICTS (MONITOR) ==========
-        
         # RULE 6: AI HALLUCINATION OVERRIDE vs. EARLY-STAGE PRE-CLINICAL RP
         # If AI is confident but clinical experts strongly disagree (0 or 1 minor votes)
         elif (ai_confidence > 0.60 and clinical_rp_votes == 0) or (ai_confidence > 0.10 and (patient_data.get('risk_score', 0) if patient_data else 0) >= 70 and clinical_rp_votes <= 1):
@@ -2009,13 +2151,28 @@ def analyze_retinal_scan():
                 confidence = "MODERATE"
                 verdict_code = "SUSPICIOUS_EARLY_STAGE"
                 log_print(f"      → Rule 6b: EARLY-STAGE RP DETECTED (AI={ai_confidence*100:.1f}%, Risk Score={risk_score})")
+            elif is_angio:
+                if mild_findings >= 1:
+                    # BRILLIANT ANGIO FIX: Color experts are blind, but structural experts (Vessels/Macula) can still see.
+                    # Because we have at least 1 structural finding confirming the AI, it is NOT a hallucination!
+                    verdict = "POSITIVE: RP DETECTED (ANGIOGRAPHY STRUCTURAL CORRELATION)"
+                    confidence = "HIGH" if mild_findings >= 2 else "MODERATE"
+                    verdict_code = "RP_POSITIVE"
+                    log_print(f"      → Rule 6c: ANGIOGRAPHY CORRELATION (AI={ai_confidence*100:.1f}%, {mild_findings} structural findings confirm AI)")
+                else:
+                    # SECURITY FIX: It is an Angiogram, but there are absolutely zero structural findings.
+                    # The AI is hallucinating on a healthy Angiogram. Override it!
+                    verdict = "NEGATIVE: HEALTHY RETINA - NO RP DETECTED (AI OVERRIDDEN)"
+                    confidence = "HIGH"
+                    verdict_code = "HEALTHY"
+                    log_print(f"      → Rule 6d: AI HALLUCINATION ON ANGIO (AI={ai_confidence*100:.1f}%, 0 structural findings. AI Overridden.)")
             else:
-                # No symptoms, no physical evidence, it's just an AI hallucination
+                # Standard Color Fundus AI Hallucination Override
                 verdict = "NEGATIVE: HEALTHY RETINA - NO RP DETECTED (AI OVERRIDDEN)"
                 confidence = "HIGH"
                 verdict_code = "HEALTHY"
                 log_print(f"      → Rule 6: AI OVERRIDDEN (AI={ai_confidence*100:.1f}%, but 0 clinical votes)")
-            
+
         # RULE 7: BORDERLINE - Minor Findings Only
         # 2+ MILD findings but no strong clinical votes (and AI is not heavily hallucinating)
         elif mild_findings >= 2 and clinical_rp_votes == 0:
@@ -2025,7 +2182,7 @@ def analyze_retinal_scan():
             log_print(f"      → Rule 7: MINOR FINDINGS ONLY (AI={ai_confidence*100:.1f}%, {mild_findings} mild findings)")
 
         # ========== NEGATIVE VERDICTS (HEALTHY) ==========
-        
+
         # RULE 8: NEGATIVE - No Evidence of RP
         else:
             verdict = "NEGATIVE: HEALTHY RETINA - NO RP DETECTED"
@@ -2036,20 +2193,20 @@ def analyze_retinal_scan():
 
         # Cap score at 0.999 to prevent exceeding 100%
         base_score = min(base_score, 0.999)
-        
+
         log_print(f"   [V] VERDICT: {verdict_code}")
         log_print(f"   [S] Score: {base_score:.3f} | Confidence: {confidence}")
         log_print(f"   [C] Consensus: {clinical_rp_votes}/{total_clinical_scanners} Experts + AI: {'YES' if ai_says_rp else 'NO'}")
         log_print(f"{'='*70}\n")
         sys.stdout.flush()  # Force output to terminal
-        
+
         # Collect critical findings
         critical_findings = []
         for name, result in results.items():
-            if result['severity'] in ['CRITICAL', 'MODERATE']:
+            if result.get('severity') in ['CRITICAL', 'MODERATE']:
                 detail = result.get('detail', '')
                 critical_findings.append(f"{name}: {result['status']} ({detail})")
-        
+
         # Build expert_opinions array (format frontend expects) - 10 experts
         expert_opinions = [
             {"name": "AI Pattern Recognition", "status": ai_result['status'], "confidence": ai_result['confidence'], "vote": ai_result['vote'], "severity": ai_result['severity'], "detail": ai_result.get('detail', '')},
@@ -2063,12 +2220,12 @@ def analyze_retinal_scan():
             {"name": "Macula (CME)", "status": macula_result['status'], "confidence": macula_result['confidence'], "vote": macula_result['vote'], "severity": macula_result['severity'], "detail": macula_result.get('detail', '')},
             {"name": "Quadrant (Sectoral)", "status": quadrant_result['status'], "confidence": quadrant_result['confidence'], "vote": quadrant_result['vote'], "severity": quadrant_result['severity'], "detail": quadrant_result.get('detail', '')}
         ]
-        
+
         # Map status for display - replace non-HEALTHY with standardized terms
         for expert in expert_opinions:
             if expert['severity'] == 'NORMAL':
                 expert['status'] = 'HEALTHY'
-        
+
         # Determine overall severity for frontend color coding based on verdict
         if verdict_code in ["CLASSIC_RP", "RP_POSITIVE", "RP_SINE_PIGMENTO", "RP_RPA", "RP_SECTORAL"]:
             overall_severity = "CRITICAL"
@@ -2097,7 +2254,7 @@ def analyze_retinal_scan():
             clusters = features['pigment']['num_clusters']
             spatial_loss = features['spatial']['peripheral_degradation']
             vessel_density = features['vessel']['density']
-            
+
             # Staging algorithm based on structural degeneration using CONFIG thresholds
             if clusters >= CONFIG["PIGMENT_CRITICAL"] or spatial_loss >= CONFIG["SPATIAL_CRITICAL"] or vessel_density < CONFIG["VESSEL_CRITICAL"]:
                 rp_stage = "Late / End-Stage (Severe)"
@@ -2139,12 +2296,14 @@ def analyze_retinal_scan():
             "image_quality": quality_result,
             "differential_diagnosis": differential,
             "patient_risk_profile": patient_data if patient_data else None,
+            "heatmap_image": generate_clinical_heatmap(img, is_rpa, is_cme),
+            "treatments": generate_treatment_plan(verdict_code, is_sine_pigmento, is_rpa, is_sectoral, is_cme, differential),
             # FRONTEND COMPATIBILITY: Add commonly accessed fields at root level
             "quality_score": quality_result.get('quality_score') if quality_result else None,
             "angiography_warning": f"[!] ANGIOGRAPHY DETECTED: This appears to be a fluorescein/ICG angiography image. Results may be less reliable than color fundus analysis. ({angio_reason})" if is_angio else None,
-            "xai_explanation": generate_xai_explanation(ai_conf, expert_opinions, verdict_code, is_sine_pigmento, is_rpa, is_sectoral, is_cme, quality_result.get("quality_score", 100) if quality_result else 100, patient_data.get("risk_score", 0) if patient_data else 0, is_angio)
+            "xai_explanation": generate_xai_explanation(ai_conf, expert_opinions, verdict_code, is_sine_pigmento, is_rpa, is_sectoral, is_cme, quality_result, patient_data.get("risk_score", 0) if patient_data else 0, is_angio, differential.get('top_diagnosis') if differential else None)
         }
-        
+
         # Add cache control headers to prevent browser caching
         import flask
         resp = flask.make_response(jsonify(response), 200)
@@ -2152,7 +2311,7 @@ def analyze_retinal_scan():
         resp.headers['Pragma'] = 'no-cache'
         resp.headers['Expires'] = '0'
         return resp
-        
+
     except Exception as e:
         log_print(f"\n{'='*70}")
         log_print(f"[X] CRITICAL ERROR DURING ANALYSIS:")
@@ -2164,7 +2323,7 @@ def analyze_retinal_scan():
         traceback.print_exc()
         log_print(f"{'='*70}\n")
         sys.stdout.flush()
-        
+
         # Return detailed error info
         error_details = {
             "error": str(e),
@@ -2270,29 +2429,29 @@ def progression_compare():
     try:
         from datetime import datetime, timedelta
         data = request.get_json()
-        
+
         if 'baseline_image' not in data or 'current_image' not in data:
             return jsonify({"error": "Both baseline_image and current_image required"}), 400
-        
+
         if 'months_between' not in data:
             return jsonify({"error": "months_between field required"}), 400
-        
+
         log_print(f"\n[{datetime.now().strftime('%H:%M:%S')}] [P] Comparing scans for progression analysis...")
         sys.stdout.flush()
-        
+
         # Preprocess both images
         baseline = preprocess_image(data['baseline_image'])
         current = preprocess_image(data['current_image'])
-        
+
         if baseline is None or current is None:
             return jsonify({"error": "Invalid image data"}), 400
-        
+
         # Track progression
-        
+
         # Determine dates
         baseline_date = data.get('baseline_date', 'Unknown')
         current_date = data.get('current_date', 'Unknown')
-        
+
         if baseline_date == 'Unknown' or current_date == 'Unknown':
             base_dt = datetime(2025, 1, 15)
             baseline_date = base_dt.strftime("%Y-%m-%d")
@@ -2303,16 +2462,16 @@ def progression_compare():
         # Instantiate tracker and register images
         tracker = ProgressionTracker()
         aligned_baseline, aligned_current = tracker.register_images(baseline, current)
-        
+
         # Check alignment success
         registration_success = not np.array_equal(aligned_current, current)
         alignment_confidence = 0.95 if registration_success else 0.0
-        
+
         # Helper to extract clinical expert data from a scan
         def analyze_scan_for_progression(img):
             is_angio, _, _ = detect_angiography(img)
             fov_mask = get_fov_mask(img)
-            
+
             # Extract features
             vessel_feats = extract_vessel_features(img, fov_mask, is_angiography=is_angio)
             pigment_feats = extract_pigment_features(img, fov_mask, is_angiography=is_angio)
@@ -2322,7 +2481,7 @@ def progression_compare():
             bright_lesion_feats = extract_bright_lesion_features(img, fov_mask, is_angiography=is_angio)
             macula_feats = extract_macula_features(img, fov_mask, is_angiography=is_angio)
             quadrant_feats = extract_quadrant_features(img, fov_mask, is_angiography=is_angio)
-            
+
             features = {
                 'vessel': vessel_feats,
                 'pigment': pigment_feats,
@@ -2333,27 +2492,27 @@ def progression_compare():
                 'macula': macula_feats,
                 'quadrant': quadrant_feats
             }
-            
+
             # Consult key experts
             vessel_result = vessel_attenuation_expert(features)
             pigment_result = pigment_bone_spicules_expert(features)
             spatial_result = spatial_pattern_expert(features)
-            
+
             # Inject keys expected by ProgressionTracker
             vessel_result['density'] = vessel_feats['density']
             pigment_result['cluster_count'] = pigment_feats['num_clusters']
             spatial_result['degradation_score'] = spatial_feats['peripheral_degradation']
-            
+
             return {
                 'vessel_result': vessel_result,
                 'pigment_result': pigment_result,
                 'spatial_result': spatial_result
             }
-            
+
         # Analyze baseline and current
         baseline_data = analyze_scan_for_progression(aligned_baseline)
         current_data = analyze_scan_for_progression(aligned_current)
-        
+
         # Track progression
         raw_result = tracker.compare_scans(
             baseline=baseline_data,
@@ -2361,7 +2520,7 @@ def progression_compare():
             baseline_date=baseline_date,
             current_date=current_date
         )
-        
+
         # Map to response format
         progression_result = {
             'progression_category': raw_result['progression_rate'],
@@ -2372,7 +2531,7 @@ def progression_compare():
             'clinical_recommendation': raw_result['clinical_significance'],
             'registration_success': registration_success,
             'alignment_confidence': alignment_confidence,
-            
+
             # Keep raw/extended properties for deep diagnostics
             'time_interval_years': raw_result['time_interval_years'],
             'time_interval_days': raw_result['time_interval_days'],
@@ -2382,13 +2541,13 @@ def progression_compare():
             'progression_score': raw_result['progression_score'],
             'urgent': raw_result['urgent']
         }
-        
+
         log_print(f"   [+] Progression category: {progression_result['progression_category']}")
         log_print(f"   [V] Vessel density change: {progression_result['vessel_density_change']*100:.1f}% per year")
         sys.stdout.flush()
-        
+
         return jsonify(progression_result), 200
-        
+
     except Exception as e:
         log_print(f"[X] Error during progression analysis: {str(e)}")
         import traceback
@@ -2401,22 +2560,22 @@ def validation_study():
     """Generate clinical validation statistics for a study cohort"""
     try:
         data = request.get_json()
-        
+
         if 'predictions' not in data or 'ground_truth' not in data:
             return jsonify({"error": "predictions and ground_truth arrays required"}), 400
-        
+
         log_print(f"\n[{datetime.now().strftime('%H:%M:%S')}] [V] Generating validation study report...")
         sys.stdout.flush()
-        
+
         toolkit = create_validation_study()
-        
+
         # Calculate performance metrics
         metrics = toolkit.calculate_performance_metrics(
             predictions=data['predictions'],
             ground_truth=data['ground_truth'],
             threshold=data.get('threshold', 'SUSPICIOUS')
         )
-        
+
         # Subgroup analysis if metadata provided
         subgroup_results = None
         if 'patient_metadata' in data:
@@ -2425,7 +2584,7 @@ def validation_study():
                 ground_truth=data['ground_truth'],
                 patient_metadata=data['patient_metadata']
             )
-        
+
         # Inter-rater agreement if second rater provided
         kappa_result = None
         if 'rater2_labels' in data:
@@ -2433,25 +2592,25 @@ def validation_study():
                 rater1_labels=data['ground_truth'],
                 rater2_labels=data['rater2_labels']
             )
-        
+
         # Generate FDA report
         fda_report = toolkit.generate_fda_report(
             metrics=metrics,
             study_size=len(data['predictions']),
             study_name=data.get('study_name', 'RetinaGuard V500 Validation Study')
         )
-        
+
         log_print(f"   [+] Sensitivity: {metrics['sensitivity']*100:.1f}% (FDA target: >=80%)")
         log_print(f"   [+] Specificity: {metrics['specificity']*100:.1f}% (FDA target: >=90%)")
         sys.stdout.flush()
-        
+
         return jsonify({
             "metrics": metrics,
             "subgroup_analysis": subgroup_results,
             "inter_rater_agreement": kappa_result,
             "fda_report": fda_report
         }), 200
-        
+
     except Exception as e:
         log_print(f"[X] Error during validation study: {str(e)}")
         import traceback
@@ -2464,9 +2623,9 @@ def fda_documentation():
     """Generate FDA 510(k) submission documentation"""
     try:
         log_print(f"\n[{datetime.now().strftime('%H:%M:%S')}] [F] Generating FDA 510(k) documentation...")
-        
+
         generator = FDASubmissionGenerator()
-        
+
         # Generate all 5 sections
         sections = {
             "section_1_device_description": generator.generate_device_description(),
@@ -2475,12 +2634,12 @@ def fda_documentation():
             "section_4_risk_analysis": generator.generate_risk_analysis(),
             "section_5_labeling": generator.generate_labeling()
         }
-        
+
         log_print(f"   [+] Generated 5 regulatory sections (total: ~{sum(len(s) for s in sections.values())} characters)")
         sys.stdout.flush()
-        
+
         return jsonify(sections), 200
-        
+
     except Exception as e:
         log_print(f"[X] Error generating FDA documentation: {str(e)}")
         import traceback
@@ -2529,6 +2688,6 @@ if __name__ == '__main__':
     log_print(">> DEBUG MODE: DISABLED (Terminal output will show here)")
     log_print(">> To enable auto-reload, set debug=True in app.run()\n")
     sys.stdout.flush()
-    
+
     app.run(host='0.0.0.0', port=5001, debug=False)
 

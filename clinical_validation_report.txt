@@ -1,0 +1,21 @@
+RETINAGUARD V500 - FULL CLINICAL METRICS
+========================================
+
+Total Validation Samples: 1000
+Optimal Threshold: 0.6993
+Overall Accuracy: 99.10%
+ROC AUC Score: 1.0000
+
+CONFUSION MATRIX:
+[[500   0]
+ [  9 491]]
+
+DETAILED CLASSIFICATION REPORT:
+              precision    recall  f1-score   support
+
+     Healthy       0.98      1.00      0.99       500
+          RP       1.00      0.98      0.99       500
+
+    accuracy                           0.99      1000
+   macro avg       0.99      0.99      0.99      1000
+weighted avg       0.99      0.99      0.99      1000

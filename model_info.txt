@@ -1,0 +1,20 @@
+1. Conv2D (Convolutional Layer)
+What it does: It acts like a smart magnifying glass.
+What to tell the panel: "The Conv2D layer applies mathematical filters that slide across the image. Its job is to extract features. Early Conv2D layers detect simple things like edges and colors, while deeper Conv2D layers learn to recognize complex medical structures, like the damaged blood vessels in Retinitis Pigmentosa."
+2. Conv2DTranspose (Used ONLY in the Generator)
+What it does: It does the exact opposite of Conv2D.
+What to tell the panel: "In our Generator, we use Conv2DTranspose. Instead of shrinking an image to find features, it takes a small array of random numbers and 'upscales' or expands them layer by layer until it builds a full 128x128 color image."
+3. MaxPooling2D (Used in the CNN / Discriminator)
+What it does: It shrinks the image to save memory and keep only the most important details.
+What to tell the panel: "Pooling layers reduce the spatial dimensions (height and width) of the image. It looks at a 2x2 grid of pixels and only keeps the maximum value. This compresses the data, making the model run faster and preventing it from memorizing useless background noise (preventing overfitting)."
+4. Flatten Layer
+What it does: It is the bridge between the image layers and the final decision layers.
+What to tell the panel: "Neural networks cannot make a final decision on 2D image squares. The Flatten layer takes the 2D grid of features extracted by the Conv2D layers and squashes them into a single, long 1D straight line of numbers so they can be processed by the Dense layers."
+5. Dense (Fully Connected Layer)
+What it does: It is the final decision-maker.
+What to tell the panel: "The Dense layer takes the flattened list of features and assigns weights to them. It calculates the final mathematical vote to make the ultimate decision. In the Discriminator, the final Dense layer decides: 0 for Fake, or 1 for Real."
+(Bonus Points!)
+If you want to really impress the panel, mention these two:
+
+Batch Normalization: "We use Batch Normalization between our layers to stabilize the training. It normalizes the math so the numbers don't get too large or too small, which prevents the network from crashing."
+LeakyReLU / ReLU (Activation Functions): "We use LeakyReLU activations. These act as the 'switches' in our network, deciding which artificial neurons should fire and pass information forward, allowing the network to learn complex, non-linear medical patterns."
