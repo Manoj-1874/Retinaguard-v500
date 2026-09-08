@@ -120,6 +120,7 @@ class ProgressionTracker:
         print(f"         Rate: {progression_rate}")
         print(f"         Score: {progression_score:.1f}/100")
         print(f"         Interpretation: {clinical_sig}")
+        print(f"         Interval Warning: {'YES - estimates unreliable' if interval_warning else 'No'}")
         
         if urgent:
             print(f"         [!!] URGENT REFERRAL REQUIRED - Rapid progression detected")
