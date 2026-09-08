@@ -49,6 +49,7 @@ DISEASE_PATTERNS = {
         "name": "Hypertensive Retinopathy",
         "features": {"vessel_tortuosity": 0.50, "optic_disc_edema": 0.30, "exudates": 0.20},
         "exclusions": ["bone_spicules", "drusen"],
+        "note": "Silver/copper wire appearance in vessels; papilledema in malignant hypertension — rule out if BP history unavailable",
     },
     "choroideremia": {
         "name": "Choroideremia",
