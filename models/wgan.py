@@ -3,11 +3,9 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 import cv2
 import os
-from google.colab import drive
-drive.mount('/content/drive', force_remount=True)
 # ================= CONFIGURATION =================
 # 1. Path to your BEST model (Epoch 4260)
-MODEL_PATH = "/content/drive/MyDrive/WGAN_Results/gen_4260.h5"
+MODEL_PATH = "D:\project 7\Retinaguard-v500\models\wgan_gen_final.h5"
 
 # 2. Where to save the final images
 OUTPUT_FOLDER = "/content/drive/MyDrive/Final_RP_Dataset"
