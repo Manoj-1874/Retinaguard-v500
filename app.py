@@ -55,6 +55,20 @@ from validation_study_toolkit import create_validation_study
 from fda_submission_generator import FDASubmissionGenerator
 # ==================================================
 
+def make_serializable(obj):
+    if isinstance(obj, dict):
+        return {k: make_serializable(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple, set)):
+        return [make_serializable(v) for v in obj]
+    elif isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return make_serializable(obj.tolist())
+    else:
+        return obj
+
 # Configure logging to BOTH file and console (using stderr for reliable terminal output)
 logging.basicConfig(
     level=logging.INFO,
@@ -1974,7 +1988,7 @@ def analyze_retinal_scan():
         
         # Add cache control headers to prevent browser caching
         import flask
-        resp = flask.make_response(jsonify(response), 200)
+        resp = flask.make_response(jsonify(make_serializable(response)), 200)
         resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
         resp.headers['Pragma'] = 'no-cache'
         resp.headers['Expires'] = '0'
@@ -1998,7 +2012,7 @@ def analyze_retinal_scan():
             "error_type": type(e).__name__,
             "traceback": traceback.format_exc()
         }
-        return jsonify(error_details), 500
+        return jsonify(make_serializable(error_details)), 500
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -2217,13 +2231,13 @@ def progression_compare():
         log_print(f"   [V] Vessel density change: {progression_result['vessel_density_change']*100:.1f}% per year")
         sys.stdout.flush()
         
-        return jsonify(progression_result), 200
+        return jsonify(make_serializable(progression_result)), 200
         
     except Exception as e:
         log_print(f"[X] Error during progression analysis: {str(e)}")
         import traceback
         traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+        return jsonify(make_serializable({"error": str(e)})), 500
 
 
 @app.route('/api/validation-study', methods=['POST'])
@@ -2275,18 +2289,18 @@ def validation_study():
         log_print(f"   [+] Specificity: {metrics['specificity']*100:.1f}% (FDA target: >=90%)")
         sys.stdout.flush()
         
-        return jsonify({
+        return jsonify(make_serializable({
             "metrics": metrics,
             "subgroup_analysis": subgroup_results,
             "inter_rater_agreement": kappa_result,
             "fda_report": fda_report
-        }), 200
+        })), 200
         
     except Exception as e:
         log_print(f"[X] Error during validation study: {str(e)}")
         import traceback
         traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+        return jsonify(make_serializable({"error": str(e)})), 500
 
 
 @app.route('/api/fda-documentation', methods=['GET'])
@@ -2309,13 +2323,13 @@ def fda_documentation():
         log_print(f"   [+] Generated 5 regulatory sections (total: ~{sum(len(s) for s in sections.values())} characters)")
         sys.stdout.flush()
         
-        return jsonify(sections), 200
+        return jsonify(make_serializable(sections)), 200
         
     except Exception as e:
         log_print(f"[X] Error generating FDA documentation: {str(e)}")
         import traceback
         traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+        return jsonify(make_serializable({"error": str(e)})), 500
 
 # ====================================================
 
