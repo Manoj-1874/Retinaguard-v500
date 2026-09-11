@@ -203,6 +203,14 @@ class MultiDiseaseClassifier:
             if sine_pigmento_score > disease_scores['retinitis_pigmentosa']:
                 disease_scores['retinitis_pigmentosa'] = min(sine_pigmento_score, 0.95)
         
+        # FIX #12: DR hemorrhage+exudate CO-OCCURRENCE BOOST
+        # When hemorrhages AND bright lesions are both present, this is strong DR evidence
+        hemorrhage_feat = features.get('hemorrhages', 0) + features.get('microaneurysms', 0)
+        exudate_feat = features.get('exudates', 0)
+        if hemorrhage_feat > 0.2 and exudate_feat > 0.3:
+            dr_boost = min(hemorrhage_feat * exudate_feat * 1.5, 0.30)
+            disease_scores['diabetic_retinopathy'] = min(disease_scores.get('diabetic_retinopathy', 0) + dr_boost, 0.95)
+        
         # Sort diseases by confidence (descending)
         sorted_diseases = sorted(disease_scores.items(), key=lambda x: x[1], reverse=True)
         
@@ -287,25 +295,50 @@ class MultiDiseaseClassifier:
         # Hemorrhages typically > 5 is severe. Cap at 15.
         features['hemorrhages'] = min(hemorrhage.get('hemorrhages', 0) / 15.0, 1.0)
         
-        # Exudates are bright lesions (use local_variation as signal + fleck_count)
-        texture = expert_results.get('texture_result') or expert_results.get('texture') or {}
-        local_var = texture.get('local_variation', 0)
-        features['exudates'] = min(local_var / 6.0, 1.0)  # Improved sensitivity
-        features['cotton_wool_spots'] = features['exudates'] * 0.7  # Similar to exudates
+        # FIX #8: Real exudate feature = bright lesions that CO-OCCUR with hemorrhages (DR pattern)
+        # Pure bright lesions without hemorrhages = drusen/RPA, not DR exudates
+        bright_lesion = expert_results.get('bright_lesion_result') or expert_results.get('bright_lesion') or {}
+        fleck_count = bright_lesion.get('fleck_count', 0)
+        macular_ratio = bright_lesion.get('macular_ratio', 0.5)
+        hemorrhage_present = (features['hemorrhages'] > 0.1 or features['microaneurysms'] > 0.1)
+        
+        if hemorrhage_present and fleck_count > 10:
+            # Bright lesions + hemorrhages = true DR exudates
+            features['exudates'] = min(fleck_count / 30.0, 1.0)
+        else:
+            # No hemorrhages = probably drusen or RPA flecks, not DR exudates
+            features['exudates'] = min(fleck_count / 80.0, 0.3)  # Much lower score
+        
+        # FIX #9: Cotton-wool spots = placeholder (NOT a multiplier of exudates)
+        # CWS are nerve fiber layer infarcts, completely different from exudates
+        features['cotton_wool_spots'] = 0.0  # Placeholder - requires dedicated detector
         features['neovascularization'] = 0.0  # Placeholder (requires OCT/Angio)
         
-        # AMD features
-        bright_lesion = expert_results.get('bright_lesion_result') or expert_results.get('bright_lesion') or {}
-        features['drusen'] = min(bright_lesion.get('fleck_count', 0) / 20.0, 1.0)
+        # FIX #7: AMD drusen = MACULAR bright lesions only (not peripheral flecks)
+        # DR exudates cluster around macula too, but they co-occur with hemorrhages
+        macular_lesions = bright_lesion.get('macular_lesion_count', 0)
+        if hemorrhage_present:
+            # If hemorrhages present, bright macular lesions are DR exudates, not drusen
+            features['drusen'] = min(macular_lesions / 40.0, 0.3)  # Heavily discounted
+        else:
+            # No hemorrhages = macular bright spots are likely drusen (AMD)
+            features['drusen'] = min(macular_lesions / 15.0, 1.0)
         
+        texture = expert_results.get('texture_result') or expert_results.get('texture') or {}
         macula = expert_results.get('macula_result') or expert_results.get('macula') or {}
         features['macular_edema'] = macula.get('cme_score', 0.0)
         features['abnormal_texture'] = min(texture.get('entropy', 5.0) / 7.0, 1.0)
         features['geographic_atrophy'] = 0.0  # Placeholder
         
-        # GLAUCOMA features
-        # High disc brightness + specific shape = cupping
-        features['disc_cupping'] = 0.0  # Placeholder - needs cup/disc ratio
+        # FIX #10: GLAUCOMA features - Proxy disc_cupping from disc uniformity + brightness
+        # High brightness + high uniformity = pallor (RP). High brightness + LOW uniformity = cupping (Glaucoma)
+        disc_uniformity = disc.get('uniformity', 0.5)
+        disc_color_sat = disc.get('color_saturation', 1.0)
+        # Cupping creates non-uniform disc with central depression
+        if disc_brightness > 190 and disc_uniformity < 0.6:
+            features['disc_cupping'] = min((190 - disc_brightness * disc_uniformity) / 80.0, 0.8)
+        else:
+            features['disc_cupping'] = 0.0
         features['rnfl_thinning'] = features['vessel_attenuation'] * 0.5  # Proxy
         features['peripapillary_atrophy'] = 0.0  # Placeholder
         
@@ -345,11 +378,14 @@ class MultiDiseaseClassifier:
             if feature_name in features:
                 score += features[feature_name] * weight
         
-        # Negative evidence (presence of exclusionary features)
+        # FIX #11: Scaled exclusion penalty — stronger blocking based on feature strength
+        # Instead of flat 0.5 per exclusion, scale penalty with how strong the exclusion is
         exclusions = pattern.get('exclusions', [])
         for exclusion in exclusions:
             if exclusion in features and features[exclusion] > 0.3:
-                score *= 0.5  # Penalize if exclusionary feature present
+                # Penalty scales with exclusion strength: 0.3→0.7 multiplier, 1.0→0.2 multiplier
+                penalty = max(0.2, 1.0 - features[exclusion] * 0.8)
+                score *= penalty
         
         return min(score, 1.0)
     

@@ -1,201 +1,117 @@
 From C:\Users\HP\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\keras\src\backend\common\global_state.py:82: The name tf.reset_default_graph is deprecated. Please use tf.compat.v1.reset_default_graph instead.
 
-[+] Loaded model from models/recovered_model.h5 (GPU Accelerated)
+Exception on /api/analyze [POST]
+Traceback (most recent call last):
+  File "E:\V500\app.py", line 1756, in analyze_retinal_scan
+    quality_result = validator.validate(img, patient_id=data.get('patientId', 'UNKNOWN'), is_angiography=is_angio)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\V500\image_quality_validator.py", line 87, in validate
+    print(f"\n   [Q] IMAGE QUALITY VALIDATION for {patient_id}", flush=True)
+OSError: [Errno 22] Invalid argument
 
-======================================================================
->> STARTING RETINAGUARD V500 FLASK API SERVER
-======================================================================
+During handling of the above exception, another exception occurred:
 
->> CLINICAL DECISION SUPPORT SYSTEM FOR RETINITIS PIGMENTOSA
+Traceback (most recent call last):
+  File "E:\V500\app.py", line 1759, in analyze_retinal_scan
+    quality_result = validate_image_quality(img)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\V500\image_quality_validator.py", line 474, in validate_image_quality
+    return validator.validate(image, patient_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\V500\image_quality_validator.py", line 87, in validate
+    print(f"\n   [Q] IMAGE QUALITY VALIDATION for {patient_id}", flush=True)
+OSError: [Errno 22] Invalid argument
 
-CORE CAPABILITIES:
-  [+] 10-Expert Clinical Panel (includes variants: RPA, CME, Sectoral)
-  [+] Classic RP Triad Verification
-  [+] Weighted Voting Decision Engine (6 rules)
-  [+] Real-time Image Analysis
+During handling of the above exception, another exception occurred:
 
-NEW: ENHANCED CLINICAL FEATURES:
-  [Q] Image Quality Validation (blur/brightness/resolution checks)
-  [C] Camera Calibration (Topcon/Zeiss/Canon/Optomed)
-  [P] Patient History Integration (age/ethnicity/symptom adjustments)
-  [D] Differential Diagnosis (RP vs DR vs AMD vs Glaucoma + 3 more)
-  [T] Progression Tracking (serial scan comparison)
-  [V] Clinical Validation Tools (sensitivity/specificity/Cohen's Kappa)
-  [F] FDA 510(k) Documentation Generator
+Traceback (most recent call last):
+  File "C:\Users\HP\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\flask\app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\flask\app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\flask\app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\V500\app.py", line 2409, in analyze_retinal_scan
+    traceback.print_exc()
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\traceback.py", line 180, in print_exc
+    print_exception(*sys.exc_info(), limit=limit, file=file, chain=chain)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\traceback.py", line 125, in print_exception
+    te.print(file=file, chain=chain)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\traceback.py", line 1022, in print
+    print(line, file=file, end="")
+OSError: [Errno 22] Invalid argument
+Exception on /api/analyze [POST]
+Traceback (most recent call last):
+  File "E:\V500\app.py", line 1709, in analyze_retinal_scan
+    sys.stdout.flush()
+OSError: [Errno 22] Invalid argument
 
-RP TRIAD COMPONENTS:
-  [1] Bone Spicule Pigmentation (18% weight)
-  [2] Arteriolar Attenuation (20% weight)
-  [3] Optic Disc Pallor (12% weight)
+During handling of the above exception, another exception occurred:
 
-SUPPORTING SCANNERS:
-  * AI Pattern Recognition (25% weight)
-  * Vessel Tortuosity (10% weight)
-  * Texture Degeneration (8% weight)
-  * Spatial Pattern (7% weight)
-======================================================================
+Traceback (most recent call last):
+  File "C:\Users\HP\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\flask\app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\flask\app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\flask\app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\V500\app.py", line 2409, in analyze_retinal_scan
+    traceback.print_exc()
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\traceback.py", line 180, in print_exc
+    print_exception(*sys.exc_info(), limit=limit, file=file, chain=chain)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\traceback.py", line 125, in print_exception
+    te.print(file=file, chain=chain)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\traceback.py", line 1022, in print
+    print(line, file=file, end="")
+OSError: [Errno 22] Invalid argument
+Exception on /api/analyze [POST]
+Traceback (most recent call last):
+  File "E:\V500\app.py", line 1709, in analyze_retinal_scan
+    sys.stdout.flush()
+OSError: [Errno 22] Invalid argument
 
->> Server URL: http://localhost:5001
->> Health Check: http://localhost:5001/api/health
->> System Info: http://localhost:5001/api/models/info
+During handling of the above exception, another exception occurred:
 
-API ENDPOINTS:
-  POST /api/analyze - Main RP diagnosis (with quality validation)
-  POST /api/progression-compare - Compare baseline + current scans
-  POST /api/validation-study - Generate clinical trial statistics
-  GET  /api/fda-documentation - Export 510(k) submission package
-
-======================================================================
-
->> DEBUG MODE: DISABLED (Terminal output will show here)
->> To enable auto-reload, set debug=True in app.run()
-
-
-======================================================================
-[!!] IMAGE UPLOAD DETECTED - STARTING ANALYSIS [!!]
-======================================================================
-
-======================================================================
-[!!] IMAGE UPLOAD DETECTED - STARTING ANALYSIS [!!]
-======================================================================
-
-======================================================================
-[08:39:15] [A] Analyzing scan for PT-1615
-======================================================================
-
-======================================================================
-[08:39:15] [A] Analyzing scan for PT-1615
-======================================================================
-   [Q] Validating image quality...
-   [!] WARNING: Marginal image quality (score: 65.0/100)
-      - Image too blurry (variance=84.05). Minimum: 100.0
-      - Resolution below optimal (512x512). Recommended: 1024x1024
-      - Noticeable vignetting (ratio=0.393)
-      - Color cast detected (max channel diff=68.6)
-   [U] Analyzing patient demographics and history...
-      Ethnicity: Caucasian (Pigment adjustment: 0)
-      Age: 29 (Vessel adjustment: 0.0)
-      Risk Score: 10.0/100
-   [*] Extracting clinical features...
-   [VESSEL] Raw density: 15.6%, Brightness: 65.4, Correction: 1.00, Final: 15.6%
-   [PIGMENT] L-channel: mean=73.9, std=18.6, percentile=52.0, statistical=45.9, brightness_comp=0, final_threshold=52.0
-[TEXTURE] Global entropy=5.88, Local variation=3.29, Mean brightness=50.3
-   [E] Expert panel consultation (10 scanners)...
-   ------------------------------------------------------------------
-   [!] AI Pattern Recognition                   -> MILD CHANGES         ( 31.7%)
-      Vote: 0.0634 | Neural network RP probability: 31.7%
-   [!] Vessel Attenuation (TRIAD #2)            -> MILD ATTENUATION     ( 60.0%)
-      Vote: 0.0960 | Vessel density: 15.6% (Normal: >25%)
-   [+] Bone Spicule Pigmentation (TRIAD #1)     -> NORMAL               ( 15.0%)
-      Vote: 0.0210 | Clusters: 0 (Normal: <8)
-   [+] Optic Disc Pallor (TRIAD #3)             -> NORMAL               ( 20.0%)
-      Vote: 0.0200 | Brightness: 150 (Normal: 140-180)
-   [+] Vessel Tortuosity                        -> NORMAL               ( 25.0%)
-      Vote: 0.0200 | Tortuosity: 1.00 (Normal: <1.3)
-   [+] Texture Degeneration                     -> NORMAL               ( 25.0%)
-      Vote: 0.0150 | Entropy: 5.88, Local: 3.3 (Normal: <6.4/<7.0)
-   [+] Spatial Pattern                          -> NORMAL               ( 20.0%)
-      Vote: 0.0080 | Degradation: 0.16 (Normal: <0.4)
-   [+] Bright Lesions (RPA)                     -> NORMAL               ( 15.0%)
-      Vote: 0.0120 | Flecks: 0 | Density: 0.0000
-   [+] Macula (CME)                             -> NORMAL MACULA        ( 15.0%)
-      Vote: 0.0105 | CME Score: 0.17 | Irregularity: 15.6
-   [!] Quadrant (Sectoral)                      -> MILD ASYMMETRY       ( 35.0%)
-      Vote: 0.0245 | Asymmetry: 0.45 | Worst: sup_nasal
-
-   [D] Generating differential diagnosis...
-   [L] Top Differential Diagnoses:
-      1. Stargardt Disease (Macular Dystrophy): 53.7%
-      2. Ophthalmic Syphilis (Infectious Mimic): 33.6%
-      3. Retinitis Pigmentosa: 29.6%
-      4. Hypertensive Retinopathy: 26.9%
-      5. Choroideremia: 26.2%
-   ⚖️  DECISION ENGINE (Simplified 6-Rule System):
-      AI: 31.7% | Says RP: NO
-      Clinical Votes (MODERATE/CRITICAL): 0/9
-      MILD findings: 2 | CRITICAL findings: 0
-      Triad Complete: False | Pathways: SP=False, RPA=False, Sectoral=False
-      → Rule 0: DIFFERENTIAL OVERRIDE (Top: Stargardt Disease (Macular Dystrophy) 53.7%, RP: 29.6%)
-   [V] VERDICT: OTHER_DISEASE
-   [S] Score: 0.290 | Confidence: HIGH
-   [C] Consensus: 0/9 Experts + AI: NO
-======================================================================
-
-
-======================================================================
-[!!] IMAGE UPLOAD DETECTED - STARTING ANALYSIS [!!]
-======================================================================
-
-======================================================================
-[!!] IMAGE UPLOAD DETECTED - STARTING ANALYSIS [!!]
-======================================================================
-
-======================================================================
-[08:44:17] [A] Analyzing scan for PT-9809
-======================================================================
-
-======================================================================
-[08:44:17] [A] Analyzing scan for PT-9809
-======================================================================
-   [Q] Validating image quality...
-   [!] WARNING: Marginal image quality (score: 45.0/100)
-      - Image too blurry (variance=95.02). Minimum: 100.0
-      - Excessive vignetting (ratio=0.286). Maximum: 0.3
-      - Resolution below optimal (512x512). Recommended: 1024x1024
-      - Color cast detected (max channel diff=68.5)
-      - Weak vessel network (coverage=0.0736)
-   [U] Analyzing patient demographics and history...
-      Ethnicity: Caucasian (Pigment adjustment: 0)
-      Age: 66 (Vessel adjustment: -0.03)
-      Risk Score: 3.0/100
-   [*] Extracting clinical features...
-   [VESSEL] Raw density: 17.8%, Brightness: 85.1, Correction: 1.00, Final: 17.8%
-   [PIGMENT] L-channel: mean=93.6, std=30.8, percentile=70.0, statistical=35.0, brightness_comp=-8, final_threshold=62.0
-[TEXTURE] Global entropy=6.36, Local variation=4.71, Mean brightness=64.2
-   [E] Expert panel consultation (10 scanners)...
-   ------------------------------------------------------------------
-   [!] AI Pattern Recognition                   -> MILD CHANGES         ( 40.3%)
-      Vote: 0.0807 | Neural network RP probability: 40.3%
-   [!] Vessel Attenuation (TRIAD #2)            -> MILD ATTENUATION     ( 60.0%)
-      Vote: 0.0960 | Vessel density: 17.8% (Normal: >25%)
-   [+] Bone Spicule Pigmentation (TRIAD #1)     -> NORMAL               ( 15.0%)
-      Vote: 0.0210 | Clusters: 0 (Normal: <8)
-   [!] Optic Disc Pallor (TRIAD #3)             -> MODERATE PALLOR      ( 80.0%)
-      Vote: 0.1280 | Brightness: 251 (Normal: 140-180)
-   [+] Vessel Tortuosity                        -> NORMAL               ( 25.0%)
-      Vote: 0.0200 | Tortuosity: 1.00 (Normal: <1.3)
-   [+] Texture Degeneration                     -> NORMAL               ( 25.0%)
-      Vote: 0.0150 | Entropy: 6.36, Local: 4.7 (Normal: <6.4/<7.0)
-   [!] Spatial Pattern                          -> MILD PERIPHERAL CHANGES ( 50.0%)
-      Vote: 0.0200 | Degradation: 0.40 (Normal: <0.4)
-   [+] Bright Lesions (RPA)                     -> NORMAL               ( 15.0%)
-      Vote: 0.0120 | Flecks: 5 | Density: 0.0020
-   [!] Macula (CME)                             -> MILD IRREGULARITY    ( 45.0%)
-      Vote: 0.0378 | CME Score: 0.38 | Irregularity: 35.1
-   [!] Quadrant (Sectoral)                      -> MILD ASYMMETRY       ( 35.0%)
-      Vote: 0.0245 | Asymmetry: 0.35 | Worst: inf_nasal
-
-   [D] Generating differential diagnosis...
-   [L] Top Differential Diagnoses:
-      1. Stargardt Disease (Macular Dystrophy): 47.6%
-      2. Choroideremia: 39.0%
-      3. Ophthalmic Syphilis (Infectious Mimic): 36.3%
-      4. Retinitis Pigmentosa: 30.5%
-      5. Diabetic Retinopathy: 21.2%
-   [N] Clinical Notes:
-      - Age >50: Consider AMD as differential
-      - Ambiguous diagnosis: Stargardt Disease (Macular Dystrophy) vs Choroideremia - clinical correlation required
-   🧬 SINE PIGMENTO PATHWAY ACTIVATED! (+0.180 compensation)
-      → AI/Clinical concerned + No classic pigment + Degeneration signs
-      → Texture: NORMAL, Spatial: MILD
-   ⚖️  DECISION ENGINE (Simplified 6-Rule System):
-      AI: 40.3% | Says RP: NO
-      Clinical Votes (MODERATE/CRITICAL): 1/9
-      MILD findings: 4 | CRITICAL findings: 0
-      Triad Complete: False | Pathways: SP=True, RPA=False, Sectoral=False
-      → Rule 2a: SINE PIGMENTO VARIANT (AI=40.3%, No pigment, Degeneration)
-   [V] VERDICT: RP_SINE_PIGMENTO
-   [S] Score: 0.635 | Confidence: MODERATE
-   [C] Consensus: 1/9 Experts + AI: NO
-======================================================================
-
+Traceback (most recent call last):
+  File "C:\Users\HP\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\flask\app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\flask\app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\flask\app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\V500\app.py", line 2409, in analyze_retinal_scan
+    traceback.print_exc()
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\traceback.py", line 180, in print_exc
+    print_exception(*sys.exc_info(), limit=limit, file=file, chain=chain)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\traceback.py", line 125, in print_exception
+    te.print(file=file, chain=chain)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\traceback.py", line 1022, in print
+    print(line, file=file, end="")
+OSError: [Errno 22] Invalid argument

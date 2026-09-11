@@ -1,10 +1,20 @@
 import logging
+import sys as _sys
+
+# Save the REAL stderr before Flask/LoggerWriter can hijack it
+_real_stderr = _sys.stderr
 
 def log_print(*args, **kwargs):
-    # BYPASS Python's complex logging module to guarantee it prints to the VSCode terminal!
-    # Remove kwargs that print doesn't support if any slipped through
+    # Write directly to the saved real stderr — immune to Flask/LoggerWriter interference
     kwargs.pop('flush', None)
     msg = " ".join(str(a) for a in args)
+
+    # Write to terminal via saved real stderr
+    try:
+        _real_stderr.write(msg + "\n")
+        _real_stderr.flush()
+    except Exception:
+        pass
 
     # Also log to file for history
     try:
@@ -12,8 +22,6 @@ def log_print(*args, **kwargs):
             f.write(msg + '\n')
     except Exception:
         pass
-
-    print(msg, file=sys.stderr, flush=True)
 
 """
 ================================================================================
@@ -623,9 +631,13 @@ def extract_spatial_features(img, fov_mask, is_angiography=False):
 def extract_bright_lesion_features(img, fov_mask, is_angiography=False):
     """NEW SCANNER #1: Retinitis Punctata Albescens Detection
     RPA presents with BRIGHT white/yellowish flecks instead of dark bone spicules.
-    This scanner specifically looks for abnormal bright lesions in the retina."""
+    This scanner specifically looks for abnormal bright lesions in the retina.
+    FIX: Added spatial distribution analysis to distinguish DR exudates (macular clustering)
+    from RPA flecks (scattered across entire retina)."""
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     l_channel, a_channel, b_channel = cv2.split(lab)
+    h, w = l_channel.shape
+    center_y, center_x = h // 2, w // 2
 
     # USE TOP-HAT TRANSFORM to find small bright spots (Drusen/Flecks) regardless of global lighting/color cast
     # This prevents false positives on naturally yellow/blonde fundus images.
@@ -642,20 +654,39 @@ def extract_bright_lesion_features(img, fov_mask, is_angiography=False):
     _, yellow_mask = cv2.threshold(tophat_b, 30, 255, cv2.THRESH_BINARY)
     yellow_mask = yellow_mask & (fov_mask > 0)
 
-    # Count bright lesion clusters
+    # Count bright lesion clusters + track spatial distribution
     contours, _ = cv2.findContours(bright_mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Filter: lesions should be small (drusen are 20-2000 pixels)
+    # Macular region = central 30% of image (DR exudates cluster here)
+    macula_radius = int(min(h, w) * 0.30)
+
     lesion_count = 0
     total_lesion_area = 0
+    macular_lesion_count = 0
+    peripheral_lesion_count = 0
     for cnt in contours:
         area = cv2.contourArea(cnt)
         if 30 < area < 2000:  # Drusen/fleck size range
             lesion_count += 1
             total_lesion_area += area
+            # Check if this lesion is near the macula (center) or in the periphery
+            M = cv2.moments(cnt)
+            if M['m00'] > 0:
+                cx = int(M['m10'] / M['m00'])
+                cy = int(M['m01'] / M['m00'])
+                dist_from_center = np.sqrt((cx - center_x)**2 + (cy - center_y)**2)
+                if dist_from_center < macula_radius:
+                    macular_lesion_count += 1
+                else:
+                    peripheral_lesion_count += 1
 
     fov_area = np.sum(fov_mask > 0)
     lesion_density = total_lesion_area / fov_area if fov_area > 0 else 0
+
+    # SPATIAL DISTRIBUTION: DR exudates cluster around macula; RPA flecks scatter everywhere
+    # macular_ratio > 0.6 = likely DR exudates (clustered pattern)
+    # macular_ratio < 0.4 = likely RPA flecks (scattered pattern)
+    macular_ratio = macular_lesion_count / max(lesion_count, 1)
 
     # Count yellow fleck clusters
     yellow_contours, _ = cv2.findContours(yellow_mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -669,11 +700,16 @@ def extract_bright_lesion_features(img, fov_mask, is_angiography=False):
         combined_flecks = int(combined_flecks * 0.1)
         lesion_density = lesion_density * 0.1
 
+    log_print(f"   [BRIGHT] Lesions={lesion_count}, Macular={macular_lesion_count}, Peripheral={peripheral_lesion_count}, Macular ratio={macular_ratio:.2f}")
+
     return {
         'lesion_count': lesion_count,
         'lesion_density': lesion_density,
         'yellow_fleck_count': yellow_fleck_count,
-        'combined_flecks': combined_flecks
+        'combined_flecks': combined_flecks,
+        'macular_ratio': macular_ratio,
+        'macular_lesion_count': macular_lesion_count,
+        'peripheral_lesion_count': peripheral_lesion_count
     }
 
 def extract_macula_features(img, fov_mask, is_angiography=False):
@@ -1948,14 +1984,26 @@ def analyze_retinal_scan():
         has_clinical_sine_pigmento = vessel_abnormal and optic_abnormal and (pigment_conf < CONFIG["SINE_PIGMENTO_PIGMENT_MAX"]) and (texture_severity in ['MODERATE', 'CRITICAL'] or spatial_abnormal)
 
         # Pathway #1: Retinitis Punctata Albescens (white flecks instead of dark)
+        # FIX: Cross-check with hemorrhage count and spatial distribution.
+        # DR exudates cluster around macula (macular_ratio > 0.6) and co-occur with hemorrhages.
+        # True RPA flecks scatter uniformly (macular_ratio < 0.5) with no hemorrhages.
+        hemorrhage_count = features.get('hemorrhage', {}).get('total_dr_lesions', 0)
+        macular_ratio = features.get('bright_lesion', {}).get('macular_ratio', 0.5)
+        has_dr_pattern = (hemorrhage_count > 5) or (macular_ratio > 0.60)
+
         is_rpa = (
-            bright_severity == 'CRITICAL' or
-            (bright_severity == 'MODERATE' and pigment_conf < CONFIG["RPA_PIGMENT_MAX"])
+            (bright_severity == 'CRITICAL' or
+             (bright_severity == 'MODERATE' and pigment_conf < CONFIG["RPA_PIGMENT_MAX"]))
+            and not has_dr_pattern  # BLOCK RPA when DR exudate pattern detected
         )
         if is_rpa:
             base_score += CONFIG["RPA_PATHWAY_BONUS"]
             log_print(f"   🔘 RPA PATHWAY ACTIVATED! (+{CONFIG['RPA_PATHWAY_BONUS']:.3f} compensation)")
             log_print(f"      → Bright lesions detected + No dark bone spicules")
+            log_print(f"      → Spatial: macular_ratio={macular_ratio:.2f} (scattered=RPA), hemorrhages={hemorrhage_count} (low=RPA)")
+        elif (bright_severity in ['CRITICAL', 'MODERATE']) and has_dr_pattern:
+            log_print(f"   [!] RPA PATHWAY BLOCKED: DR exudate pattern detected!")
+            log_print(f"      → Macular clustering={macular_ratio:.2f} (>0.60=DR), Hemorrhages={hemorrhage_count} (>5=DR)")
 
         # Pathway #2: Sectoral RP (one quadrant affected)
         # Requires CRITICAL severity AND AI agreement to activate
@@ -1968,14 +2016,20 @@ def analyze_retinal_scan():
 
         # Pathway #3: Sine Pigmento (no pigment but AI shows concern + degeneration signs OR clinical consensus)
         # ADJUST FOR ANGIOGRAPHY: We artificially suppressed pigment detection, so we cannot safely diagnose "Sine Pigmento".
-        if not is_angio and ((ai_conf > CONFIG["SINE_PIGMENTO_AI_MIN"] and pigment_conf < CONFIG["SINE_PIGMENTO_PIGMENT_MAX"] and (texture_severity in ['MODERATE', 'CRITICAL'] or spatial_result['severity'] in ['MODERATE', 'CRITICAL'])) or has_clinical_sine_pigmento):
+        # FIX #14: Require at least one RP-SPECIFIC structural finding (vessel attenuation OR peripheral loss)
+        # even on the AI path. Texture/spatial changes alone are too generic (DR/AMD also cause them).
+        has_rp_structural_evidence = vessel_abnormal or spatial_abnormal
+        if not is_angio and has_rp_structural_evidence and (
+            (ai_conf > CONFIG["SINE_PIGMENTO_AI_MIN"] and pigment_conf < CONFIG["SINE_PIGMENTO_PIGMENT_MAX"] and (texture_severity in ['MODERATE', 'CRITICAL'] or spatial_result['severity'] in ['MODERATE', 'CRITICAL']))
+            or has_clinical_sine_pigmento
+        ):
             is_sine_pigmento = True
             base_score += CONFIG["SINE_PIGMENTO_BONUS"]
             angio_note = " (ANGIO)" if is_angio else ""
             clin_note = " (CLINICAL)" if has_clinical_sine_pigmento and not (ai_conf > CONFIG["SINE_PIGMENTO_AI_MIN"]) else ""
             log_print(f"   🧬 SINE PIGMENTO PATHWAY ACTIVATED! (+{CONFIG['SINE_PIGMENTO_BONUS']:.3f} compensation)")
             log_print(f"      → AI/Clinical concerned + No classic pigment + Degeneration signs{angio_note}{clin_note}")
-            log_print(f"      → Texture: {texture_severity}, Spatial: {spatial_result['severity']}")
+            log_print(f"      → Texture: {texture_severity}, Spatial: {spatial_result['severity']}, Vessels: {vessel_severity}")
 
         # Pathway #4: Classic RP Triad Complete
         if triad_complete:
@@ -2010,12 +2064,24 @@ def analyze_retinal_scan():
             'quadrant': quadrant_result
         }
 
+        # FIX: Exclude bright_lesion from clinical RP votes when hemorrhages indicate DR.
+        # DR exudates falsely trigger the bright lesion scanner, inflating RP consensus.
+        hemorrhage_total = features.get('hemorrhage', {}).get('total_dr_lesions', 0)
+        bright_macular_ratio = features.get('bright_lesion', {}).get('macular_ratio', 0.5)
+        exclude_bright_from_votes = (hemorrhage_total > 5) or (bright_macular_ratio > 0.60)
+
         # Count MODERATE/CRITICAL as clinical votes (strong abnormalities)
-        clinical_rp_votes = sum(1 for r in clinical_results.values() if r['severity'] in ['CRITICAL', 'MODERATE'])
+        clinical_rp_votes = 0
+        for name, r in clinical_results.items():
+            if r['severity'] in ['CRITICAL', 'MODERATE']:
+                if name == 'bright_lesion' and exclude_bright_from_votes:
+                    log_print(f"      [!] Excluding bright_lesion vote: DR exudate pattern (hemorrhages={hemorrhage_total}, macular_ratio={bright_macular_ratio:.2f})")
+                    continue
+                clinical_rp_votes += 1
         # Count MILD findings separately (weak abnormalities)
         mild_findings = sum(1 for r in clinical_results.values() if r['severity'] == 'MILD')
         # Count CRITICAL findings (severe abnormalities)
-        critical_count = sum(1 for r in clinical_results.values() if r['severity'] == 'CRITICAL')
+        critical_count = sum(1 for name, r in clinical_results.items() if r['severity'] == 'CRITICAL' and not (name == 'bright_lesion' and exclude_bright_from_votes))
         total_clinical_scanners = len(clinical_results)
 
         log_print(f"   ⚖️  DECISION ENGINE (Simplified 6-Rule System):")
@@ -2044,10 +2110,23 @@ def analyze_retinal_scan():
 
         syndromic_prefix = "USHER SYNDROME (SYNDROMIC RP)" if top_disease == "Usher Syndrome" else "RETINITIS PIGMENTOSA"
 
-        if is_other_disease_dominant and not (is_sine_pigmento or is_rpa or is_sectoral):
+        # FIX: Removed variant exemption — differential override now applies even when
+        # RPA/SP/Sectoral pathways are active, because those pathways can be triggered by
+        # non-RP pathology (e.g., DR exudates triggering RPA).
+        if is_other_disease_dominant:
             verdict = f"NEGATIVE FOR RP: ALTERNATIVE PATHOLOGY DETECTED ({top_disease.upper()})"
             confidence = "HIGH"
             verdict_code = "OTHER_DISEASE"
+            # Deactivate variant pathways since differential says it's not RP
+            if is_rpa:
+                log_print(f"      [!] RPA pathway overridden by differential diagnosis")
+                is_rpa = False
+            if is_sine_pigmento:
+                log_print(f"      [!] Sine Pigmento pathway overridden by differential diagnosis")
+                is_sine_pigmento = False
+            if is_sectoral:
+                log_print(f"      [!] Sectoral pathway overridden by differential diagnosis")
+                is_sectoral = False
             log_print(f"      → Rule 0: DIFFERENTIAL OVERRIDE (Top: {top_disease} {top_score}%, RP: {rp_score}%)")
 
         # RULE 1: CLASSIC RP - Triad Complete (Gold Standard)
@@ -2119,8 +2198,15 @@ def analyze_retinal_scan():
              (critical_count > 0) or \
              (spatial_result['severity'] == 'MODERATE' and ai_confidence > CONFIG["AI_MILD"]):
 
+            # FIX #13: Check differential before flagging as RP-suspicious.
+            # If the differential strongly points to another disease, don't flag as RP-suspicious.
+            if is_other_disease_dominant:
+                verdict = f"NEGATIVE FOR RP: ALTERNATIVE PATHOLOGY DETECTED ({top_disease.upper()})"
+                confidence = "HIGH"
+                verdict_code = "OTHER_DISEASE"
+                log_print(f"      → Rule 5 BLOCKED by differential override (Top: {top_disease} {top_score}%, RP: {rp_score}%)")
             # Enhanced messaging for isolated findings
-            if ai_uncertain and clinical_rp_votes >= 1:
+            elif ai_uncertain and clinical_rp_votes >= 1:
                 verdict = "SUSPICIOUS: ATYPICAL FINDINGS - RECOMMEND CLINICAL REVIEW"
                 confidence = "MODERATE"
                 verdict_code = "SUSPICIOUS"
