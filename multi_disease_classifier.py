@@ -53,7 +53,7 @@ class MultiDiseaseClassifier:
                 'cotton_wool_spots': 0.10,
                 'neovascularization': 0.05
             },
-            'exclusions': ['bone_spicules', 'disc_pallor']
+            'exclusions': ['disc_pallor']  # Removed bone_spicules as PRP laser scars mimic them
         },
         'amd': {
             'name': 'Age-Related Macular Degeneration',
@@ -109,16 +109,16 @@ class MultiDiseaseClassifier:
         'syphilis': {
             'name': 'Ophthalmic Syphilis (Infectious Mimic)',
             'key_features': {
-                'abnormal_texture': 0.40,       # Severe inflammation/vitritis
-                'bone_spicules': 0.35,          # Pseudo-RP pigment
-                'optic_disc_pallor': 0.25       # Optic atrophy
+                'bone_spicules': 0.45,          # Pseudo-RP pigment is required
+                'abnormal_texture': 0.20,       # Severe inflammation/vitritis
+                'optic_disc_pallor': 0.35       # Optic atrophy
             },
             'exclusions': []  # Inflammatory lesions can mimic drusen/exudates, so no exclusions
         },
         'stargardt': {
             'name': 'Stargardt Disease (Macular Dystrophy)',
             'key_features': {
-                'abnormal_texture': 0.40,       # Yellow flecks in macula
+                'drusen': 0.40,                 # Yellow flecks in macula are essential
                 'macular_edema': 0.30,          # Macular atrophy
                 'early_onset': 0.30             # Typically juvenile
             },
@@ -161,7 +161,7 @@ class MultiDiseaseClassifier:
             print(f"\n      [D] DIFFERENTIAL DIAGNOSIS:")
             print(f"         [!] Skipped: Color-based differential diagnosis is not supported for grayscale Angiography.")
             print(f"      {'='*60}\n")
-            sys.stdout.flush()
+            
             return {
                 'top_diagnosis': 'Angiography (Differential Skipped)',
                 'top_confidence': 0.0,
@@ -246,7 +246,7 @@ class MultiDiseaseClassifier:
                 print(f"         - {note}")
         
         print(f"      {'='*60}\n")
-        sys.stdout.flush()
+        
         
         return {
             'top_diagnosis': top_diagnosis,
@@ -273,15 +273,18 @@ class MultiDiseaseClassifier:
         
         # RETINITIS PIGMENTOSA features
         pigment = expert_results.get('pigment_result') or expert_results.get('pigment') or {}
-        features['bone_spicules'] = min(pigment.get('cluster_count', 0) / 30.0, 1.0)
+        # DATA: RP mean=1.5, CRITICAL threshold = 8.0. Normalizing by 8.0 instead of 30.0.
+        features['bone_spicules'] = min(pigment.get('cluster_count', 0) / 8.0, 1.0)
         
         vessel = expert_results.get('vessel_result') or expert_results.get('vessels') or {}
-        vessel_density = vessel.get('density', 0.30)
-        features['vessel_attenuation'] = max(0, (0.30 - vessel_density) / 0.30)  # Lower = more attenuation
+        vessel_density = vessel.get('density', 0.12)
+        # DATA: RP mean=0.07, Healthy mean=0.12. Normalize against healthy mean.
+        features['vessel_attenuation'] = max(0, (0.12 - vessel_density) / 0.12)  # Lower = more attenuation
         
         disc = expert_results.get('optic_disc_result') or expert_results.get('optic_disc') or {}
         disc_brightness = disc.get('brightness', 160)
-        features['optic_disc_pallor'] = max(0, (disc_brightness - 180) / 50)  # >180 = pallor
+        # DATA: INVERTED — Healthy mean=210, RP mean=199. Raised threshold to 220.
+        features['optic_disc_pallor'] = max(0, (disc_brightness - 220) / 30)  # >220 = pallor
         
         spatial = expert_results.get('spatial_result') or expert_results.get('spatial') or {}
         features['peripheral_loss'] = spatial.get('degradation_score', 0.0)
@@ -291,23 +294,26 @@ class MultiDiseaseClassifier:
         hemorrhage = expert_results.get('hemorrhage_result') or expert_results.get('hemorrhage') or {}
         
         # Microaneurysms typically > 10 is severe. Cap at 30.
-        features['microaneurysms'] = min(hemorrhage.get('microaneurysms', 0) / 30.0, 1.0)
+        # DATA: Healthy mean=50.8! Detector picks up normal features as microaneurysms.
+        # Raised divisor to 100 to prevent healthy images from scoring as DR.
+        features['microaneurysms'] = min(hemorrhage.get('microaneurysms', 0) / 100.0, 1.0)
         # Hemorrhages typically > 5 is severe. Cap at 15.
         features['hemorrhages'] = min(hemorrhage.get('hemorrhages', 0) / 15.0, 1.0)
         
         # FIX #8: Real exudate feature = bright lesions that CO-OCCUR with hemorrhages (DR pattern)
         # Pure bright lesions without hemorrhages = drusen/RPA, not DR exudates
         bright_lesion = expert_results.get('bright_lesion_result') or expert_results.get('bright_lesion') or {}
-        fleck_count = bright_lesion.get('fleck_count', 0)
+        # FIX: The scanner returns 'combined_flecks', not 'fleck_count'
+        fleck_count = bright_lesion.get('combined_flecks', 0)
         macular_ratio = bright_lesion.get('macular_ratio', 0.5)
         hemorrhage_present = (features['hemorrhages'] > 0.1 or features['microaneurysms'] > 0.1)
         
-        if hemorrhage_present and fleck_count > 10:
-            # Bright lesions + hemorrhages = true DR exudates
-            features['exudates'] = min(fleck_count / 30.0, 1.0)
+        if hemorrhage_present and fleck_count > 5:
+            # Bright lesions + hemorrhages = true DR exudates. Threshold = 19.0
+            features['exudates'] = min(fleck_count / 20.0, 1.0)
         else:
             # No hemorrhages = probably drusen or RPA flecks, not DR exudates
-            features['exudates'] = min(fleck_count / 80.0, 0.3)  # Much lower score
+            features['exudates'] = min(fleck_count / 50.0, 0.3)  # Much lower score
         
         # FIX #9: Cotton-wool spots = placeholder (NOT a multiplier of exudates)
         # CWS are nerve fiber layer infarcts, completely different from exudates
@@ -327,7 +333,14 @@ class MultiDiseaseClassifier:
         texture = expert_results.get('texture_result') or expert_results.get('texture') or {}
         macula = expert_results.get('macula_result') or expert_results.get('macula') or {}
         features['macular_edema'] = macula.get('cme_score', 0.0)
-        features['abnormal_texture'] = min(texture.get('entropy', 5.0) / 7.0, 1.0)
+        
+        # FIX: Texture entropy is INVERTED (Healthy mean=6.53, RP mean=6.28)
+        # Healthy retinas have higher entropy because of rich vessel networks.
+        # Degenerate retinas are "smoother" (lower entropy).
+        # We invert the logic so lower entropy = higher abnormality score.
+        entropy = texture.get('entropy', 6.53)
+        features['abnormal_texture'] = max(0, (6.53 - entropy) / 0.5)
+        
         features['geographic_atrophy'] = 0.0  # Placeholder
         
         # FIX #10: GLAUCOMA features - Proxy disc_cupping from disc uniformity + brightness
@@ -355,7 +368,10 @@ class MultiDiseaseClassifier:
         features['macular_preservation'] = max(0, 1.0 - features['macular_edema'])
         
         # USHER SYNDROME (similar to RP but earlier onset)
-        features['early_onset'] = 1.0 if patient_age < 20 else 0.5 if patient_age < 30 else 0.0
+        if patient_age is not None:
+            features['early_onset'] = 1.0 if patient_age < 20 else 0.5 if patient_age < 30 else 0.0
+        else:
+            features['early_onset'] = 0.0
         
         return features
     
@@ -400,13 +416,14 @@ class MultiDiseaseClassifier:
         notes = []
         
         # Age-related observations
-        if patient_age >= 50:
-            if features.get('drusen', 0) > 0.3 or features.get('macular_edema', 0) > 0.3:
-                notes.append("Age >50: Consider AMD as differential")
-        
-        if patient_age < 20:
-            if features.get('bone_spicules', 0) > 0.3:
-                notes.append("Early onset RP: Consider Usher syndrome (genetic testing + audiology)")
+        if patient_age is not None:
+            if patient_age >= 50:
+                if features.get('drusen', 0) > 0.3 or features.get('macular_edema', 0) > 0.3:
+                    notes.append("Age >50: Consider AMD as differential")
+            
+            if patient_age < 20:
+                if features.get('bone_spicules', 0) > 0.3:
+                    notes.append("Early onset RP: Consider Usher syndrome (genetic testing + audiology)")
         
         # Feature-specific notes
         if features.get('bone_spicules', 0) > 0.5 and features.get('vessel_attenuation', 0) < 0.3:

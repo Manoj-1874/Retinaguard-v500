@@ -1,315 +1,288 @@
 RETINAGUARD V500 HYBRID CDSS - BATCH EVALUATION REPORT
 ============================================================
 
-Date: 2026-09-11 19:46:11
+Date: 2026-09-16 18:16:40
 Dataset: Mendeley Eye Disease Image Dataset (External)
-Total Images Tested: 276
-Images Rejected (Quality): 0
+Total Images Tested: 249
+Images Rejected (Quality): 15
 
 METRICS:
-  Accuracy:    98.91%
-  Precision:   100.00%
-  Recall:      97.81%
-  Specificity: 100.00%
-  NPV:         97.89%
-  F1-Score:    98.89%
-  ROC-AUC:     1.0000
-  Cohen Kappa: 0.9783
-  MCC:         0.9785
-  FPR:         0.00%
-  FNR:         2.19%
-  FDR:         0.00%
+  Accuracy:    34.94%
+  Precision:   31.34%
+  Recall:      37.50%
+  Specificity: 32.85%
+  NPV:         39.13%
+  F1-Score:    34.15%
+  ROC-AUC:     0.5000
+  Cohen Kappa: -0.2913
+  MCC:         -0.2959
+  FPR:         67.15%
+  FNR:         62.50%
+  FDR:         68.66%
 
 CONFUSION MATRIX:
-  TP=134 | FP=0
-  FN=3 | TN=139
+  TP=42 | FP=92
+  FN=70 | TN=45
 
 CLASSIFICATION REPORT:
               precision    recall  f1-score   support
 
-     Healthy       0.98      1.00      0.99       139
-          RP       1.00      0.98      0.99       137
+     Healthy       0.39      0.33      0.36       137
+          RP       0.31      0.38      0.34       112
 
-    accuracy                           0.99       276
-   macro avg       0.99      0.99      0.99       276
-weighted avg       0.99      0.99      0.99       276
+    accuracy                           0.35       249
+   macro avg       0.35      0.35      0.35       249
+weighted avg       0.36      0.35      0.35       249
 
 
 PER-IMAGE RESULTS:
 ------------------------------------------------------------
-  [CORRECT] Retinitis Pigmentosa1.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa10.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa100.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa101.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa102.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa103.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa104.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa105.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa106.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa107.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa108.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa109.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa11.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa110.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa111.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [WRONG] Retinitis Pigmentosa112.jpg | True: RP | Verdict: HEALTHY | AI: 12.5%
-  [CORRECT] Retinitis Pigmentosa113.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa114.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa115.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa116.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa117.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa118.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa119.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa12.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa120.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa121.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa122.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa123.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa124.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa125.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa126.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa127.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa128.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa129.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa13.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa130.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa131.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa132.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa133.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa134.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa135.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa136.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa137.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa138.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa139.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa14.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa15.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa16.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa17.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa18.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa19.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa20.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa21.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa22.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa23.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa24.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa25.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa27.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa28.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa29.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa3.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa30.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [WRONG] Retinitis Pigmentosa31.jpg | True: RP | Verdict: HEALTHY | AI: 12.5%
-  [CORRECT] Retinitis Pigmentosa32.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa33.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa34.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa35.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa36.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa37.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa38.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa39.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa4.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa40.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa41.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa42.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa43.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa44.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa45.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa46.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa47.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa48.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa49.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa5.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa50.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa51.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa52.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa53.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa54.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa55.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa56.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa57.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa58.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa59.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa6.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa60.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa61.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa62.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa63.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa64.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa65.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa66.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa67.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa68.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa69.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [WRONG] Retinitis Pigmentosa7.jpg | True: RP | Verdict: HEALTHY | AI: 12.5%
-  [CORRECT] Retinitis Pigmentosa70.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa71.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa72.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa73.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa74.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa75.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa76.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa77.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa78.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa79.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa8.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa80.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa81.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa82.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa83.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa84.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa85.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa86.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa87.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa88.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa89.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa9.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa90.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa91.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa92.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa93.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa94.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa95.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa96.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa97.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa98.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Retinitis Pigmentosa99.jpg | True: RP | Verdict: RP_POSITIVE | AI: 95.5%
-  [CORRECT] Healthy1.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy10.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy100.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1000.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1001.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1002.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1003.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1004.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1005.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1006.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1007.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1008.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1009.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy101.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1010.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1011.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1012.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1013.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1014.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1015.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1016.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1017.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1018.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1019.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy102.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1020.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1021.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1022.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1023.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy1024.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy103.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy104.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy105.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy106.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy107.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy108.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy109.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy11.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy110.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy111.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy112.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy113.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy114.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy115.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy116.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy117.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy118.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy119.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy12.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy120.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy121.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy122.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy123.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy124.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy125.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy126.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy127.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy128.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy129.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy13.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy130.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy131.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy132.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy133.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy134.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy135.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy136.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy137.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy138.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy139.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy14.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy140.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy141.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy142.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy143.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy144.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy145.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy146.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy147.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy148.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy149.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy15.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy150.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy151.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy152.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy153.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy154.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy155.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy156.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy157.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy158.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy159.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy16.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy160.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy161.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy162.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy163.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy164.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy165.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy166.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy167.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy168.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy169.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy17.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy170.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy171.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy172.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy173.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy174.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy175.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy176.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy177.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy178.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy179.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy18.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy180.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy181.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy182.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy183.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy184.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy185.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy186.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy187.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy188.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy189.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy19.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy190.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy191.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy192.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy193.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy194.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy195.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy196.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy197.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy198.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy199.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy2.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy20.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
-  [CORRECT] Healthy200.jpg | True: Healthy | Verdict: HEALTHY | AI: 5.2%
+  [WRONG] Retinitis Pigmentosa1.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa10.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa100.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [WRONG] Retinitis Pigmentosa101.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa102.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa103.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa104.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa105.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Retinitis Pigmentosa106.jpg | True: RP | Verdict: RP_SECTORAL | AI: 0%
+  [WRONG] Retinitis Pigmentosa107.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa108.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa109.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa11.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa110.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa111.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Retinitis Pigmentosa114.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Retinitis Pigmentosa115.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Retinitis Pigmentosa116.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Retinitis Pigmentosa117.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Retinitis Pigmentosa118.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Retinitis Pigmentosa119.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa12.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [WRONG] Retinitis Pigmentosa120.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa121.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa122.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Retinitis Pigmentosa123.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Retinitis Pigmentosa125.jpg | True: RP | Verdict: SUSPICIOUS | AI: 0%
+  [CORRECT] Retinitis Pigmentosa127.jpg | True: RP | Verdict: RP_SECTORAL | AI: 0%
+  [CORRECT] Retinitis Pigmentosa128.jpg | True: RP | Verdict: RP_SECTORAL | AI: 0%
+  [CORRECT] Retinitis Pigmentosa129.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Retinitis Pigmentosa130.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Retinitis Pigmentosa131.jpg | True: RP | Verdict: RP_SECTORAL | AI: 0%
+  [CORRECT] Retinitis Pigmentosa133.jpg | True: RP | Verdict: RP_POSITIVE | AI: 0%
+  [CORRECT] Retinitis Pigmentosa134.jpg | True: RP | Verdict: SUSPICIOUS | AI: 0%
+  [WRONG] Retinitis Pigmentosa135.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [WRONG] Retinitis Pigmentosa136.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [CORRECT] Retinitis Pigmentosa138.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Retinitis Pigmentosa15.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Retinitis Pigmentosa16.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Retinitis Pigmentosa17.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Retinitis Pigmentosa18.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Retinitis Pigmentosa19.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa20.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa21.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Retinitis Pigmentosa23.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Retinitis Pigmentosa27.jpg | True: RP | Verdict: OTHER_DISEASE | AI: 0%
+  [CORRECT] Retinitis Pigmentosa28.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Retinitis Pigmentosa29.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Retinitis Pigmentosa3.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa30.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [WRONG] Retinitis Pigmentosa31.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [WRONG] Retinitis Pigmentosa32.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [WRONG] Retinitis Pigmentosa33.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [CORRECT] Retinitis Pigmentosa34.jpg | True: RP | Verdict: BORDERLINE | AI: 0%
+  [WRONG] Retinitis Pigmentosa35.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [CORRECT] Retinitis Pigmentosa36.jpg | True: RP | Verdict: BORDERLINE | AI: 0%
+  [CORRECT] Retinitis Pigmentosa37.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Retinitis Pigmentosa38.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa39.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa4.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Retinitis Pigmentosa40.jpg | True: RP | Verdict: SUSPICIOUS | AI: 0%
+  [WRONG] Retinitis Pigmentosa41.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa42.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Retinitis Pigmentosa43.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Retinitis Pigmentosa44.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Retinitis Pigmentosa45.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Retinitis Pigmentosa47.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [CORRECT] Retinitis Pigmentosa48.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Retinitis Pigmentosa5.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Retinitis Pigmentosa50.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Retinitis Pigmentosa53.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [CORRECT] Retinitis Pigmentosa55.jpg | True: RP | Verdict: RP_POSITIVE | AI: 0%
+  [WRONG] Retinitis Pigmentosa57.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa58.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa59.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa6.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa60.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Retinitis Pigmentosa63.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Retinitis Pigmentosa64.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Retinitis Pigmentosa65.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [WRONG] Retinitis Pigmentosa66.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [WRONG] Retinitis Pigmentosa67.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [WRONG] Retinitis Pigmentosa68.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [WRONG] Retinitis Pigmentosa69.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa7.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Retinitis Pigmentosa70.jpg | True: RP | Verdict: RP_SECTORAL | AI: 0%
+  [WRONG] Retinitis Pigmentosa71.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa72.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa76.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa77.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa79.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa8.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa80.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa81.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa82.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa83.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Retinitis Pigmentosa84.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Retinitis Pigmentosa85.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [CORRECT] Retinitis Pigmentosa86.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Retinitis Pigmentosa87.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa88.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Retinitis Pigmentosa89.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Retinitis Pigmentosa9.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Retinitis Pigmentosa90.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Retinitis Pigmentosa91.jpg | True: RP | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Retinitis Pigmentosa92.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [CORRECT] Retinitis Pigmentosa93.jpg | True: RP | Verdict: BORDERLINE | AI: 0%
+  [WRONG] Retinitis Pigmentosa95.jpg | True: RP | Verdict: OTHER_DISEASE | AI: 0%
+  [WRONG] Retinitis Pigmentosa96.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [WRONG] Retinitis Pigmentosa97.jpg | True: RP | Verdict: HEALTHY | AI: 0%
+  [WRONG] Retinitis Pigmentosa98.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Retinitis Pigmentosa99.jpg | True: RP | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Healthy1.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [CORRECT] Healthy10.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy100.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy1000.jpg | True: Healthy | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Healthy1001.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy1002.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy1003.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy1004.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [CORRECT] Healthy1005.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy1006.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy1007.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy1008.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy1009.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [CORRECT] Healthy101.jpg | True: Healthy | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Healthy1010.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy1011.jpg | True: Healthy | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Healthy1012.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [CORRECT] Healthy1013.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [CORRECT] Healthy1014.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [CORRECT] Healthy1015.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy1016.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy1017.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy1018.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy1019.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy102.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy1020.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy1021.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy1022.jpg | True: Healthy | Verdict: SUSPICIOUS | AI: 0%
+  [CORRECT] Healthy1023.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy1024.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy103.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy104.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy105.jpg | True: Healthy | Verdict: SUSPICIOUS | AI: 0%
+  [CORRECT] Healthy106.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy107.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy108.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy109.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy11.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy110.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy111.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy112.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy113.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy114.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy115.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy116.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy117.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy118.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy119.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy12.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy120.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy121.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy123.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy124.jpg | True: Healthy | Verdict: SUSPICIOUS | AI: 0%
+  [CORRECT] Healthy125.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy126.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy127.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy128.jpg | True: Healthy | Verdict: SUSPICIOUS | AI: 0%
+  [WRONG] Healthy129.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy13.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy130.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy131.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy132.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy133.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy134.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy135.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy136.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy137.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy138.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy139.jpg | True: Healthy | Verdict: SUSPICIOUS | AI: 0%
+  [CORRECT] Healthy14.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy140.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy141.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy142.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy143.jpg | True: Healthy | Verdict: SUSPICIOUS | AI: 0%
+  [CORRECT] Healthy144.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy145.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy146.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy147.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy148.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy149.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy15.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy150.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy151.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy152.jpg | True: Healthy | Verdict: SUSPICIOUS | AI: 0%
+  [CORRECT] Healthy153.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [CORRECT] Healthy154.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy155.jpg | True: Healthy | Verdict: SUSPICIOUS | AI: 0%
+  [WRONG] Healthy156.jpg | True: Healthy | Verdict: SUSPICIOUS | AI: 0%
+  [CORRECT] Healthy157.jpg | True: Healthy | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Healthy158.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy159.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy16.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy160.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy161.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy162.jpg | True: Healthy | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Healthy163.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy164.jpg | True: Healthy | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Healthy165.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [CORRECT] Healthy166.jpg | True: Healthy | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Healthy167.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy168.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy169.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy17.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy170.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy171.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy172.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy173.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy174.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy175.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy176.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy177.jpg | True: Healthy | Verdict: OTHER_DISEASE | AI: 0%
+  [WRONG] Healthy178.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy179.jpg | True: Healthy | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Healthy18.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy180.jpg | True: Healthy | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [CORRECT] Healthy181.jpg | True: Healthy | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Healthy182.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy183.jpg | True: Healthy | Verdict: RP_RPA | AI: 0%
+  [CORRECT] Healthy184.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy185.jpg | True: Healthy | Verdict: SUSPICIOUS | AI: 0%
+  [CORRECT] Healthy186.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy187.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy188.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy189.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy19.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy190.jpg | True: Healthy | Verdict: SUSPICIOUS_ISOLATED | AI: 0%
+  [WRONG] Healthy191.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [CORRECT] Healthy192.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [CORRECT] Healthy193.jpg | True: Healthy | Verdict: HEALTHY | AI: 0%
+  [WRONG] Healthy194.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy195.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy196.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy197.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy198.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy2.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy20.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
+  [WRONG] Healthy200.jpg | True: Healthy | Verdict: RP_SINE_PIGMENTO | AI: 0%
