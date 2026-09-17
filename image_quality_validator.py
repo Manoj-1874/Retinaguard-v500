@@ -75,13 +75,14 @@ class ImageQualityValidator:
         print(f"   [IQV] ImageQualityValidator initialized — Mode: {mode}")
         sys.stdout.flush()
             
-    def validate(self, image: np.ndarray, patient_id: str = "UNKNOWN") -> Dict:
+    def validate(self, image: np.ndarray, patient_id: str = "UNKNOWN", is_angiography: bool = False) -> Dict:
         """
         Comprehensive image quality validation
         
         Args:
             image: Input fundus image (BGR or RGB format)
             patient_id: Patient identifier for logging
+            is_angiography: Whether the image is an angiography
             
         Returns:
             Dictionary with:
@@ -437,7 +438,7 @@ class ImageQualityValidator:
         return max(0.0, min(100.0, score))
 
 
-def validate_image_quality(image: np.ndarray, patient_id: str = "UNKNOWN", strict: bool = True) -> Dict:
+def validate_image_quality(image: np.ndarray, patient_id: str = "UNKNOWN", strict: bool = True, is_angiography: bool = False) -> Dict:
     """
     Convenience function for external use
     
@@ -445,12 +446,13 @@ def validate_image_quality(image: np.ndarray, patient_id: str = "UNKNOWN", stric
         image: Input fundus image (BGR or RGB format)
         patient_id: Patient identifier for logging
         strict: Strict validation mode
+        is_angiography: Whether the image is an angiography
         
     Returns:
         Validation result dictionary
     """
     validator = ImageQualityValidator(strict_mode=strict)
-    return validator.validate(image, patient_id)
+    return validator.validate(image, patient_id, is_angiography=is_angiography)
 
 
 # Testing harness
