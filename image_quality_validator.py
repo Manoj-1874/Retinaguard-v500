@@ -1,3 +1,6 @@
+def print(*args, **kwargs):
+    pass
+
 """
 ================================================================================
 IMAGE QUALITY VALIDATOR - RETINAGUARD V500
@@ -92,7 +95,7 @@ class ImageQualityValidator:
         errors = []
         metrics = {}
         
-        print(f"\n   [Q] IMAGE QUALITY VALIDATION for {patient_id} (Strict Mode: {self.strict_mode})")
+        print(f"\n   [Q] IMAGE QUALITY VALIDATION for {patient_id}")
         print(f"      {'='*60}")
         
         # Convert to grayscale for some checks
@@ -101,6 +104,46 @@ class ImageQualityValidator:
         else:
             gray = image
         
+        # CHECK 0: Structural Integrity (Security/OOD Check)
+        # Rejects non-eye images (e.g., selfies, dogs) by checking for the circular FOV mask.
+        h, w = gray.shape
+        corner_size = max(10, min(h, w) // 10)
+        
+        corners = [
+            gray[0:corner_size, 0:corner_size],
+            gray[0:corner_size, w-corner_size:w],
+            gray[h-corner_size:h, 0:corner_size],
+            gray[h-corner_size:h, w-corner_size:w]
+        ]
+        
+        # Fundus images are circles in a black square (corners are pitch black). Natural images have bright corners.
+        corner_brightness = np.mean([np.mean(c) for c in corners])
+        metrics['corner_brightness'] = round(corner_brightness, 2)
+        
+        print(f"      [0] Structural Security: corner_brightness={corner_brightness:.1f}", end=" -> ")
+        
+        # If strict mode is off, we are more lenient for cropped images
+        security_threshold = 85.0 if self.strict_mode else 120.0
+        
+        if corner_brightness > security_threshold:
+            print(f"[X] CRITICAL SECURITY FAILURE")
+            print(f"\\n      [X] VERDICT: REJECTED - NON-RETINAL IMAGE DETECTED")
+            print(f"      Reason: The image lacks the characteristic circular Field-Of-View mask of a fundus scan.")
+            print(f"      {'='*60}\\n")
+            
+            
+            return {
+                'valid': False,
+                'quality_score': 0.0,
+                'warnings': [],
+                'errors': [f"CRITICAL SECURITY REJECTION: Image appears to be a natural photo (corner brightness {corner_brightness:.1f} > {security_threshold}), not a fundus scan. Please upload a valid retina image."],
+                'metrics': metrics,
+                'critical_failure': True,
+                'failure_reason': 'OOD_SECURITY_REJECTION'
+            }
+        else:
+            print(f"[+] PASS (Valid Fundus Structure)")
+            
         # CHECK 1: Resolution
         height, width = gray.shape
         metrics['resolution'] = f"{width}×{height}"
@@ -117,7 +160,7 @@ class ImageQualityValidator:
             print(f"      Required: {self.MIN_RESOLUTION}×{self.MIN_RESOLUTION} | Received: {width}×{height}")
             print(f"      Reason: Blood vessel diameter measurement requires minimum pixel density.")
             print(f"      {'='*60}\n")
-            sys.stdout.flush()
+            
             
             # Immediate rejection - do not proceed with further checks
             return {
@@ -194,7 +237,9 @@ class ImageQualityValidator:
         
         print(f"      [5] Vignetting: ratio={vignetting_ratio:.3f}", end=" -> ")
         
-        if vignetting_ratio < self.MAX_VIGNETTING_RATIO:
+        if is_angiography:
+            print(f"[+] PASS (angio artifact ignored)")
+        elif vignetting_ratio < self.MAX_VIGNETTING_RATIO:
             errors.append(f"Excessive vignetting (ratio={vignetting_ratio:.3f}). Maximum: {self.MAX_VIGNETTING_RATIO}")
             print(f"[X] FAIL (dark edges)")
         elif vignetting_ratio < self.MAX_VIGNETTING_RATIO + 0.1:
@@ -210,31 +255,72 @@ class ImageQualityValidator:
             
             print(f"      [6] Color Balance: R={color_balance['r']:.1f} G={color_balance['g']:.1f} B={color_balance['b']:.1f}", end=" -> ")
             
-            # Check for severe color casts
-            max_diff = max(abs(color_balance['r'] - color_balance['g']),
-                          abs(color_balance['g'] - color_balance['b']),
-                          abs(color_balance['b'] - color_balance['r']))
-            
-            if max_diff > 50:
-                warnings.append(f"Color cast detected (max channel diff={max_diff:.1f})")
-                print(f"[!] WARN (color cast)")
+            if is_angiography:
+                print(f"[+] PASS (angio grayscale)")
             else:
-                print(f"[+] PASS")
+                # Check for severe color casts
+                max_diff = max(abs(color_balance['r'] - color_balance['g']),
+                              abs(color_balance['g'] - color_balance['b']),
+                              abs(color_balance['b'] - color_balance['r']))
+                
+                if max_diff > 50:
+                    warnings.append(f"Color cast detected (max channel diff={max_diff:.1f})")
+                    print(f"[!] WARN (color cast)")
+                else:
+                    print(f"[+] PASS")
         
-        # CHECK 7: Vessel Network Detection (Ensures optic disc visible)
+        # CHECK 7: Vessel Network Detection (Ensures vascularization)
         vessel_coverage = self._estimate_vessel_coverage(gray)
         metrics['vessel_coverage'] = round(vessel_coverage, 4)
         
         print(f"      [7] Vessel Network: coverage={vessel_coverage:.4f}", end=" -> ")
         
         if vessel_coverage < self.MIN_VESSEL_DENSITY:
-            errors.append(f"No vessel network detected (coverage={vessel_coverage:.4f}). Minimum: {self.MIN_VESSEL_DENSITY}")
-            print(f"[X] FAIL (no vessels)")
+            print(f"[X] CRITICAL SECURITY FAILURE")
+            print(f"\\n      [X] VERDICT: REJECTED - NO BLOOD VESSELS DETECTED")
+            print(f"      Reason: The image lacks a retinal blood vessel network (Coverage: {vessel_coverage:.4f}). This is likely a non-eye object.")
+            print(f"      {'='*60}\\n")
+            
+            
+            return {
+                'valid': False,
+                'quality_score': 0.0,
+                'warnings': [],
+                'errors': [f"CRITICAL SECURITY REJECTION: No retinal blood vessels detected. This appears to be a non-eye object."],
+                'metrics': metrics,
+                'critical_failure': True,
+                'failure_reason': 'OOD_NO_VESSELS'
+            }
         elif vessel_coverage < self.MIN_VESSEL_DENSITY * 1.5:
             warnings.append(f"Weak vessel network (coverage={vessel_coverage:.4f})")
             print(f"[!] WARN (weak vessels)")
         else:
             print(f"[+] PASS")
+            
+        # CHECK 8: Anatomical Security (Optic Disc Detection)
+        # Prevents adversarial attacks (like a fertilized chicken egg) which have vessels but no optic disc.
+        has_optic_disc = self._detect_optic_disc(gray)
+        metrics['has_optic_disc'] = has_optic_disc
+        
+        print(f"      [8] Anatomical Security: Optic Disc=", end="")
+        if not has_optic_disc:
+            print(f"MISSING -> [X] CRITICAL SECURITY FAILURE")
+            print(f"\\n      [X] VERDICT: REJECTED - NO OPTIC DISC DETECTED")
+            print(f"      Reason: The image has vessels but lacks a human optic disc (e.g., adversarial chicken egg attack).")
+            print(f"      {'='*60}\\n")
+            
+            
+            return {
+                'valid': False,
+                'quality_score': 0.0,
+                'warnings': [],
+                'errors': ["CRITICAL SECURITY REJECTION: No Optic Disc detected. Adversarial non-human object suspected."],
+                'metrics': metrics,
+                'critical_failure': True,
+                'failure_reason': 'OOD_NO_OPTIC_DISC'
+            }
+        else:
+            print(f"DETECTED -> [+] PASS")
         
         # CALCULATE OVERALL QUALITY SCORE (0-100)
         quality_score = self._calculate_quality_score(metrics, errors, warnings)
@@ -251,7 +337,7 @@ class ImageQualityValidator:
             print(f"\n      [+] VERDICT: EXCELLENT QUALITY (Quality Score: {quality_score:.1f}/100)")
         
         print(f"      {'='*60}\n")
-        sys.stdout.flush()
+        
         
         return {
             'valid': valid,
@@ -396,3 +482,4 @@ if __name__ == "__main__":
     print("\n" + "="*80)
     print("VALIDATION COMPLETE")
     print("="*80)
+

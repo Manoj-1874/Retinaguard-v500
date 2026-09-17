@@ -9,4 +9,4 @@ with app.app.test_client() as client:
     response = client.post('/api/analyze', 
                            data=json.dumps({"image": valid_b64, "patientId": "TEST-1"}),
                            content_type='application/json')
-    print("STATUS:", response.status_code)
+    pass #print("STATUS:", response.status_code)

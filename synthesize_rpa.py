@@ -9,7 +9,7 @@ def synthesize_rpa_variant():
     out_path = os.path.join("E:\\V500", "uploads", "synthesized_rpa_variant.png")
     
     if not os.path.exists(base_image_path):
-        print(f"Error: Base image not found at {base_image_path}")
+        pass #print(f"Error: Base image not found at {base_image_path}")
         return
         
     try:
@@ -20,7 +20,7 @@ def synthesize_rpa_variant():
         # RPA (Retinitis Punctata Albescens) is characterized by hundreds of 
         # tiny white/yellowish flecks scattered across the retina, without bone spicules.
         
-        print("Injecting Retinitis Punctata Albescens (White Flecks)...")
+        pass #print("Injecting Retinitis Punctata Albescens (White Flecks)...")
         num_flecks = random.randint(150, 250)
         
         for _ in range(num_flecks):
@@ -33,10 +33,10 @@ def synthesize_rpa_variant():
             draw.ellipse([ex_x, ex_y, ex_x+sz, ex_y+sz], fill=(245, 250, 220))
             
         img.save(out_path, quality=95)
-        print(f"Success! Synthesized RPA edge-case image at: {out_path}")
+        pass #print(f"Success! Synthesized RPA edge-case image at: {out_path}")
         
     except Exception as e:
-        print(f"Error during synthesis: {e}")
+        pass #print(f"Error during synthesis: {e}")
 
 if __name__ == "__main__":
     synthesize_rpa_variant()
