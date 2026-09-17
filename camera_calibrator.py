@@ -1,3 +1,6 @@
+def print(*args, **kwargs):
+    pass
+
 """
 ================================================================================
 CAMERA CALIBRATOR - RETINAGUARD V500
@@ -110,60 +113,60 @@ class CameraCalibrator:
         Returns:
             Tuple of (calibrated_image, calibration_info)
         """
-        print(f"\n   🎨 CAMERA CALIBRATION")
-        print(f"      {'='*60}")
+        pass #print(f"\n   🎨 CAMERA CALIBRATION")
+        pass #print(f"      {'='*60}")
         
         # Auto-detect camera if requested (simplified - in production use EXIF data)
         if auto_detect:
             detected_camera = self._auto_detect_camera(image)
             if detected_camera != 'generic':
-                print(f"      Auto-detected: {self.CAMERA_PROFILES[detected_camera]['name']}")
+                pass #print(f"      Auto-detected: {self.CAMERA_PROFILES[detected_camera]['name']}")
                 camera_type = detected_camera
             else:
-                print(f"      Camera: {camera_type.capitalize()} (manual)")
+                pass #print(f"      Camera: {camera_type.capitalize()} (manual)")
         else:
-            print(f"      Camera: {camera_type.capitalize()} (manual)")
+            pass #print(f"      Camera: {camera_type.capitalize()} (manual)")
         
         # Get camera profile
         if camera_type not in self.CAMERA_PROFILES:
-            print(f"      [!] Unknown camera type '{camera_type}' - using generic profile")
+            pass #print(f"      [!] Unknown camera type '{camera_type}' - using generic profile")
             camera_type = 'generic'
         
         profile = self.CAMERA_PROFILES[camera_type]
-        print(f"      Profile: {profile['name']}")
+        pass #print(f"      Profile: {profile['name']}")
         
         # Create copy for calibration
         calibrated = image.copy().astype(np.float32)
         
         # STEP 1: White Balance Correction
-        print(f"\n      [1] White Balance Correction:", end=" ")
+        pass #print(f"\n      [1] White Balance Correction:", end=" ")
         calibrated = self._apply_white_balance(calibrated, profile['white_balance'])
-        print(f"✓ Applied (R={profile['white_balance'][0]:.2f}, G={profile['white_balance'][1]:.2f}, B={profile['white_balance'][2]:.2f})")
+        pass #print(f"✓ Applied (R={profile['white_balance'][0]:.2f}, G={profile['white_balance'][1]:.2f}, B={profile['white_balance'][2]:.2f})")
         
         # STEP 2: Gamma Correction
-        print(f"      [2] Gamma Correction:", end=" ")
+        pass #print(f"      [2] Gamma Correction:", end=" ")
         calibrated = self._apply_gamma(calibrated, profile['gamma'])
-        print(f"✓ Applied (γ={profile['gamma']:.2f})")
+        pass #print(f"✓ Applied (γ={profile['gamma']:.2f})")
         
         # STEP 3: Brightness Adjustment
-        print(f"      [3] Brightness Adjustment:", end=" ")
+        pass #print(f"      [3] Brightness Adjustment:", end=" ")
         calibrated = self._adjust_brightness(calibrated, profile['brightness_offset'])
-        print(f"✓ Applied ({profile['brightness_offset']:+d} offset)")
+        pass #print(f"✓ Applied ({profile['brightness_offset']:+d} offset)")
         
         # STEP 4: Contrast Enhancement
-        print(f"      [4] Contrast Enhancement:", end=" ")
+        pass #print(f"      [4] Contrast Enhancement:", end=" ")
         calibrated = self._adjust_contrast(calibrated, profile['contrast_multiplier'])
-        print(f"✓ Applied (×{profile['contrast_multiplier']:.2f})")
+        pass #print(f"✓ Applied (×{profile['contrast_multiplier']:.2f})")
         
         # STEP 5: Vignetting Correction (generic algorithm for all cameras)
-        print(f"      [5] Vignetting Correction:", end=" ")
+        pass #print(f"      [5] Vignetting Correction:", end=" ")
         calibrated = self._correct_vignetting(calibrated)
-        print(f"✓ Applied")
+        pass #print(f"✓ Applied")
         
         # STEP 6: Color Space Standardization (convert to sRGB standard)
-        print(f"      [6] Color Space Standardization:", end=" ")
+        pass #print(f"      [6] Color Space Standardization:", end=" ")
         calibrated = self._standardize_color_space(calibrated)
-        print(f"✓ sRGB")
+        pass #print(f"✓ sRGB")
         
         # Convert back to uint8
         calibrated = np.clip(calibrated, 0, 255).astype(np.uint8)
@@ -173,12 +176,12 @@ class CameraCalibrator:
         calibrated_mean = calibrated.mean()
         adjustment = calibrated_mean - original_mean
         
-        print(f"\n      [C] CALIBRATION SUMMARY:")
-        print(f"         Original brightness: {original_mean:.1f}")
-        print(f"         Calibrated brightness: {calibrated_mean:.1f}")
-        print(f"         Net adjustment: {adjustment:+.1f}")
-        print(f"      {'='*60}\n")
-        sys.stdout.flush()
+        pass #print(f"\n      [C] CALIBRATION SUMMARY:")
+        pass #print(f"         Original brightness: {original_mean:.1f}")
+        pass #print(f"         Calibrated brightness: {calibrated_mean:.1f}")
+        pass #print(f"         Net adjustment: {adjustment:+.1f}")
+        pass #print(f"      {'='*60}\n")
+        pass
         
         calibration_info = {
             'camera_type': camera_type,
@@ -376,9 +379,9 @@ def calibrate_camera(image: np.ndarray, camera_type: str = 'generic',
 
 # Testing harness
 if __name__ == "__main__":
-    print("="*80)
-    print("CAMERA CALIBRATOR - TEST SUITE")
-    print("="*80)
+    pass #print("="*80)
+    pass #print("CAMERA CALIBRATOR - TEST SUITE")
+    pass #print("="*80)
     
     # Create test image (simulate fundus photo)
     test_image = np.random.randint(40, 180, size=(1024, 1024, 3), dtype=np.uint8)
@@ -386,16 +389,17 @@ if __name__ == "__main__":
     # Test each camera profile
     calibrator = CameraCalibrator()
     
-    print("\n[TEST] Testing all camera profiles:")
+    pass #print("\n[TEST] Testing all camera profiles:")
     for camera_type in ['topcon', 'zeiss', 'canon', 'optomed', 'generic']:
         calibrated, info = calibrate_camera(test_image, camera_type, auto_detect=False)
-        print(f"\n{camera_type.upper()}: Adjustment = {info['adjustment']:+.1f}")
+        pass #print(f"\n{camera_type.upper()}: Adjustment = {info['adjustment']:+.1f}")
     
     # Test auto-detection
-    print("\n[TEST] Auto-detection:")
+    pass #print("\n[TEST] Auto-detection:")
     calibrated, info = calibrate_camera(test_image, auto_detect=True)
-    print(f"Detected: {info['camera_name']}")
+    pass #print(f"Detected: {info['camera_name']}")
     
-    print("\n" + "="*80)
-    print("CALIBRATION COMPLETE")
-    print("="*80)
+    pass #print("\n" + "="*80)
+    pass #print("CALIBRATION COMPLETE")
+    pass #print("="*80)
+

@@ -1,3 +1,6 @@
+def print(*args, **kwargs):
+    pass
+
 """
 ================================================================================
 IMAGE QUALITY VALIDATOR - RETINAGUARD V500
@@ -503,3 +506,4 @@ if __name__ == "__main__":
     print("\n" + "="*80)
     print("VALIDATION COMPLETE")
     print("="*80)
+

@@ -1,3 +1,6 @@
+def print(*args, **kwargs):
+    pass
+
 """
 ================================================================================
 PATIENT HISTORY MODULE - RETINAGUARD V500
@@ -130,8 +133,8 @@ class PatientHistoryModule:
                 - 'clinical_flags': list (important notes)
                 - 'confidence_modifier': float (AI confidence adjustment)
         """
-        print(f"\n   [P] PATIENT HISTORY ANALYSIS")
-        print(f"      {'='*60}")
+        pass #print(f"\n   [P] PATIENT HISTORY ANALYSIS")
+        pass #print(f"      {'='*60}")
         
         # Extract patient data
         age = data.get('age', 40)
@@ -171,7 +174,7 @@ class PatientHistoryModule:
         clinical_flags = []
         
         # DEMOGRAPHICS
-        print(f"      Age: {age} years | Gender: {gender.capitalize()} | Ethnicity: {ethnicity.replace('_', ' ').title()}")
+        pass #print(f"      Age: {age} years | Gender: {gender.capitalize()} | Ethnicity: {ethnicity.replace('_', ' ').title()}")
         
         # Determine age category
         age_category = self._classify_age(age)
@@ -186,10 +189,10 @@ class PatientHistoryModule:
         
         # SYMPTOM ANALYSIS
         symptom_score = self._calculate_symptom_score(symptoms)
-        print(f"\n      [S] SYMPTOM ASSESSMENT:")
+        pass #print(f"\n      [S] SYMPTOM ASSESSMENT:")
         
         if len(symptoms) == 0:
-            print(f"         No symptoms reported")
+            pass #print(f"         No symptoms reported")
             clinical_flags.append("[i] No symptoms reported - screening only")
         else:
             for symptom, severity in symptoms.items():
@@ -197,7 +200,7 @@ class PatientHistoryModule:
                     weight = self.SYMPTOM_WEIGHTS[symptom]
                     contribution = severity * weight
                     symptom_name = symptom.replace('_', ' ').title()
-                    print(f"         • {symptom_name}: {severity}/10 (weight={weight}, score={contribution:.1f})")
+                    pass #print(f"         • {symptom_name}: {severity}/10 (weight={weight}, score={contribution:.1f})")
                     
                     # Flag critical symptoms
                     if symptom == 'night_blindness' and severity >= 7:
@@ -205,22 +208,22 @@ class PatientHistoryModule:
                     elif symptom == 'tunnel_vision' and severity >= 7:
                         clinical_flags.append("[!!] SEVERE tunnel vision - Advanced RP likely")
         
-        print(f"         -> Total Symptom Score: {symptom_score:.1f}/100")
+        pass #print(f"         -> Total Symptom Score: {symptom_score:.1f}/100")
         
         # FAMILY HISTORY
         family_risk = 0.0
         if family_history:
             family_risk = 25.0  # 25% increased risk with family history
-            print(f"\n      [F] FAMILY HISTORY: Positive (+25% risk)")
+            pass #print(f"\n      [F] FAMILY HISTORY: Positive (+25% risk)")
             clinical_flags.append("[!] Family history of RP - Hereditary risk")
         else:
-            print(f"\n      [F] FAMILY HISTORY: Negative")
+            pass #print(f"\n      [F] FAMILY HISTORY: Negative")
         
         # VISUAL FIELD DATA (if available)
         vf_score = 0.0
         if visual_field_data:
             vf_score = self._analyze_visual_fields(visual_field_data)
-            print(f"\n      [V] VISUAL FIELD DATA: Peripheral loss score = {vf_score:.1f}/100")
+            pass #print(f"\n      [V] VISUAL FIELD DATA: Peripheral loss score = {vf_score:.1f}/100")
             
             if vf_score > 50:
                 clinical_flags.append(f"[!!] Significant peripheral vision loss detected (VF score: {vf_score:.1f})")
@@ -228,36 +231,36 @@ class PatientHistoryModule:
         # CALCULATE OVERALL RISK SCORE (0-100)
         risk_score = self._calculate_risk_score(symptom_score, family_risk, vf_score, age)
         
-        print(f"\n      [R] OVERALL RISK SCORE: {risk_score:.1f}/100")
+        pass #print(f"\n      [R] OVERALL RISK SCORE: {risk_score:.1f}/100")
         
         if risk_score >= 70:
             risk_level = "HIGH RISK"
-            print(f"         -> [HIGH] Strong clinical suspicion - Urgent evaluation recommended")
+            pass #print(f"         -> [HIGH] Strong clinical suspicion - Urgent evaluation recommended")
         elif risk_score >= 40:
             risk_level = "MODERATE RISK"
-            print(f"         -> [MODERATE] Warrants further investigation")
+            pass #print(f"         -> [MODERATE] Warrants further investigation")
         else:
             risk_level = "LOW RISK"
-            print(f"         -> [LOW] Routine screening - No immediate concern")
+            pass #print(f"         -> [LOW] Routine screening - No immediate concern")
         
         # GENERATE THRESHOLD ADJUSTMENTS
         threshold_adjustments = self._generate_threshold_adjustments(
             age_adj, eth_adj, symptom_score, family_history
         )
         
-        print(f"\n      [A] THRESHOLD ADJUSTMENTS:")
-        print(f"         Pigment threshold: {threshold_adjustments['pigment_adjustment']:+.1f} (ethnicity correction)")
-        print(f"         Vessel threshold: {threshold_adjustments['vessel_adjustment']:+.3f} (age correction)")
-        print(f"         AI confidence shift: {threshold_adjustments['ai_confidence_shift']:+.2f} (symptom risk)")
+        pass #print(f"\n      [A] THRESHOLD ADJUSTMENTS:")
+        pass #print(f"         Pigment threshold: {threshold_adjustments['pigment_adjustment']:+.1f} (ethnicity correction)")
+        pass #print(f"         Vessel threshold: {threshold_adjustments['vessel_adjustment']:+.3f} (age correction)")
+        pass #print(f"         AI confidence shift: {threshold_adjustments['ai_confidence_shift']:+.2f} (symptom risk)")
         
         # CLINICAL FLAGS
         if clinical_flags:
-            print(f"\n      [*] CLINICAL FLAGS:")
+            pass #print(f"\n      [*] CLINICAL FLAGS:")
             for flag in clinical_flags:
-                print(f"         {flag}")
+                pass #print(f"         {flag}")
         
-        print(f"      {'='*60}\n")
-        sys.stdout.flush()
+        pass #print(f"      {'='*60}\n")
+        pass
         
         return {
             'risk_score': risk_score,
@@ -481,9 +484,9 @@ def analyze_patient_history(patient_data: Dict) -> Dict:
 
 # Testing harness
 if __name__ == "__main__":
-    print("="*80)
-    print("PATIENT HISTORY MODULE - TEST SUITE")
-    print("="*80)
+    pass #print("="*80)
+    pass #print("PATIENT HISTORY MODULE - TEST SUITE")
+    pass #print("="*80)
     
     # Test Case 1: High-risk patient (African descent, severe symptoms, family history)
     test_patient_1 = {
@@ -503,9 +506,9 @@ if __name__ == "__main__":
         }
     }
     
-    print("\n[TEST 1] High-Risk Patient:")
+    pass #print("\n[TEST 1] High-Risk Patient:")
     result1 = analyze_patient_history(test_patient_1)
-    print(f"Result: {result1['risk_level']} | Score: {result1['risk_score']:.1f}/100 | {result1['age_category'].title()}, {result1['age']} yrs | Flags: {len(result1['clinical_flags'])}")
+    pass #print(f"Result: {result1['risk_level']} | Score: {result1['risk_score']:.1f}/100 | {result1['age_category'].title()}, {result1['age']} yrs | Flags: {len(result1['clinical_flags'])}")
     
     # Test Case 2: Moderate-risk patient (adult, moderate symptoms, family history)
     test_patient_2 = {
@@ -520,9 +523,9 @@ if __name__ == "__main__":
         'family_history': True  # Changed from False - hereditary component
     }
     
-    print("\n[TEST 2] Moderate-Risk Patient:")
+    pass #print("\n[TEST 2] Moderate-Risk Patient:")
     result2 = analyze_patient_history(test_patient_2)
-    print(f"Result: {result2['risk_level']} | Score: {result2['risk_score']:.1f}/100 | {result2['age_category'].title()}, {result2['age']} yrs | Flags: {len(result2['clinical_flags'])}")
+    pass #print(f"Result: {result2['risk_level']} | Score: {result2['risk_score']:.1f}/100 | {result2['age_category'].title()}, {result2['age']} yrs | Flags: {len(result2['clinical_flags'])}")
     
     # Test Case 3: Low-risk screening (no symptoms)
     test_patient_3 = {
@@ -533,9 +536,9 @@ if __name__ == "__main__":
         'family_history': False
     }
     
-    print("\n[TEST 3] Low-Risk Screening:")
+    pass #print("\n[TEST 3] Low-Risk Screening:")
     result3 = analyze_patient_history(test_patient_3)
-    print(f"Result: {result3['risk_level']} | Score: {result3['risk_score']:.1f}/100 | {result3['age_category'].title()}, {result3['age']} yrs | Flags: {len(result3['clinical_flags'])}")
+    pass #print(f"Result: {result3['risk_level']} | Score: {result3['risk_score']:.1f}/100 | {result3['age_category'].title()}, {result3['age']} yrs | Flags: {len(result3['clinical_flags'])}")
     
     # Test Case 4: Pediatric patient (Asian, mild symptoms)
     test_patient_4 = {
@@ -549,9 +552,9 @@ if __name__ == "__main__":
         'family_history': False
     }
     
-    print("\n[TEST 4] Pediatric Patient:")
+    pass #print("\n[TEST 4] Pediatric Patient:")
     result4 = analyze_patient_history(test_patient_4)
-    print(f"Result: {result4['risk_level']} | Score: {result4['risk_score']:.1f}/100 | {result4['age_category'].title()}, {result4['age']} yrs | Flags: {len(result4['clinical_flags'])}")
+    pass #print(f"Result: {result4['risk_level']} | Score: {result4['risk_score']:.1f}/100 | {result4['age_category'].title()}, {result4['age']} yrs | Flags: {len(result4['clinical_flags'])}")
     
     # Test Case 5: Geriatric patient (age-related changes)
     test_patient_5 = {
@@ -565,10 +568,11 @@ if __name__ == "__main__":
         'family_history': False
     }
     
-    print("\n[TEST 5] Geriatric Patient:")
+    pass #print("\n[TEST 5] Geriatric Patient:")
     result5 = analyze_patient_history(test_patient_5)
-    print(f"Result: {result5['risk_level']} | Score: {result5['risk_score']:.1f}/100 | {result5['age_category'].title()}, {result5['age']} yrs | Flags: {len(result5['clinical_flags'])}")
+    pass #print(f"Result: {result5['risk_level']} | Score: {result5['risk_score']:.1f}/100 | {result5['age_category'].title()}, {result5['age']} yrs | Flags: {len(result5['clinical_flags'])}")
     
-    print("\n" + "="*80)
-    print("TESTING COMPLETE")
-    print("="*80)
+    pass #print("\n" + "="*80)
+    pass #print("TESTING COMPLETE")
+    pass #print("="*80)
+

@@ -95,7 +95,7 @@ def send_to_v500(image_b64, patient_id, age=35, ethnicity="Caucasian"):
                 "verdict_code": result.get("verdict_code", "UNKNOWN"),
                 "score": result.get("score", 0),
                 "confidence": result.get("confidence", "UNKNOWN"),
-                "ai_probability": result.get("ai_confidence", 0),
+                "ai_probability": result.get("ai_probability", result.get("ai_confidence", 0)),
             }
         elif resp.status_code == 400:
             # Image rejected by quality checks
@@ -105,13 +105,14 @@ def send_to_v500(image_b64, patient_id, age=35, ethnicity="Caucasian"):
                 "verdict_code": "REJECTED",
                 "reason": result.get("error", "Quality failure"),
                 "quality_score": result.get("quality_score", 0),
+                "ai_probability": 0.0
             }
         else:
-            return {"success": False, "verdict_code": "API_ERROR", "reason": f"HTTP {resp.status_code}"}
+            return {"success": False, "verdict_code": "API_ERROR", "reason": f"HTTP {resp.status_code}", "ai_probability": 0.0}
     except requests.exceptions.ConnectionError:
-        return {"success": False, "verdict_code": "CONNECTION_ERROR", "reason": "Is app.py running?"}
+        return {"success": False, "verdict_code": "CONNECTION_ERROR", "reason": "Is app.py running?", "ai_probability": 0.0}
     except Exception as e:
-        return {"success": False, "verdict_code": "ERROR", "reason": str(e)}
+        return {"success": False, "verdict_code": "ERROR", "reason": str(e), "ai_probability": 0.0}
 
 
 def run_batch_evaluation():
@@ -197,7 +198,7 @@ def run_batch_evaluation():
         y_pred.append(1 if is_positive else 0)
         
         # Ensure ai_probability is cleanly parsed
-        ai_prob_val = result.get("ai_probability", 95.0)
+        ai_prob_val = result.get("ai_probability", 0.0)
         y_scores.append(ai_prob_val / 100.0 if ai_prob_val > 1 else ai_prob_val)
         
         status = "TP" if is_positive else "FN"
@@ -233,7 +234,7 @@ def run_batch_evaluation():
         y_pred.append(1 if is_positive else 0)
         
         # Ensure ai_probability is cleanly parsed
-        ai_prob_val = result.get("ai_probability", 5.0)
+        ai_prob_val = result.get("ai_probability", 0.0)
         y_scores.append(ai_prob_val / 100.0 if ai_prob_val > 1 else ai_prob_val)
         
         status = "FP" if is_positive else "TN"

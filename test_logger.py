@@ -32,7 +32,7 @@ class LoggerWriter:
 
 sys.stdout = LoggerWriter(logger.info)
 
-print("Test line 1")
-print("Test line 2", flush=True)
-print("Test line 3", end=" -> ", flush=True)
-print("PASS", flush=True)
+pass #print("Test line 1")
+pass #print("Test line 2", flush=True)
+pass #print("Test line 3", end=" -> ", flush=True)
+pass #print("PASS", flush=True)

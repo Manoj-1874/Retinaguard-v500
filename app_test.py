@@ -12,10 +12,6 @@ def log_print(*args, **kwargs):
     # Write to terminal via saved real stderr
     try:
         _real_stderr.write(msg + "\n")
-    except Exception:
-        pass
-        
-    try:
         _real_stderr.flush()
     except Exception:
         pass
@@ -513,12 +509,7 @@ def extract_optic_disc_features(img, fov_mask, is_angiography=False):
         # Normalize disc brightness relative to overall image brightness
         # This reduces false positives from overexposed images
         # Subtract overall brightness, then add back a standard baseline (140)
-        # BUG FIX: Only normalize downwards for overexposed images to prevent artificially inflating dark healthy discs.
-        if overall_brightness > 120:
-            disc_brightness = raw_disc_brightness - overall_brightness + 140.0
-        else:
-            disc_brightness = raw_disc_brightness
-            
+        disc_brightness = raw_disc_brightness - overall_brightness + 140.0
         disc_brightness = max(80.0, min(255.0, disc_brightness))  # Clamp to valid range
 
         # Check color saturation for waxy pallor detection
@@ -1046,9 +1037,7 @@ def ai_pattern_recognition_expert(img, is_angiography=False):
             for x in batch
         ])
 
-        # BUG FIX: Use model(batch, training=False) instead of model.predict() to prevent memory leaks in Flask server
-        probs_tensor = DEEP_LEARNING_MODEL(batch_arr, training=False)
-        probs = np.array(probs_tensor)
+        probs = DEEP_LEARNING_MODEL.predict(batch_arr, verbose=0)
 
         # THE PROBABILITY FIX:
         # If output is [Healthy, RP] (2 classes), grab index 1 (RP probability).
@@ -1777,26 +1766,20 @@ def analyze_retinal_scan():
         # only rejecting on critical resolution failures (<512px) to prevent backend crashes.
         bypass_quality = data.get('bypassQualityCheck', False)
         
-        if (quality_result.get('critical_failure', False) or quality_result['quality_score'] < 30):
-            if bypass_quality:
-                log_print(f"   [!] BYPASSING CRITICAL QUALITY REJECTION (Score: {quality_result['quality_score']}/100)")
-                for issue in issues:
-                    log_print(f"      - {issue}")
-                pass
-            else:
-                log_print(f"   [X] IMAGE REJECTED: Critical quality failure (Score: {quality_result['quality_score']}/100)")
-                for issue in issues:
-                    log_print(f"      - {issue}")
-                pass
-                return jsonify({
-                    "error": "Image quality too low for reliable analysis",
-                    "quality_score": quality_result['quality_score'],
-                    "issues": issues,
-                    "errors": quality_result.get('errors', []),
-                    "warnings": quality_result.get('warnings', []),
-                    "recommendation": "Please recapture with: Sharp focus (avoid blur), Good lighting (avoid over/underexposure), Resolution ≥512×512 pixels",
-                    "critical_failure": quality_result.get('critical_failure', False)
-                }), 400
+        if not bypass_quality and (quality_result.get('critical_failure', False) or quality_result['quality_score'] < 30):
+            log_print(f"   [X] IMAGE REJECTED: Critical quality failure (Score: {quality_result['quality_score']}/100)")
+            for issue in issues:
+                log_print(f"      - {issue}")
+            pass
+            return jsonify({
+                "error": "Image quality too low for reliable analysis",
+                "quality_score": quality_result['quality_score'],
+                "issues": issues,
+                "errors": quality_result.get('errors', []),
+                "warnings": quality_result.get('warnings', []),
+                "recommendation": "Please recapture with: Sharp focus (avoid blur), Good lighting (avoid over/underexposure), Resolution ≥512×512 pixels",
+                "critical_failure": quality_result.get('critical_failure', False)
+            }), 400
         elif quality_result['quality_score'] < 85:
             log_print(f"   [!] WARNING: Marginal image quality (score: {quality_result['quality_score']}/100)")
             for issue in issues:
@@ -2048,14 +2031,11 @@ def analyze_retinal_scan():
         is_sine_pigmento = False
         if not is_angio and not has_dr_pattern and pigment_conf < CONFIG["SINE_PIGMENTO_PIGMENT_MAX"]:
             # Requires strict corroboration to avoid flagging healthy eyes with minor biological variance
-            if ai_conf > 0.85 and vessel_abnormal:
+            if ai_conf > 0.65 and vessel_abnormal:
                 is_sine_pigmento = True
-            elif ai_conf > 0.75 and (vessel_severe or other_structural_abnormal):
+            elif ai_conf > 0.40 and (vessel_severe or other_structural_abnormal):
                 is_sine_pigmento = True
-                is_sine_pigmento = True
-            elif vessel_severe and other_structural_abnormal and ai_conf > 0.50:
-                is_sine_pigmento = True
-            elif ai_conf > 0.30 and vessel_abnormal and features['texture']['entropy'] < 6.0:
+            elif vessel_severe and other_structural_abnormal and ai_conf > 0.15:
                 is_sine_pigmento = True
                 
         if is_sine_pigmento:
@@ -2149,12 +2129,6 @@ def analyze_retinal_scan():
 
         syndromic_prefix = "USHER SYNDROME (SYNDROMIC RP)" if top_disease == "Usher Syndrome" else "RETINITIS PIGMENTOSA"
 
-        # Define pathognomonic RP findings (Vessels or Pigment)
-        vessel_pathognomonic = vessel_result['severity'] in ['MODERATE', 'CRITICAL']
-        pigment_pathognomonic = pigment_result['severity'] in ['MODERATE', 'CRITICAL']
-        has_pathognomonic = vessel_pathognomonic or pigment_pathognomonic
-        has_mild_pathognomonic = vessel_result['severity'] == 'MILD' or pigment_result['severity'] == 'MILD'
-
         # FIX: Removed variant exemption — differential override now applies even when
         # RPA/SP/Sectoral pathways are active, because those pathways can be triggered by
         # non-RP pathology (e.g., DR exudates triggering RPA).
@@ -2240,12 +2214,7 @@ def analyze_retinal_scan():
             log_print(f"      → Rule 5a: HIGH AI + PHYSICAL CORRELATION (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
 
         # Rule 5b-5f: Suspicious triggers
-        elif (clinical_rp_votes >= 2 and ai_confidence >= 0.55) or \
-             (critical_count >= 1 and ai_confidence >= 0.25) or \
-             (clinical_rp_votes >= 1 and has_pathognomonic and ai_confidence >= 0.40) or \
-             (clinical_rp_votes >= 1 and ai_confidence >= 0.55) or \
-             (mild_findings >= 2 and has_mild_pathognomonic and ai_confidence >= 0.30) or \
-             (mild_findings >= 1 and ai_confidence >= 0.65):
+        elif (clinical_rp_votes >= 2 and ai_says_rp) or (critical_count >= 1 and ai_confidence >= CONFIG["AI_UNCERTAIN_THRESHOLD"]) or (clinical_rp_votes >= 1 and ai_confidence >= 0.50) or (mild_findings >= 1 and ai_confidence >= 0.50):
 
             # Check differential before flagging as RP-suspicious.
             if is_other_disease_dominant:
@@ -2254,11 +2223,12 @@ def analyze_retinal_scan():
                 verdict_code = "OTHER_DISEASE"
                 log_print(f"      → Rule 5 BLOCKED by differential override (Top: {top_disease} {top_score}%, RP: {rp_score}%)")
             
-            # Isolated critical finding + AI >= 25%
-            elif critical_count >= 1 and ai_confidence >= 0.25:
+            # Isolated critical finding + AI >= 40%
+            elif critical_count >= 1 and ai_confidence >= CONFIG["AI_UNCERTAIN_THRESHOLD"]:
                 critical_findings = []
                 for name, r in clinical_results.items():
                     if r['severity'] == 'CRITICAL':
+                        if name in INVERTED_EXPERTS: continue
                         if name == 'bright_lesion' and exclude_bright_from_votes: continue
                         critical_findings.append(name.replace('_', ' ').upper())
                         
@@ -2268,35 +2238,28 @@ def analyze_retinal_scan():
                 verdict_code = "SUSPICIOUS_ISOLATED"
                 log_print(f"      → Rule 5c: ISOLATED CRITICAL FINDING ({finding_list}, AI {ai_confidence*100:.1f}%)")
 
-            # 2 Moderate findings + AI >= 55%
-            elif clinical_rp_votes >= 2 and ai_confidence >= 0.55:
+            # 2 Moderate findings + AI says RP
+            elif clinical_rp_votes >= 2 and ai_says_rp:
                 verdict = "SUSPICIOUS: MULTIPLE FINDINGS WITH AI CORRELATION"
                 confidence = "MODERATE"
                 verdict_code = "SUSPICIOUS"
                 log_print(f"      → Rule 5d: MULTIPLE FINDINGS + AI CORRELATION (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
 
-            # 1 Moderate Pathognomonic finding + AI >= 40%
-            elif clinical_rp_votes >= 1 and has_pathognomonic and ai_confidence >= 0.40:
-                verdict = "SUSPICIOUS: PATHOGNOMONIC SIGN WITH AI CORRELATION"
-                confidence = "MODERATE"
-                verdict_code = "SUSPICIOUS_ISOLATED"
-                log_print(f"      → Rule 5e(alt): PATHOGNOMONIC SIGN + AI (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
-
-            # AI >= 55% + 1 Moderate finding
-            elif clinical_rp_votes >= 1 and ai_confidence >= 0.55:
+            # AI >= 60% + 1 Moderate finding
+            elif clinical_rp_votes >= 1 and ai_confidence >= 0.50:
                 verdict = "SUSPICIOUS: AI POSITIVE WITH CLINICAL SIGNS"
                 confidence = "MODERATE"
                 verdict_code = "SUSPICIOUS_ISOLATED"
                 log_print(f"      → Rule 5e: AI POSITIVE + SIGNS (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
                 
-            # Early RP / Mild findings (MUST have strong AI support to avoid flagging healthy biological variance)
-            elif mild_findings >= 1 and ai_confidence >= 0.65:
+            # AI >= 60% + 1 or more mild findings
+            elif mild_findings >= 1 and ai_confidence >= 0.50:
                 verdict = "BORDERLINE: MILD CLINICAL SIGNS WITH AI CORRELATION"
                 confidence = "MODERATE"
                 verdict_code = "BORDERLINE"
                 log_print(f"      → Rule 5f: MILD CLINICAL + AI CORRELATION (AI={ai_confidence*100:.1f}%, Mild={mild_findings})")
 
-        # Catch-all for isolated anomalies that DO NOT have strong AI support
+        # Catch-all for isolated anomalies that DO NOT have strong AI support (< 60%)
         elif (clinical_rp_votes >= 1 or critical_count >= 1 or mild_findings >= 1) and ai_confidence < 0.50:
             verdict = "NEGATIVE: ISOLATED CLINICAL ANOMALY (HEALTHY VARIANCE)"
             confidence = "LOW"
@@ -2338,8 +2301,8 @@ def analyze_retinal_scan():
                 log_print(f"      → Rule 6: AI OVERRIDDEN (AI={ai_confidence*100:.1f}%, but 0 clinical votes)")
 
         # RULE 7: BORDERLINE - Minor Findings Only
-        # 3+ MILD findings but no strong clinical votes (and AI is not heavily hallucinating)
-        elif mild_findings >= 3 and clinical_rp_votes == 0:
+        # 2+ MILD findings but no strong clinical votes (and AI is not heavily hallucinating)
+        elif mild_findings >= 2 and clinical_rp_votes == 0:
             verdict = "BORDERLINE: MINOR FINDINGS - RECOMMEND MONITORING"
             confidence = "LOW"
             verdict_code = "BORDERLINE"
@@ -2450,8 +2413,8 @@ def analyze_retinal_scan():
             "verdict": verdict,
             "verdict_code": verdict_code,
             "confidence": confidence,
-            "ai_probability": round(ai_confidence * 100, 1),
-            "ai_confidence": round(ai_confidence * 100, 1),
+            "ai_probability": round(ai_confidence * 100, 1) if 'ai_confidence' in locals() else 0.0,
+            "ai_confidence": round(ai_confidence * 100, 1) if 'ai_confidence' in locals() else 0.0,
             "composite_score": round(base_score, 3),
             "critical_findings": critical_findings,
             "timestamp": datetime.now().isoformat(),
@@ -2734,7 +2697,7 @@ def progression_compare():
     except Exception as e:
         log_print(f"[X] Error during progression analysis: {str(e)}")
         import traceback
-        log_print(traceback.format_exc())
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
@@ -2751,45 +2714,35 @@ def validation_study():
         pass
 
         toolkit = create_validation_study()
-        
-        # Populate the toolkit with patient data
-        preds = data['predictions']
-        truths = data['ground_truth']
-        metadata = data.get('patient_metadata', [])
-        
-        for i in range(len(preds)):
-            meta = metadata[i] if i < len(metadata) else {}
-            toolkit.add_patient_result({
-                "patient_id": f"P{i:04d}",
-                "ai_verdict": preds[i],
-                "ground_truth": truths[i],
-                "age": meta.get("age", 50),
-                "ethnicity": meta.get("ethnicity", "Unknown"),
-                "severity": meta.get("severity", "MODERATE"),
-                "site": meta.get("site", "Site-A")
-            })
 
         # Calculate performance metrics
         metrics = toolkit.calculate_performance_metrics(
-            threshold=data.get('threshold', 'SUSPICIOUS'),
-            verbose=False
+            predictions=data['predictions'],
+            ground_truth=data['ground_truth'],
+            threshold=data.get('threshold', 'SUSPICIOUS')
         )
 
         # Subgroup analysis if metadata provided
         subgroup_results = None
         if 'patient_metadata' in data:
-            subgroup_results = toolkit.subgroup_analysis()
+            subgroup_results = toolkit.subgroup_analysis(
+                predictions=data['predictions'],
+                ground_truth=data['ground_truth'],
+                patient_metadata=data['patient_metadata']
+            )
 
         # Inter-rater agreement if second rater provided
         kappa_result = None
         if 'rater2_labels' in data:
             kappa_result = toolkit.calculate_inter_rater_agreement(
-                rater1_verdicts=truths,
-                rater2_verdicts=data['rater2_labels']
+                rater1_labels=data['ground_truth'],
+                rater2_labels=data['rater2_labels']
             )
 
         # Generate FDA report
         fda_report = toolkit.generate_fda_report(
+            metrics=metrics,
+            study_size=len(data['predictions']),
             study_name=data.get('study_name', 'RetinaGuard V500 Validation Study')
         )
 
@@ -2807,7 +2760,7 @@ def validation_study():
     except Exception as e:
         log_print(f"[X] Error during validation study: {str(e)}")
         import traceback
-        log_print(traceback.format_exc())
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
@@ -2836,7 +2789,7 @@ def fda_documentation():
     except Exception as e:
         log_print(f"[X] Error generating FDA documentation: {str(e)}")
         import traceback
-        log_print(traceback.format_exc())
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 # ====================================================
@@ -2882,5 +2835,5 @@ if __name__ == '__main__':
     log_print(">> To enable auto-reload, set debug=True in app.run()\n")
     pass
 
-    app.run(host='0.0.0.0', port=5001, debug=False)
+    app.run(host='0.0.0.0', port=5005, debug=False)
 

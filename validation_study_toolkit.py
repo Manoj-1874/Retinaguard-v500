@@ -1,3 +1,6 @@
+def print(*args, **kwargs):
+    pass
+
 """
 ================================================================================
 VALIDATION STUDY TOOLKIT - RETINAGUARD V500
@@ -67,10 +70,10 @@ class ValidationStudyToolkit:
             Dictionary with sensitivity, specificity, PPV, NPV, accuracy
         """
         if verbose:
-            print(f"\n   [M] PERFORMANCE METRICS CALCULATION")
-            print(f"      {'='*60}")
-            print(f"      Test Threshold: {threshold} or higher = Positive Test")
-            print(f"      Sample Size: {len(self.results_database)} patients")
+            pass #print(f"\n   [M] PERFORMANCE METRICS CALCULATION")
+            pass #print(f"      {'='*60}")
+            pass #print(f"      Test Threshold: {threshold} or higher = Positive Test")
+            pass #print(f"      Sample Size: {len(self.results_database)} patients")
         
         # Define positive test criteria
         positive_verdicts = {
@@ -125,29 +128,29 @@ class ValidationStudyToolkit:
         
         if verbose:
             # Display confusion matrix
-            print(f"\n      [M] CONFUSION MATRIX:")
-            print(f"                      Ground Truth")
-            print(f"                    RP     | Healthy")
-            print(f"         AI  RP     {tp:4d}  |  {fp:4d}   (AI Positive)")
-            print(f"             Healthy {fn:4d}  |  {tn:4d}   (AI Negative)")
+            pass #print(f"\n      [M] CONFUSION MATRIX:")
+            pass #print(f"                      Ground Truth")
+            pass #print(f"                    RP     | Healthy")
+            pass #print(f"         AI  RP     {tp:4d}  |  {fp:4d}   (AI Positive)")
+            pass #print(f"             Healthy {fn:4d}  |  {tn:4d}   (AI Negative)")
             
-            print(f"\n      [M] PERFORMANCE METRICS (with 95% CI):")
-            print(f"         Sensitivity (Recall):    {sensitivity*100:5.1f}% ({tp}/{tp+fn}) [{sens_ci[0]*100:.1f}%-{sens_ci[1]*100:.1f}%]")
-            print(f"         Specificity:             {specificity*100:5.1f}% ({tn}/{tn+fp}) [{spec_ci[0]*100:.1f}%-{spec_ci[1]*100:.1f}%]")
-            print(f"         Positive Predictive Value: {ppv*100:5.1f}% ({tp}/{tp+fp})")
-            print(f"         Negative Predictive Value: {npv*100:5.1f}% ({tn}/{tn+fn})")
-            print(f"         Accuracy:                {accuracy*100:5.1f}% ({tp+tn}/{total})")
-            print(f"         F1 Score:                {f1:5.3f}")
+            pass #print(f"\n      [M] PERFORMANCE METRICS (with 95% CI):")
+            pass #print(f"         Sensitivity (Recall):    {sensitivity*100:5.1f}% ({tp}/{tp+fn}) [{sens_ci[0]*100:.1f}%-{sens_ci[1]*100:.1f}%]")
+            pass #print(f"         Specificity:             {specificity*100:5.1f}% ({tn}/{tn+fp}) [{spec_ci[0]*100:.1f}%-{spec_ci[1]*100:.1f}%]")
+            pass #print(f"         Positive Predictive Value: {ppv*100:5.1f}% ({tp}/{tp+fp})")
+            pass #print(f"         Negative Predictive Value: {npv*100:5.1f}% ({tn}/{tn+fn})")
+            pass #print(f"         Accuracy:                {accuracy*100:5.1f}% ({tp+tn}/{total})")
+            pass #print(f"         F1 Score:                {f1:5.3f}")
             
             # FDA target benchmarks
-            print(f"\n      [T] FDA TARGET BENCHMARKS:")
+            pass #print(f"\n      [T] FDA TARGET BENCHMARKS:")
             self._display_benchmark('Sensitivity', sensitivity, 0.80, 0.75)
             self._display_benchmark('Specificity', specificity, 0.90, 0.85)
             self._display_benchmark('PPV', ppv, 0.80, 0.70)
             self._display_benchmark('NPV', npv, 0.95, 0.90)
             
-            print(f"      {'='*60}\n")
-            sys.stdout.flush()
+            pass #print(f"      {'='*60}\n")
+            pass
         
         return {
             'confusion_matrix': {'tp': tp, 'tn': tn, 'fp': fp, 'fn': fn},
@@ -167,7 +170,7 @@ class ValidationStudyToolkit:
         status = "[+] EXCEEDS TARGET" if value >= target else \
                  "[o] ACCEPTABLE" if value >= acceptable else \
                  "[X] BELOW TARGET"
-        print(f"         {metric:30s} {value*100:5.1f}% | Target: {target*100:.0f}% | {status}")
+        pass #print(f"         {metric:30s} {value*100:5.1f}% | Target: {target*100:.0f}% | {status}")
     
     def subgroup_analysis(self) -> Dict:
         """
@@ -182,8 +185,8 @@ class ValidationStudyToolkit:
         Returns:
             Dictionary with subgroup-specific metrics
         """
-        print(f"\n   [S] SUBGROUP ANALYSIS")
-        print(f"      {'='*60}")
+        pass #print(f"\n   [S] SUBGROUP ANALYSIS")
+        pass #print(f"      {'='*60}")
         
         subgroups = defaultdict(list)
         
@@ -243,12 +246,12 @@ class ValidationStudyToolkit:
             self.results_database = original_db
         
         # Display subgroup summary
-        print(f"\n      [S] SUBGROUP SUMMARY:")
+        pass #print(f"\n      [S] SUBGROUP SUMMARY:")
         for group, metrics in sorted(subgroup_metrics.items()):
-            print(f"         {group:25s} N={metrics['n']:3d} | Sens={metrics['sensitivity']*100:5.1f}% | Spec={metrics['specificity']*100:5.1f}%")
+            pass #print(f"         {group:25s} N={metrics['n']:3d} | Sens={metrics['sensitivity']*100:5.1f}% | Spec={metrics['specificity']*100:5.1f}%")
         
-        print(f"      {'='*60}\n")
-        sys.stdout.flush()
+        pass #print(f"      {'='*60}\n")
+        pass
         
         return subgroup_metrics
     
@@ -269,11 +272,11 @@ class ValidationStudyToolkit:
         Returns:
             Kappa statistic and interpretation
         """
-        print(f"\n   [A] INTER-RATER AGREEMENT")
-        print(f"      {'='*60}")
+        pass #print(f"\n   [A] INTER-RATER AGREEMENT")
+        pass #print(f"      {'='*60}")
         
         if len(rater1_verdicts) != len(rater2_verdicts):
-            print(f"      [X] ERROR: Rater lists must be same length")
+            pass #print(f"      [X] ERROR: Rater lists must be same length")
             return {}
         
         n = len(rater1_verdicts)
@@ -315,13 +318,13 @@ class ValidationStudyToolkit:
         else:
             interpretation = "POOR agreement"
         
-        print(f"      Sample Size: {n}")
-        print(f"      Observed Agreement: {po*100:.1f}% ({agreements}/{n})")
-        print(f"      Expected Agreement (chance): {pe*100:.1f}%")
-        print(f"      Cohen's Kappa: {kappa:.3f}")
-        print(f"      Interpretation: {interpretation}")
-        print(f"      {'='*60}\n")
-        sys.stdout.flush()
+        pass #print(f"      Sample Size: {n}")
+        pass #print(f"      Observed Agreement: {po*100:.1f}% ({agreements}/{n})")
+        pass #print(f"      Expected Agreement (chance): {pe*100:.1f}%")
+        pass #print(f"      Cohen's Kappa: {kappa:.3f}")
+        pass #print(f"      Interpretation: {interpretation}")
+        pass #print(f"      {'='*60}\n")
+        pass
         
         return {
             'kappa': round(kappa, 3),
@@ -447,7 +450,7 @@ class ValidationStudyToolkit:
         report.append("="*80)
         
         report_text = "\n".join(report)
-        print(report_text)
+        pass #print(report_text)
         
         return report_text
 
@@ -460,9 +463,9 @@ def create_validation_study() -> ValidationStudyToolkit:
 
 # Testing harness
 if __name__ == "__main__":
-    print("="*80)
-    print("VALIDATION STUDY TOOLKIT - TEST SUITE")
-    print("="*80)
+    pass #print("="*80)
+    pass #print("VALIDATION STUDY TOOLKIT - TEST SUITE")
+    pass #print("="*80)
     
     # Create mock validation study
     study = create_validation_study()
@@ -519,23 +522,24 @@ if __name__ == "__main__":
         })
     
     # Calculate performance
-    print("\n[TEST 1] Overall Performance:")
+    pass #print("\n[TEST 1] Overall Performance:")
     metrics = study.calculate_performance_metrics()
     
     # Subgroup analysis
-    print("\n[TEST 2] Subgroup Analysis:")
+    pass #print("\n[TEST 2] Subgroup Analysis:")
     subgroups = study.subgroup_analysis()
     
     # Inter-rater agreement
-    print("\n[TEST 3] Inter-Rater Agreement:")
+    pass #print("\n[TEST 3] Inter-Rater Agreement:")
     rater1 = ['POSITIVE', 'POSITIVE', 'NEGATIVE', 'SUSPICIOUS', 'POSITIVE']
     rater2 = ['POSITIVE', 'SUSPICIOUS', 'NEGATIVE', 'SUSPICIOUS', 'POSITIVE']
     kappa = study.calculate_inter_rater_agreement(rater1, rater2)
     
     # Generate FDA report
-    print("\n[TEST 4] FDA Report Generation:")
+    pass #print("\n[TEST 4] FDA Report Generation:")
     report = study.generate_fda_report()
     
-    print("\n" + "="*80)
-    print("VALIDATION TESTING COMPLETE")
-    print("="*80)
+    pass #print("\n" + "="*80)
+    pass #print("VALIDATION TESTING COMPLETE")
+    pass #print("="*80)
+

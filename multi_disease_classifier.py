@@ -1,3 +1,6 @@
+def print(*args, **kwargs):
+    pass
+
 """
 ================================================================================
 MULTI-DISEASE CLASSIFIER - RETINAGUARD V500
@@ -53,7 +56,7 @@ class MultiDiseaseClassifier:
                 'cotton_wool_spots': 0.10,
                 'neovascularization': 0.05
             },
-            'exclusions': ['disc_pallor']  # Removed bone_spicules as PRP laser scars mimic them
+            'exclusions': ['optic_disc_pallor']  # Removed bone_spicules as PRP laser scars mimic them
         },
         'amd': {
             'name': 'Age-Related Macular Degeneration',
@@ -70,7 +73,7 @@ class MultiDiseaseClassifier:
             'key_features': {
                 'disc_cupping': 0.45,
                 'rnfl_thinning': 0.35,
-                'disc_pallor': 0.15,
+                'optic_disc_pallor': 0.15,
                 'peripapillary_atrophy': 0.05
             },
             'exclusions': ['bone_spicules', 'microaneurysms']
@@ -100,7 +103,7 @@ class MultiDiseaseClassifier:
             'key_features': {
                 'bone_spicules': 0.30,
                 'vessel_attenuation': 0.25,
-                'disc_pallor': 0.20,
+                'optic_disc_pallor': 0.20,
                 'peripheral_loss': 0.15,
                 'early_onset': 0.10  # Requires patient history
             },
@@ -158,9 +161,9 @@ class MultiDiseaseClassifier:
                 - 'clinical_notes': list (important observations)
         """
         if is_angiography:
-            print(f"\n      [D] DIFFERENTIAL DIAGNOSIS:")
-            print(f"         [!] Skipped: Color-based differential diagnosis is not supported for grayscale Angiography.")
-            print(f"      {'='*60}\n")
+            pass #print(f"\n      [D] DIFFERENTIAL DIAGNOSIS:")
+            pass #print(f"         [!] Skipped: Color-based differential diagnosis is not supported for grayscale Angiography.")
+            pass #print(f"      {'='*60}\n")
             
             return {
                 'top_diagnosis': 'Angiography (Differential Skipped)',
@@ -170,16 +173,16 @@ class MultiDiseaseClassifier:
                 'clinical_notes': ['Differential diagnosis skipped: Color markers required for multi-disease classifier are invisible on angiograms.'],
                 'features': {}
             }
-        print(f"\n   [D] DIFFERENTIAL DIAGNOSIS")
-        print(f"      {'='*60}")
+        pass #print(f"\n   [D] DIFFERENTIAL DIAGNOSIS")
+        pass #print(f"      {'='*60}")
         
         # Extract feature vector from expert results
         features = self._extract_features(expert_results, patient_age, patient_history)
         
-        print(f"\n      [F] FEATURE EXTRACTION:")
+        pass #print(f"\n      [F] FEATURE EXTRACTION:")
         for feature, value in features.items():
             if value > 0:
-                print(f"         • {feature.replace('_', ' ').title()}: {value:.2f}")
+                pass #print(f"         • {feature.replace('_', ' ').title()}: {value:.2f}")
         
         # Calculate confidence score for each disease
         disease_scores = {}
@@ -235,17 +238,17 @@ class MultiDiseaseClassifier:
         )
         
         # Display results
-        print(f"\n      [D] DIFFERENTIAL DIAGNOSIS:")
+        pass #print(f"\n      [D] DIFFERENTIAL DIAGNOSIS:")
         for i, diag in enumerate(differential[:5], 1):  # Top 5
             rank_symbol = "[1]" if i == 1 else "[2]" if i == 2 else "[3]" if i == 3 else f"[{i}]"
-            print(f"         {rank_symbol} {diag['disease']}: {diag['confidence']}%")
+            pass #print(f"         {rank_symbol} {diag['disease']}: {diag['confidence']}%")
         
         if clinical_notes:
-            print(f"\n      [N] CLINICAL NOTES:")
+            pass #print(f"\n      [N] CLINICAL NOTES:")
             for note in clinical_notes:
-                print(f"         - {note}")
+                pass #print(f"         - {note}")
         
-        print(f"      {'='*60}\n")
+        pass #print(f"      {'='*60}\n")
         
         
         return {
@@ -283,8 +286,9 @@ class MultiDiseaseClassifier:
         
         disc = expert_results.get('optic_disc_result') or expert_results.get('optic_disc') or {}
         disc_brightness = disc.get('brightness', 160)
-        # DATA: INVERTED — Healthy mean=210, RP mean=199. Raised threshold to 220.
-        features['optic_disc_pallor'] = max(0, (disc_brightness - 220) / 30)  # >220 = pallor
+        # FIX: Align with app.py (Normal: 140-180, Mild: 180, Moderate: 195, Critical: 210)
+        # Must cap at 1.0 to prevent runaway scores
+        features['optic_disc_pallor'] = max(0, min((disc_brightness - 180) / 30.0, 1.0))
         
         spatial = expert_results.get('spatial_result') or expert_results.get('spatial') or {}
         features['peripheral_loss'] = spatial.get('degradation_score', 0.0)
@@ -338,8 +342,9 @@ class MultiDiseaseClassifier:
         # Healthy retinas have higher entropy because of rich vessel networks.
         # Degenerate retinas are "smoother" (lower entropy).
         # We invert the logic so lower entropy = higher abnormality score.
+        # MUST BE CAPPED AT 1.0 to prevent runaway differential scores (e.g. Syphilis reaching >50%)
         entropy = texture.get('entropy', 6.53)
-        features['abnormal_texture'] = max(0, (6.53 - entropy) / 0.5)
+        features['abnormal_texture'] = max(0, min((6.53 - entropy) / 0.5, 1.0))
         
         features['geographic_atrophy'] = 0.0  # Placeholder
         
@@ -468,9 +473,9 @@ def classify_diseases(expert_results: Dict, patient_age: int = 40,
 
 # Testing harness
 if __name__ == "__main__":
-    print("="*80)
-    print("MULTI-DISEASE CLASSIFIER - TEST SUITE")
-    print("="*80)
+    pass #print("="*80)
+    pass #print("MULTI-DISEASE CLASSIFIER - TEST SUITE")
+    pass #print("="*80)
     
     # Test Case 1: Classic RP
     rp_results = {
@@ -484,9 +489,9 @@ if __name__ == "__main__":
         'tortuosity_result': {'tortuosity': 1.1}
     }
     
-    print("\n[TEST 1] Classic Retinitis Pigmentosa:")
+    pass #print("\n[TEST 1] Classic Retinitis Pigmentosa:")
     result1 = classify_diseases(rp_results, patient_age=35)
-    print(f"Top Diagnosis: {result1['top_diagnosis']} ({result1['top_confidence']}%)")
+    pass #print(f"Top Diagnosis: {result1['top_diagnosis']} ({result1['top_confidence']}%)")
     
     # Test Case 2: AMD (older patient, drusen)
     amd_results = {
@@ -500,9 +505,9 @@ if __name__ == "__main__":
         'tortuosity_result': {'tortuosity': 1.0}
     }
     
-    print("\n[TEST 2] Age-Related Macular Degeneration:")
+    pass #print("\n[TEST 2] Age-Related Macular Degeneration:")
     result2 = classify_diseases(amd_results, patient_age=72)
-    print(f"Top Diagnosis: {result2['top_diagnosis']} ({result2['top_confidence']}%)")
+    pass #print(f"Top Diagnosis: {result2['top_diagnosis']} ({result2['top_confidence']}%)")
     
     # Test Case 3: Hypertensive Retinopathy
     htn_results = {
@@ -516,10 +521,11 @@ if __name__ == "__main__":
         'tortuosity_result': {'tortuosity': 1.6}  # High tortuosity
     }
     
-    print("\n[TEST 3] Hypertensive Retinopathy:")
+    pass #print("\n[TEST 3] Hypertensive Retinopathy:")
     result3 = classify_diseases(htn_results, patient_age=58)
-    print(f"Top Diagnosis: {result3['top_diagnosis']} ({result3['top_confidence']}%)")
+    pass #print(f"Top Diagnosis: {result3['top_diagnosis']} ({result3['top_confidence']}%)")
     
-    print("\n" + "="*80)
-    print("CLASSIFICATION COMPLETE")
-    print("="*80)
+    pass #print("\n" + "="*80)
+    pass #print("CLASSIFICATION COMPLETE")
+    pass #print("="*80)
+

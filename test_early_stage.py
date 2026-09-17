@@ -12,7 +12,7 @@ def run_early_stage_test():
         with open(image_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
     except Exception as e:
-        print(f"Failed to read image: {e}")
+        pass #print(f"Failed to read image: {e}")
         return
 
     # To trigger the new Rule 6b, we need a high clinical risk score.
@@ -33,24 +33,24 @@ def run_early_stage_test():
         }
     }
 
-    print("Sending API Request to RetinaGuard V500...")
-    print("Patient Profile: 22yo, Severe Night Blindness, Positive Family History of RP.")
+    pass #print("Sending API Request to RetinaGuard V500...")
+    pass #print("Patient Profile: 22yo, Severe Night Blindness, Positive Family History of RP.")
     
     try:
         response = requests.post(url, json=payload)
         result = response.json()
         
-        print("\n" + "="*50)
-        print("API RESPONSE")
-        print("="*50)
-        print(f"Verdict: {result.get('verdict')}")
-        print(f"Confidence: {result.get('confidence')}")
-        print(f"Score: {result.get('risk_score', result.get('score'))}")
-        print(f"Patient Data Seen By Server: {result.get('patient_analysis')}")
-        print(f"\nXAI Explanation:\n{result.get('xai_explanation')}")
-        print("="*50)
+        pass #print("\n" + "="*50)
+        pass #print("API RESPONSE")
+        pass #print("="*50)
+        pass #print(f"Verdict: {result.get('verdict')}")
+        pass #print(f"Confidence: {result.get('confidence')}")
+        pass #print(f"Score: {result.get('risk_score', result.get('score'))}")
+        pass #print(f"Patient Data Seen By Server: {result.get('patient_analysis')}")
+        pass #print(f"\nXAI Explanation:\n{result.get('xai_explanation')}")
+        pass #print("="*50)
     except Exception as e:
-        print(f"API Error: {e}")
+        pass #print(f"API Error: {e}")
 
 if __name__ == "__main__":
     run_early_stage_test()

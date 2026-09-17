@@ -1,3 +1,6 @@
+def print(*args, **kwargs):
+    pass
+
 """
 ================================================================================
 PROGRESSION TRACKER - RETINAGUARD V500
@@ -66,8 +69,8 @@ class ProgressionTracker:
                 - 'clinical_significance': str (interpretation)
                 - 'urgent': bool (requires immediate referral)
         """
-        print(f"\n   [P] PROGRESSION ANALYSIS")
-        print(f"      {'='*60}")
+        pass #print(f"\n   [P] PROGRESSION ANALYSIS")
+        pass #print(f"      {'='*60}")
         
         # Calculate time interval
         baseline_dt = datetime.fromisoformat(baseline_date)
@@ -75,14 +78,14 @@ class ProgressionTracker:
         time_delta = current_dt - baseline_dt
         years = time_delta.days / 365.25
         
-        print(f"      Baseline: {baseline_date}")
-        print(f"      Current:  {current_date}")
-        print(f"      Interval: {time_delta.days} days ({years:.2f} years)")
+        pass #print(f"      Baseline: {baseline_date}")
+        pass #print(f"      Current:  {current_date}")
+        pass #print(f"      Interval: {time_delta.days} days ({years:.2f} years)")
         
         # Check minimum interval
         if time_delta.days < self.MIN_SCAN_INTERVAL_DAYS:
-            print(f"\n      [!] WARNING: Interval too short (<{self.MIN_SCAN_INTERVAL_DAYS} days)")
-            print(f"      Progression estimates unreliable - need ≥6 months between scans")
+            pass #print(f"\n      [!] WARNING: Interval too short (<{self.MIN_SCAN_INTERVAL_DAYS} days)")
+            pass #print(f"      Progression estimates unreliable - need ≥6 months between scans")
         
         # VESSEL DENSITY PROGRESSION
         vessel_change = self._analyze_vessel_progression(
@@ -115,16 +118,16 @@ class ProgressionTracker:
             progression_rate, progression_score, years
         )
         
-        print(f"\n      [P] OVERALL PROGRESSION:")
-        print(f"         Rate: {progression_rate}")
-        print(f"         Score: {progression_score:.1f}/100")
-        print(f"         Interpretation: {clinical_sig}")
+        pass #print(f"\n      [P] OVERALL PROGRESSION:")
+        pass #print(f"         Rate: {progression_rate}")
+        pass #print(f"         Score: {progression_score:.1f}/100")
+        pass #print(f"         Interpretation: {clinical_sig}")
         
         if urgent:
-            print(f"         [!!] URGENT REFERRAL REQUIRED - Rapid progression detected")
+            pass #print(f"         [!!] URGENT REFERRAL REQUIRED - Rapid progression detected")
         
-        print(f"      {'='*60}\n")
-        sys.stdout.flush()
+        pass #print(f"      {'='*60}\n")
+        pass
         
         return {
             'time_interval_years': round(years, 2),
@@ -179,11 +182,11 @@ class ProgressionTracker:
         else:  # Increase (unusual, possible measurement error)
             severity = 'INCREASE'
         
-        print(f"\n      [C] VESSEL DENSITY CHANGE:")
-        print(f"         Baseline: {baseline_density:.3f} -> Current: {current_density:.3f}")
-        print(f"         Change: {absolute_change:+.3f} ({percent_change:+.1f}%)")
-        print(f"         Rate: {change_per_year:+.3f}/year ({percent_per_year:+.1f}%/year)")
-        print(f"         Severity: {severity}")
+        pass #print(f"\n      [C] VESSEL DENSITY CHANGE:")
+        pass #print(f"         Baseline: {baseline_density:.3f} -> Current: {current_density:.3f}")
+        pass #print(f"         Change: {absolute_change:+.3f} ({percent_change:+.1f}%)")
+        pass #print(f"         Rate: {change_per_year:+.3f}/year ({percent_per_year:+.1f}%/year)")
+        pass #print(f"         Severity: {severity}")
         
         return {
             'baseline_density': baseline_density,
@@ -234,11 +237,11 @@ class ProgressionTracker:
         else:  # Reduction (atypical, measurement error likely)
             severity = 'REDUCTION'
         
-        print(f"\n      [C] PIGMENTATION CHANGE:")
-        print(f"         Baseline: {baseline_clusters} clusters -> Current: {current_clusters} clusters")
-        print(f"         Change: {absolute_change:+.0f} ({percent_change:+.1f}%)")
-        print(f"         Rate: {change_per_year:+.1f} clusters/year")
-        print(f"         Severity: {severity}")
+        pass #print(f"\n      [C] PIGMENTATION CHANGE:")
+        pass #print(f"         Baseline: {baseline_clusters} clusters -> Current: {current_clusters} clusters")
+        pass #print(f"         Change: {absolute_change:+.0f} ({percent_change:+.1f}%)")
+        pass #print(f"         Rate: {change_per_year:+.1f} clusters/year")
+        pass #print(f"         Severity: {severity}")
         
         return {
             'baseline_clusters': baseline_clusters,
@@ -279,11 +282,11 @@ class ProgressionTracker:
         else:  # Improvement (unlikely, measurement variability)
             severity = 'IMPROVEMENT'
         
-        print(f"\n      [C] SPATIAL PATTERN CHANGE:")
-        print(f"         Baseline: {baseline_score:.3f} -> Current: {current_score:.3f}")
-        print(f"         Change: {absolute_change:+.3f}")
-        print(f"         Rate: {change_per_year:+.3f}/year")
-        print(f"         Severity: {severity}")
+        pass #print(f"\n      [C] SPATIAL PATTERN CHANGE:")
+        pass #print(f"         Baseline: {baseline_score:.3f} -> Current: {current_score:.3f}")
+        pass #print(f"         Change: {absolute_change:+.3f}")
+        pass #print(f"         Rate: {change_per_year:+.3f}/year")
+        pass #print(f"         Severity: {severity}")
         
         return {
             'baseline_score': baseline_score,
@@ -398,7 +401,7 @@ class ProgressionTracker:
         Returns:
             Tuple of (aligned_baseline, aligned_current)
         """
-        print(f"\n      🔄 IMAGE REGISTRATION:")
+        pass #print(f"\n      🔄 IMAGE REGISTRATION:")
         
         # Convert to grayscale
         if len(baseline_image.shape) == 3:
@@ -417,11 +420,11 @@ class ProgressionTracker:
         kp1, des1 = orb.detectAndCompute(baseline_gray, None)
         kp2, des2 = orb.detectAndCompute(current_gray, None)
         
-        print(f"         Baseline features: {len(kp1)}")
-        print(f"         Current features: {len(kp2)}")
+        pass #print(f"         Baseline features: {len(kp1)}")
+        pass #print(f"         Current features: {len(kp2)}")
         
         if des1 is None or des2 is None:
-            print(f"         [!] WARNING: No descriptors found in one or both images")
+            pass #print(f"         [!] WARNING: No descriptors found in one or both images")
             return baseline_image, current_image
             
         # Match features
@@ -436,10 +439,10 @@ class ProgressionTracker:
                 if m.distance < 0.75 * n.distance:
                     good_matches.append(m)
         
-        print(f"         Good matches: {len(good_matches)}")
+        pass #print(f"         Good matches: {len(good_matches)}")
         
         if len(good_matches) < 10:
-            print(f"         [!] WARNING: Insufficient matches for reliable registration")
+            pass #print(f"         [!] WARNING: Insufficient matches for reliable registration")
             return baseline_image, current_image
         
         # Extract matched keypoints
@@ -455,12 +458,12 @@ class ProgressionTracker:
             aligned_current = cv2.warpPerspective(current_image, H, (w, h))
             
             inliers = np.sum(mask)
-            print(f"         Registration successful: {inliers} inliers")
-            print(f"         Alignment quality: {'GOOD' if inliers > 50 else 'FAIR' if inliers > 20 else 'POOR'}")
+            pass #print(f"         Registration successful: {inliers} inliers")
+            pass #print(f"         Alignment quality: {'GOOD' if inliers > 50 else 'FAIR' if inliers > 20 else 'POOR'}")
             
             return baseline_image, aligned_current
         else:
-            print(f"         [X] Registration failed - using original images")
+            pass #print(f"         [X] Registration failed - using original images")
             return baseline_image, current_image
 
 
@@ -485,9 +488,9 @@ def track_progression(baseline_data: Dict, current_data: Dict,
 
 # Testing harness
 if __name__ == "__main__":
-    print("="*80)
-    print("PROGRESSION TRACKER - TEST SUITE")
-    print("="*80)
+    pass #print("="*80)
+    pass #print("PROGRESSION TRACKER - TEST SUITE")
+    pass #print("="*80)
     
     # Simulate baseline scan (1 year ago)
     baseline = {
@@ -503,10 +506,10 @@ if __name__ == "__main__":
         'spatial_result': {'degradation_score': 0.45, 'severity': 'MODERATE'}
     }
     
-    print("\n[TEST 1] Rapid Progression (1 year):")
+    pass #print("\n[TEST 1] Rapid Progression (1 year):")
     result1 = track_progression(baseline, current_rapid, '2025-02-19', '2026-02-19')
-    print(f"Rate: {result1['progression_rate']} | Score: {result1['progression_score']:.1f}")
-    print(f"Urgent: {result1['urgent']}")
+    pass #print(f"Rate: {result1['progression_rate']} | Score: {result1['progression_score']:.1f}")
+    pass #print(f"Urgent: {result1['urgent']}")
     
     # Test Case 2: Stable disease
     current_stable = {
@@ -515,11 +518,12 @@ if __name__ == "__main__":
         'spatial_result': {'degradation_score': 0.26, 'severity': 'MILD'}
     }
     
-    print("\n[TEST 2] Stable Disease (1 year):")
+    pass #print("\n[TEST 2] Stable Disease (1 year):")
     result2 = track_progression(baseline, current_stable, '2025-02-19', '2026-02-19')
-    print(f"Rate: {result2['progression_rate']} | Score: {result2['progression_score']:.1f}")
-    print(f"Urgent: {result2['urgent']}")
+    pass #print(f"Rate: {result2['progression_rate']} | Score: {result2['progression_score']:.1f}")
+    pass #print(f"Urgent: {result2['urgent']}")
     
-    print("\n" + "="*80)
-    print("TESTING COMPLETE")
-    print("="*80)
+    pass #print("\n" + "="*80)
+    pass #print("TESTING COMPLETE")
+    pass #print("="*80)
+
