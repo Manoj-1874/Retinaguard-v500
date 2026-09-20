@@ -2039,8 +2039,13 @@ def analyze_retinal_scan():
         
         # ========== SUSPICIOUS VERDICTS (NEEDS REVIEW) ==========
 
-        # RULE 5a: ULTRA-HIGH FINE-TUNED AI CONFIDENCE
-        # Trust the highly accurate finetuned model if confidence is extreme, even with minimal physical votes
+        # RULE 5a: ULTRA-HIGH RANDOM FOREST CONFIDENCE
+        # RF maxes out around 90-95%, so we lower the ultra-high threshold to 0.82
+        elif ai_confidence > 0.82 and mild_findings >= 1:
+            verdict = "POSITIVE: RP DETECTED (FINE-TUNED AI STRONG DETECTION)"
+            confidence = "HIGH"
+            verdict_code = "RP_POSITIVE"
+            log_print(f"      Γ₧ö Rule 5a: ULTRA-HIGH AI CONFIDENCE OVERRIDE (AI={ai_confidence*100:.1f}%)")
         elif ai_confidence > 0.85 and (clinical_rp_votes >= 1 or mild_findings >= 1 or rp_score >= 20.0):
             verdict = f"POSITIVE: {syndromic_prefix} (FINE-TUNED AI STRONG DETECTION)"
             confidence = "HIGH"
@@ -2143,8 +2148,8 @@ def analyze_retinal_scan():
 
         # ========== BORDERLINE VERDICTS (MONITOR) ==========
         # RULE 6: AI HALLUCINATION OVERRIDE vs. EARLY-STAGE PRE-CLINICAL RP
-        # If AI is confident but clinical experts strongly disagree (0 or 1 minor votes)
-        elif ai_confidence >= 0.50 or (ai_confidence > 0.10 and (patient_data.get('risk_score', 0) if patient_data else 0) >= 70):
+        # RF probabilities are shifted up (healthy often 40-50%), so we raise the base threshold to 0.70
+        elif ai_confidence >= 0.70 or (ai_confidence > 0.30 and (patient_data.get('risk_score', 0) if patient_data else 0) >= 70):
             log_print(f"DEBUG EVAL: Rule 6 triggered! ai_conf={ai_confidence}, risk_score={patient_data.get('risk_score', 0) if patient_data else 0}, clinical_rp_votes={clinical_rp_votes}")
             risk_score = patient_data.get('risk_score', 0) if patient_data else 0
             if risk_score >= 70:
@@ -2156,7 +2161,7 @@ def analyze_retinal_scan():
             elif is_angio:
                 if mild_findings >= 1:
                     # BRILLIANT ANGIO FIX: Color experts are blind, but structural experts (Vessels/Macula) can still see.
-                    # Because we have at least 1 structural finding confirming the AI, it is NOT a hallucination!
+                    # Since AI was trained on Color Fundus, we trust the structural experts.
                     verdict = "POSITIVE: RP DETECTED (ANGIOGRAPHY STRUCTURAL CORRELATION)"
                     confidence = "HIGH" if mild_findings >= 2 else "MODERATE"
                     verdict_code = "RP_POSITIVE"
@@ -2170,7 +2175,7 @@ def analyze_retinal_scan():
                     log_print(f"      ╬ô├Ñ├å Rule 6d: AI HALLUCINATION ON ANGIO (AI={ai_confidence*100:.1f}%, 0 structural findings. AI Overridden.)")
             else:
                 # BALANCED FIX: Smart AI interpretation using Multi-Disease Differential (rp_score)
-                if ai_confidence >= 0.75:
+                if ai_confidence >= 0.80:
                     if rp_score >= 15.0:
                         verdict = "POSITIVE: EARLY-STAGE RP DETECTED (FINE-TUNED AI + DIFFERENTIAL)"
                         confidence = "MODERATE"
@@ -2181,12 +2186,12 @@ def analyze_retinal_scan():
                         confidence = "MODERATE"
                         verdict_code = "SUSPICIOUS"
                         log_print(f"      ΓåÆ Rule 6a: VERY HIGH AI (AI={ai_confidence*100:.1f}%)")
-                elif ai_confidence >= 0.55 and rp_score >= 25.0:
+                elif ai_confidence >= 0.70 and rp_score >= 25.0:
                     verdict = "BORDERLINE: AI POSITIVE WITH DIFFERENTIAL CORRELATION"
                     confidence = "LOW"
                     verdict_code = "BORDERLINE"
                     log_print(f"      ΓåÆ Rule 6e: MODERATE AI + DIFFERENTIAL (AI={ai_confidence*100:.1f}%, RP_Score={rp_score:.1f}%)")
-                elif ai_confidence >= 0.50 and non_optic_votes >= 1:
+                elif ai_confidence >= 0.65 and non_optic_votes >= 1:
                     verdict = "BORDERLINE: AI POSITIVE WITH MULTIPLE CLINICAL SIGNS"
                     confidence = "LOW"
                     verdict_code = "BORDERLINE"

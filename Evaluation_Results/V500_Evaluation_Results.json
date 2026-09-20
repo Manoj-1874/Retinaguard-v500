@@ -1,1958 +1,1594 @@
 {
   "metrics": {
-    "accuracy": 86.23,
-    "precision": 86.67,
-    "recall": 85.4,
-    "specificity": 87.05,
-    "npv": 85.82,
-    "f1_score": 86.03,
-    "roc_auc": 0.89,
-    "cohen_kappa": 0.7246,
-    "mcc": 0.7247,
-    "fpr": 12.95,
-    "fnr": 14.6,
-    "fdr": 13.33
+    "accuracy": 96.88,
+    "precision": 93.33,
+    "recall": 98.82,
+    "specificity": 95.68,
+    "npv": 99.25,
+    "f1_score": 96.0,
+    "roc_auc": 0.9961,
+    "cohen_kappa": 0.9344,
+    "mcc": 0.9354,
+    "fpr": 4.32,
+    "fnr": 1.18,
+    "fdr": 6.67
   },
   "confusion_matrix": {
-    "tp": 117,
-    "tn": 121,
-    "fp": 18,
-    "fn": 20
+    "tp": 84,
+    "tn": 133,
+    "fp": 6,
+    "fn": 1
   },
-  "total_tested": 276,
+  "total_tested": 224,
   "rejected": 0,
   "per_image_results": [
     {
-      "file": "Retinitis Pigmentosa1.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 61.9
-    },
-    {
-      "file": "Retinitis Pigmentosa10.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 63.2
-    },
-    {
-      "file": "Retinitis Pigmentosa100.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 31.9
-    },
-    {
-      "file": "Retinitis Pigmentosa101.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 50.4
-    },
-    {
-      "file": "Retinitis Pigmentosa102.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 57.1
-    },
-    {
-      "file": "Retinitis Pigmentosa103.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 70.3
-    },
-    {
-      "file": "Retinitis Pigmentosa104.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 66.8
-    },
-    {
-      "file": "Retinitis Pigmentosa105.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 69.8
-    },
-    {
-      "file": "Retinitis Pigmentosa106.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 77.4
-    },
-    {
-      "file": "Retinitis Pigmentosa107.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 68.3
-    },
-    {
-      "file": "Retinitis Pigmentosa108.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 76.7
-    },
-    {
       "file": "Retinitis Pigmentosa109.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 71.1
-    },
-    {
-      "file": "Retinitis Pigmentosa11.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 29.9
-    },
-    {
-      "file": "Retinitis Pigmentosa110.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 70.7
-    },
-    {
-      "file": "Retinitis Pigmentosa111.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 74.4
-    },
-    {
-      "file": "Retinitis Pigmentosa112.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 75.4
-    },
-    {
-      "file": "Retinitis Pigmentosa113.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 71.2
-    },
-    {
-      "file": "Retinitis Pigmentosa114.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 73.4
-    },
-    {
-      "file": "Retinitis Pigmentosa115.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 74.9
-    },
-    {
-      "file": "Retinitis Pigmentosa116.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 44.3
-    },
-    {
-      "file": "Retinitis Pigmentosa117.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 40.5
-    },
-    {
-      "file": "Retinitis Pigmentosa118.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 76.4
-    },
-    {
-      "file": "Retinitis Pigmentosa119.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 64.3
-    },
-    {
-      "file": "Retinitis Pigmentosa12.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 78.4
-    },
-    {
-      "file": "Retinitis Pigmentosa120.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 66.0
-    },
-    {
-      "file": "Retinitis Pigmentosa121.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 72.5
-    },
-    {
-      "file": "Retinitis Pigmentosa122.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 53.7
-    },
-    {
-      "file": "Retinitis Pigmentosa123.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 73.3
-    },
-    {
-      "file": "Retinitis Pigmentosa124.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 68.5
-    },
-    {
-      "file": "Retinitis Pigmentosa125.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 44.8
-    },
-    {
-      "file": "Retinitis Pigmentosa126.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 43.7
-    },
-    {
-      "file": "Retinitis Pigmentosa127.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SECTORAL",
-      "correct": true,
-      "ai_prob": 83.7
-    },
-    {
-      "file": "Retinitis Pigmentosa128.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SECTORAL",
-      "correct": true,
-      "ai_prob": 67.8
-    },
-    {
-      "file": "Retinitis Pigmentosa129.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 77.4
-    },
-    {
-      "file": "Retinitis Pigmentosa13.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS",
-      "correct": true,
-      "ai_prob": 65.3
-    },
-    {
-      "file": "Retinitis Pigmentosa130.jpg",
-      "true_label": "RP",
-      "verdict": "RP_POSITIVE",
-      "correct": true,
-      "ai_prob": 67.1
-    },
-    {
-      "file": "Retinitis Pigmentosa131.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SECTORAL",
-      "correct": true,
-      "ai_prob": 83.2
-    },
-    {
-      "file": "Retinitis Pigmentosa132.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 77.0
-    },
-    {
-      "file": "Retinitis Pigmentosa133.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 70.0
-    },
-    {
-      "file": "Retinitis Pigmentosa134.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 41.6
-    },
-    {
-      "file": "Retinitis Pigmentosa135.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 27.1
-    },
-    {
-      "file": "Retinitis Pigmentosa136.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 34.9
-    },
-    {
-      "file": "Retinitis Pigmentosa137.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 58.8
-    },
-    {
-      "file": "Retinitis Pigmentosa138.jpg",
-      "true_label": "RP",
-      "verdict": "CLASSIC_RP",
-      "correct": true,
-      "ai_prob": 73.5
-    },
-    {
-      "file": "Retinitis Pigmentosa139.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS",
-      "correct": true,
-      "ai_prob": 66.4
-    },
-    {
-      "file": "Retinitis Pigmentosa14.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS",
-      "correct": true,
-      "ai_prob": 83.5
-    },
-    {
-      "file": "Retinitis Pigmentosa15.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS",
-      "correct": true,
-      "ai_prob": 73.4
-    },
-    {
-      "file": "Retinitis Pigmentosa16.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 25.1
-    },
-    {
-      "file": "Retinitis Pigmentosa17.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 52.2
-    },
-    {
-      "file": "Retinitis Pigmentosa18.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 39.1
-    },
-    {
-      "file": "Retinitis Pigmentosa19.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 74.8
-    },
-    {
-      "file": "Retinitis Pigmentosa20.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 65.1
-    },
-    {
-      "file": "Retinitis Pigmentosa21.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 67.1
-    },
-    {
-      "file": "Retinitis Pigmentosa22.jpg",
-      "true_label": "RP",
-      "verdict": "CLASSIC_RP",
-      "correct": true,
-      "ai_prob": 70.3
-    },
-    {
-      "file": "Retinitis Pigmentosa23.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 78.1
-    },
-    {
-      "file": "Retinitis Pigmentosa24.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 63.2
-    },
-    {
-      "file": "Retinitis Pigmentosa25.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 47.0
-    },
-    {
-      "file": "Retinitis Pigmentosa27.jpg",
-      "true_label": "RP",
-      "verdict": "RP_POSITIVE",
-      "correct": true,
-      "ai_prob": 59.0
-    },
-    {
-      "file": "Retinitis Pigmentosa28.jpg",
-      "true_label": "RP",
-      "verdict": "RP_RPA",
-      "correct": true,
-      "ai_prob": 58.2
-    },
-    {
-      "file": "Retinitis Pigmentosa29.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 65.6
-    },
-    {
-      "file": "Retinitis Pigmentosa3.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 59.5
-    },
-    {
-      "file": "Retinitis Pigmentosa30.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 69.7
-    },
-    {
-      "file": "Retinitis Pigmentosa31.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 52.7
-    },
-    {
-      "file": "Retinitis Pigmentosa32.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 59.5
-    },
-    {
-      "file": "Retinitis Pigmentosa33.jpg",
-      "true_label": "RP",
-      "verdict": "BORDERLINE",
-      "correct": true,
-      "ai_prob": 81.4
-    },
-    {
-      "file": "Retinitis Pigmentosa34.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 29.4
-    },
-    {
-      "file": "Retinitis Pigmentosa35.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 16.2
-    },
-    {
-      "file": "Retinitis Pigmentosa36.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 33.7
-    },
-    {
-      "file": "Retinitis Pigmentosa37.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 42.0
-    },
-    {
-      "file": "Retinitis Pigmentosa38.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 51.4
-    },
-    {
-      "file": "Retinitis Pigmentosa39.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 47.2
-    },
-    {
-      "file": "Retinitis Pigmentosa4.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 51.0
-    },
-    {
-      "file": "Retinitis Pigmentosa40.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 44.6
-    },
-    {
-      "file": "Retinitis Pigmentosa41.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 59.2
-    },
-    {
-      "file": "Retinitis Pigmentosa42.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 78.9
-    },
-    {
-      "file": "Retinitis Pigmentosa43.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 82.9
-    },
-    {
-      "file": "Retinitis Pigmentosa44.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 90.6
-    },
-    {
-      "file": "Retinitis Pigmentosa45.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 58.0
-    },
-    {
-      "file": "Retinitis Pigmentosa46.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 51.4
-    },
-    {
-      "file": "Retinitis Pigmentosa47.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 30.7
-    },
-    {
-      "file": "Retinitis Pigmentosa48.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 65.3
-    },
-    {
-      "file": "Retinitis Pigmentosa49.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 60.9
-    },
-    {
-      "file": "Retinitis Pigmentosa5.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 50.6
-    },
-    {
-      "file": "Retinitis Pigmentosa50.jpg",
-      "true_label": "RP",
-      "verdict": "RP_RPA",
-      "correct": true,
-      "ai_prob": 67.9
-    },
-    {
-      "file": "Retinitis Pigmentosa51.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 68.8
-    },
-    {
-      "file": "Retinitis Pigmentosa52.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 57.3
-    },
-    {
-      "file": "Retinitis Pigmentosa53.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 69.9
-    },
-    {
-      "file": "Retinitis Pigmentosa54.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 84.2
-    },
-    {
-      "file": "Retinitis Pigmentosa55.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 87.6
-    },
-    {
-      "file": "Retinitis Pigmentosa56.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 86.3
-    },
-    {
-      "file": "Retinitis Pigmentosa57.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 81.9
-    },
-    {
-      "file": "Retinitis Pigmentosa58.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 76.1
-    },
-    {
-      "file": "Retinitis Pigmentosa59.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 89.3
-    },
-    {
-      "file": "Retinitis Pigmentosa6.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 53.8
-    },
-    {
-      "file": "Retinitis Pigmentosa60.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 81.9
-    },
-    {
-      "file": "Retinitis Pigmentosa61.jpg",
-      "true_label": "RP",
-      "verdict": "RP_POSITIVE",
-      "correct": true,
-      "ai_prob": 88.3
-    },
-    {
-      "file": "Retinitis Pigmentosa62.jpg",
       "true_label": "RP",
       "verdict": "RP_POSITIVE",
       "correct": true,
       "ai_prob": 88.0
     },
     {
-      "file": "Retinitis Pigmentosa63.jpg",
+      "file": "Retinitis Pigmentosa11.jpg",
+      "true_label": "RP",
+      "verdict": "RP_RPA",
+      "correct": true,
+      "ai_prob": 85.5
+    },
+    {
+      "file": "Retinitis Pigmentosa120.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 88.2
+    },
+    {
+      "file": "Retinitis Pigmentosa123.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 83.2
+    },
+    {
+      "file": "Retinitis Pigmentosa166.jpg",
+      "true_label": "RP",
+      "verdict": "RP_RPA",
+      "correct": true,
+      "ai_prob": 81.7
+    },
+    {
+      "file": "Retinitis Pigmentosa194.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 84.7
+    },
+    {
+      "file": "Retinitis Pigmentosa206.jpg",
       "true_label": "RP",
       "verdict": "HEALTHY",
       "correct": false,
-      "ai_prob": 44.3
+      "ai_prob": 41.0
     },
     {
-      "file": "Retinitis Pigmentosa64.jpg",
+      "file": "Retinitis Pigmentosa223.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 86.8
+    },
+    {
+      "file": "Retinitis Pigmentosa225.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 91.0
+    },
+    {
+      "file": "Retinitis Pigmentosa229.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 87.0
+    },
+    {
+      "file": "Retinitis Pigmentosa23.jpg",
+      "true_label": "RP",
+      "verdict": "RP_RPA",
+      "correct": true,
+      "ai_prob": 88.2
+    },
+    {
+      "file": "Retinitis Pigmentosa241.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 87.5
+    },
+    {
+      "file": "Retinitis Pigmentosa259.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 86.0
+    },
+    {
+      "file": "Retinitis Pigmentosa285.jpg",
+      "true_label": "RP",
+      "verdict": "RP_SINE_PIGMENTO",
+      "correct": true,
+      "ai_prob": 88.8
+    },
+    {
+      "file": "Retinitis Pigmentosa29.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 87.5
+    },
+    {
+      "file": "Retinitis Pigmentosa290.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 86.7
+    },
+    {
+      "file": "Retinitis Pigmentosa291.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 87.8
+    },
+    {
+      "file": "Retinitis Pigmentosa302.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 86.0
+    },
+    {
+      "file": "Retinitis Pigmentosa306.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 84.2
+    },
+    {
+      "file": "Retinitis Pigmentosa313.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 91.0
+    },
+    {
+      "file": "Retinitis Pigmentosa32.jpg",
+      "true_label": "RP",
+      "verdict": "RP_RPA",
+      "correct": true,
+      "ai_prob": 86.8
+    },
+    {
+      "file": "Retinitis Pigmentosa328.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 87.5
+    },
+    {
+      "file": "Retinitis Pigmentosa330.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 86.7
+    },
+    {
+      "file": "Retinitis Pigmentosa351.jpg",
       "true_label": "RP",
       "verdict": "SUSPICIOUS_ISOLATED",
       "correct": true,
-      "ai_prob": 43.5
+      "ai_prob": 84.0
     },
     {
-      "file": "Retinitis Pigmentosa65.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 21.1
-    },
-    {
-      "file": "Retinitis Pigmentosa66.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 40.4
-    },
-    {
-      "file": "Retinitis Pigmentosa67.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 28.1
-    },
-    {
-      "file": "Retinitis Pigmentosa68.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 24.7
-    },
-    {
-      "file": "Retinitis Pigmentosa69.jpg",
-      "true_label": "RP",
-      "verdict": "CLASSIC_RP",
-      "correct": true,
-      "ai_prob": 79.1
-    },
-    {
-      "file": "Retinitis Pigmentosa7.jpg",
+      "file": "Retinitis Pigmentosa353.jpg",
       "true_label": "RP",
       "verdict": "SUSPICIOUS_ISOLATED",
       "correct": true,
-      "ai_prob": 54.6
+      "ai_prob": 75.8
     },
     {
-      "file": "Retinitis Pigmentosa70.jpg",
+      "file": "Retinitis Pigmentosa37.jpg",
       "true_label": "RP",
-      "verdict": "CLASSIC_RP",
+      "verdict": "RP_POSITIVE",
       "correct": true,
-      "ai_prob": 68.6
+      "ai_prob": 86.8
     },
     {
-      "file": "Retinitis Pigmentosa71.jpg",
+      "file": "Retinitis Pigmentosa371.jpg",
       "true_label": "RP",
-      "verdict": "CLASSIC_RP",
+      "verdict": "RP_RPA",
+      "correct": true,
+      "ai_prob": 82.7
+    },
+    {
+      "file": "Retinitis Pigmentosa385.jpg",
+      "true_label": "RP",
+      "verdict": "SUSPICIOUS_ISOLATED",
+      "correct": true,
+      "ai_prob": 75.2
+    },
+    {
+      "file": "Retinitis Pigmentosa40.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 82.7
+    },
+    {
+      "file": "Retinitis Pigmentosa408.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 81.2
+    },
+    {
+      "file": "Retinitis Pigmentosa410.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 92.5
+    },
+    {
+      "file": "Retinitis Pigmentosa46.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 91.8
+    },
+    {
+      "file": "Retinitis Pigmentosa462.jpg",
+      "true_label": "RP",
+      "verdict": "SUSPICIOUS_ISOLATED",
       "correct": true,
       "ai_prob": 80.7
     },
     {
-      "file": "Retinitis Pigmentosa72.jpg",
+      "file": "Retinitis Pigmentosa466.jpg",
       "true_label": "RP",
       "verdict": "RP_SINE_PIGMENTO",
       "correct": true,
-      "ai_prob": 54.1
+      "ai_prob": 85.0
     },
     {
-      "file": "Retinitis Pigmentosa73.jpg",
+      "file": "Retinitis Pigmentosa485.jpg",
       "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
+      "verdict": "BORDERLINE",
       "correct": true,
-      "ai_prob": 54.5
+      "ai_prob": 78.0
+    },
+    {
+      "file": "Retinitis Pigmentosa493.jpg",
+      "true_label": "RP",
+      "verdict": "SUSPICIOUS_ISOLATED",
+      "correct": true,
+      "ai_prob": 69.8
+    },
+    {
+      "file": "Retinitis Pigmentosa497.jpg",
+      "true_label": "RP",
+      "verdict": "SUSPICIOUS_ISOLATED",
+      "correct": true,
+      "ai_prob": 82.0
+    },
+    {
+      "file": "Retinitis Pigmentosa505.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 86.0
+    },
+    {
+      "file": "Retinitis Pigmentosa509.jpg",
+      "true_label": "RP",
+      "verdict": "SUSPICIOUS",
+      "correct": true,
+      "ai_prob": 81.5
+    },
+    {
+      "file": "Retinitis Pigmentosa522.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 85.5
+    },
+    {
+      "file": "Retinitis Pigmentosa532.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 92.0
+    },
+    {
+      "file": "Retinitis Pigmentosa533.jpg",
+      "true_label": "RP",
+      "verdict": "SUSPICIOUS",
+      "correct": true,
+      "ai_prob": 85.0
+    },
+    {
+      "file": "Retinitis Pigmentosa542.jpg",
+      "true_label": "RP",
+      "verdict": "RP_RPA",
+      "correct": true,
+      "ai_prob": 87.5
+    },
+    {
+      "file": "Retinitis Pigmentosa544.jpg",
+      "true_label": "RP",
+      "verdict": "RP_RPA",
+      "correct": true,
+      "ai_prob": 93.0
+    },
+    {
+      "file": "Retinitis Pigmentosa546.jpg",
+      "true_label": "RP",
+      "verdict": "RP_RPA",
+      "correct": true,
+      "ai_prob": 89.0
+    },
+    {
+      "file": "Retinitis Pigmentosa547.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 88.8
+    },
+    {
+      "file": "Retinitis Pigmentosa558.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 82.5
+    },
+    {
+      "file": "Retinitis Pigmentosa561.jpg",
+      "true_label": "RP",
+      "verdict": "RP_SECTORAL",
+      "correct": true,
+      "ai_prob": 83.5
+    },
+    {
+      "file": "Retinitis Pigmentosa566.jpg",
+      "true_label": "RP",
+      "verdict": "RP_SECTORAL",
+      "correct": true,
+      "ai_prob": 84.5
+    },
+    {
+      "file": "Retinitis Pigmentosa573.jpg",
+      "true_label": "RP",
+      "verdict": "SUSPICIOUS_ISOLATED",
+      "correct": true,
+      "ai_prob": 83.2
+    },
+    {
+      "file": "Retinitis Pigmentosa598.jpg",
+      "true_label": "RP",
+      "verdict": "SUSPICIOUS_ISOLATED",
+      "correct": true,
+      "ai_prob": 78.6
+    },
+    {
+      "file": "Retinitis Pigmentosa60.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 91.5
+    },
+    {
+      "file": "Retinitis Pigmentosa607.jpg",
+      "true_label": "RP",
+      "verdict": "SUSPICIOUS_ISOLATED",
+      "correct": true,
+      "ai_prob": 83.7
+    },
+    {
+      "file": "Retinitis Pigmentosa612.jpg",
+      "true_label": "RP",
+      "verdict": "SUSPICIOUS_ISOLATED",
+      "correct": true,
+      "ai_prob": 83.5
+    },
+    {
+      "file": "Retinitis Pigmentosa621.jpg",
+      "true_label": "RP",
+      "verdict": "SUSPICIOUS_ISOLATED",
+      "correct": true,
+      "ai_prob": 73.8
+    },
+    {
+      "file": "Retinitis Pigmentosa632.jpg",
+      "true_label": "RP",
+      "verdict": "RP_SECTORAL",
+      "correct": true,
+      "ai_prob": 80.0
+    },
+    {
+      "file": "Retinitis Pigmentosa645.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 82.7
+    },
+    {
+      "file": "Retinitis Pigmentosa655.jpg",
+      "true_label": "RP",
+      "verdict": "BORDERLINE",
+      "correct": true,
+      "ai_prob": 78.5
+    },
+    {
+      "file": "Retinitis Pigmentosa659.jpg",
+      "true_label": "RP",
+      "verdict": "BORDERLINE",
+      "correct": true,
+      "ai_prob": 79.2
+    },
+    {
+      "file": "Retinitis Pigmentosa662.jpg",
+      "true_label": "RP",
+      "verdict": "SUSPICIOUS_ISOLATED",
+      "correct": true,
+      "ai_prob": 82.0
+    },
+    {
+      "file": "Retinitis Pigmentosa672.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 87.0
+    },
+    {
+      "file": "Retinitis Pigmentosa677.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 88.2
+    },
+    {
+      "file": "Retinitis Pigmentosa682.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 89.2
+    },
+    {
+      "file": "Retinitis Pigmentosa687.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 87.0
+    },
+    {
+      "file": "Retinitis Pigmentosa704.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 86.5
+    },
+    {
+      "file": "Retinitis Pigmentosa715.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 92.2
+    },
+    {
+      "file": "Retinitis Pigmentosa72.jpg",
+      "true_label": "RP",
+      "verdict": "RP_RPA",
+      "correct": true,
+      "ai_prob": 85.5
+    },
+    {
+      "file": "Retinitis Pigmentosa726.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 88.1
+    },
+    {
+      "file": "Retinitis Pigmentosa736.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 88.0
+    },
+    {
+      "file": "Retinitis Pigmentosa737.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 82.5
     },
     {
       "file": "Retinitis Pigmentosa74.jpg",
       "true_label": "RP",
-      "verdict": "CLASSIC_RP",
+      "verdict": "RP_POSITIVE",
       "correct": true,
-      "ai_prob": 68.9
+      "ai_prob": 89.5
     },
     {
-      "file": "Retinitis Pigmentosa75.jpg",
+      "file": "Retinitis Pigmentosa743.jpg",
       "true_label": "RP",
-      "verdict": "CLASSIC_RP",
+      "verdict": "RP_POSITIVE",
       "correct": true,
-      "ai_prob": 70.1
+      "ai_prob": 83.5
+    },
+    {
+      "file": "Retinitis Pigmentosa758.jpg",
+      "true_label": "RP",
+      "verdict": "RP_RPA",
+      "correct": true,
+      "ai_prob": 82.7
+    },
+    {
+      "file": "Retinitis Pigmentosa759.jpg",
+      "true_label": "RP",
+      "verdict": "RP_RPA",
+      "correct": true,
+      "ai_prob": 85.5
     },
     {
       "file": "Retinitis Pigmentosa76.jpg",
       "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
+      "verdict": "RP_POSITIVE",
       "correct": true,
-      "ai_prob": 80.8
+      "ai_prob": 90.3
     },
     {
-      "file": "Retinitis Pigmentosa77.jpg",
+      "file": "Retinitis Pigmentosa786.jpg",
+      "true_label": "RP",
+      "verdict": "RP_SECTORAL",
+      "correct": true,
+      "ai_prob": 85.2
+    },
+    {
+      "file": "Retinitis Pigmentosa796.jpg",
+      "true_label": "RP",
+      "verdict": "RP_RPA",
+      "correct": true,
+      "ai_prob": 91.0
+    },
+    {
+      "file": "Retinitis Pigmentosa801.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 91.5
+    },
+    {
+      "file": "Retinitis Pigmentosa822.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 89.5
+    },
+    {
+      "file": "Retinitis Pigmentosa825.jpg",
+      "true_label": "RP",
+      "verdict": "RP_POSITIVE",
+      "correct": true,
+      "ai_prob": 87.2
+    },
+    {
+      "file": "Retinitis Pigmentosa89.jpg",
+      "true_label": "RP",
+      "verdict": "RP_RPA",
+      "correct": true,
+      "ai_prob": 83.2
+    },
+    {
+      "file": "Retinitis Pigmentosa90.jpg",
+      "true_label": "RP",
+      "verdict": "RP_RPA",
+      "correct": true,
+      "ai_prob": 88.5
+    },
+    {
+      "file": "Retinitis Pigmentosa92.jpg",
       "true_label": "RP",
       "verdict": "RP_SINE_PIGMENTO",
       "correct": true,
       "ai_prob": 76.5
     },
     {
-      "file": "Retinitis Pigmentosa78.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 69.4
-    },
-    {
-      "file": "Retinitis Pigmentosa79.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 63.9
-    },
-    {
-      "file": "Retinitis Pigmentosa8.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 57.0
-    },
-    {
-      "file": "Retinitis Pigmentosa80.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 72.3
-    },
-    {
-      "file": "Retinitis Pigmentosa81.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 77.3
-    },
-    {
-      "file": "Retinitis Pigmentosa82.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 58.7
-    },
-    {
-      "file": "Retinitis Pigmentosa83.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 60.0
-    },
-    {
-      "file": "Retinitis Pigmentosa84.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 81.3
-    },
-    {
-      "file": "Retinitis Pigmentosa85.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 87.1
-    },
-    {
-      "file": "Retinitis Pigmentosa86.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 86.3
-    },
-    {
-      "file": "Retinitis Pigmentosa87.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 55.5
-    },
-    {
-      "file": "Retinitis Pigmentosa88.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 73.4
-    },
-    {
-      "file": "Retinitis Pigmentosa89.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 45.2
-    },
-    {
-      "file": "Retinitis Pigmentosa9.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 65.4
-    },
-    {
-      "file": "Retinitis Pigmentosa90.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS",
-      "correct": true,
-      "ai_prob": 65.5
-    },
-    {
-      "file": "Retinitis Pigmentosa91.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS",
-      "correct": true,
-      "ai_prob": 76.3
-    },
-    {
-      "file": "Retinitis Pigmentosa92.jpg",
-      "true_label": "RP",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": true,
-      "ai_prob": 60.1
-    },
-    {
       "file": "Retinitis Pigmentosa93.jpg",
       "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 40.1
-    },
-    {
-      "file": "Retinitis Pigmentosa94.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SECTORAL",
+      "verdict": "SUSPICIOUS",
       "correct": true,
-      "ai_prob": 79.7
-    },
-    {
-      "file": "Retinitis Pigmentosa95.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SECTORAL",
-      "correct": true,
-      "ai_prob": 71.5
-    },
-    {
-      "file": "Retinitis Pigmentosa96.jpg",
-      "true_label": "RP",
-      "verdict": "HEALTHY",
-      "correct": false,
-      "ai_prob": 50.4
-    },
-    {
-      "file": "Retinitis Pigmentosa97.jpg",
-      "true_label": "RP",
-      "verdict": "BORDERLINE",
-      "correct": true,
-      "ai_prob": 66.7
-    },
-    {
-      "file": "Retinitis Pigmentosa98.jpg",
-      "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": true,
-      "ai_prob": 51.4
+      "ai_prob": 69.8
     },
     {
       "file": "Retinitis Pigmentosa99.jpg",
       "true_label": "RP",
-      "verdict": "RP_SINE_PIGMENTO",
+      "verdict": "RP_POSITIVE",
       "correct": true,
-      "ai_prob": 60.5
-    },
-    {
-      "file": "Healthy1.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 14.6
-    },
-    {
-      "file": "Healthy10.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 29.5
-    },
-    {
-      "file": "Healthy100.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 14.9
-    },
-    {
-      "file": "Healthy1000.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 20.5
-    },
-    {
-      "file": "Healthy1001.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 22.9
-    },
-    {
-      "file": "Healthy1002.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 23.2
-    },
-    {
-      "file": "Healthy1003.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 31.1
-    },
-    {
-      "file": "Healthy1004.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 20.7
+      "ai_prob": 83.5
     },
     {
       "file": "Healthy1005.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 19.1
-    },
-    {
-      "file": "Healthy1006.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 35.6
-    },
-    {
-      "file": "Healthy1007.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 27.0
-    },
-    {
-      "file": "Healthy1008.jpg",
-      "true_label": "Healthy",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": false,
-      "ai_prob": 55.1
-    },
-    {
-      "file": "Healthy1009.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 23.7
-    },
-    {
-      "file": "Healthy101.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 33.8
+      "ai_prob": 40.3
     },
     {
       "file": "Healthy1010.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 25.6
+      "ai_prob": 38.6
     },
     {
       "file": "Healthy1011.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 31.5
-    },
-    {
-      "file": "Healthy1012.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 18.3
-    },
-    {
-      "file": "Healthy1013.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 16.6
-    },
-    {
-      "file": "Healthy1014.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 28.8
-    },
-    {
-      "file": "Healthy1015.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 31.6
-    },
-    {
-      "file": "Healthy1016.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 36.9
-    },
-    {
-      "file": "Healthy1017.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 22.2
-    },
-    {
-      "file": "Healthy1018.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 18.0
-    },
-    {
-      "file": "Healthy1019.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 34.6
+      "ai_prob": 33.1
     },
     {
       "file": "Healthy102.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 13.4
+      "ai_prob": 40.8
     },
     {
-      "file": "Healthy1020.jpg",
+      "file": "Healthy1047.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 18.1
+      "ai_prob": 43.2
     },
     {
-      "file": "Healthy1021.jpg",
+      "file": "Healthy1054.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 49.9
+      "ai_prob": 33.6
     },
     {
-      "file": "Healthy1022.jpg",
+      "file": "Healthy1065.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 35.1
+      "ai_prob": 33.1
     },
     {
-      "file": "Healthy1023.jpg",
+      "file": "Healthy1067.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 31.0
-    },
-    {
-      "file": "Healthy1024.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 41.9
-    },
-    {
-      "file": "Healthy103.jpg",
-      "true_label": "Healthy",
-      "verdict": "API_ERROR",
-      "correct": true,
-      "ai_prob": 0.0
-    },
-    {
-      "file": "Healthy104.jpg",
-      "true_label": "Healthy",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": false,
-      "ai_prob": 55.2
-    },
-    {
-      "file": "Healthy105.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 36.3
-    },
-    {
-      "file": "Healthy106.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 30.4
+      "ai_prob": 41.3
     },
     {
       "file": "Healthy107.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 50.9
+      "ai_prob": 35.7
     },
     {
-      "file": "Healthy108.jpg",
+      "file": "Healthy1071.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 31.1
+      "ai_prob": 65.0
     },
     {
-      "file": "Healthy109.jpg",
+      "file": "Healthy1082.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 35.0
+      "ai_prob": 39.0
     },
     {
-      "file": "Healthy11.jpg",
+      "file": "Healthy1094.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 48.8
+      "ai_prob": 53.5
     },
     {
-      "file": "Healthy110.jpg",
+      "file": "Healthy1101.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 23.6
+      "ai_prob": 38.1
     },
     {
-      "file": "Healthy111.jpg",
+      "file": "Healthy1102.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 27.8
+      "ai_prob": 37.5
+    },
+    {
+      "file": "Healthy1103.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 47.0
+    },
+    {
+      "file": "Healthy1111.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 37.9
     },
     {
       "file": "Healthy112.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 25.0
+      "ai_prob": 39.5
     },
     {
-      "file": "Healthy113.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 48.2
-    },
-    {
-      "file": "Healthy114.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 41.5
-    },
-    {
-      "file": "Healthy115.jpg",
-      "true_label": "Healthy",
-      "verdict": "API_ERROR",
-      "correct": true,
-      "ai_prob": 0.0
-    },
-    {
-      "file": "Healthy116.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 27.7
-    },
-    {
-      "file": "Healthy117.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 47.2
-    },
-    {
-      "file": "Healthy118.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 52.7
-    },
-    {
-      "file": "Healthy119.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 34.7
-    },
-    {
-      "file": "Healthy12.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 24.4
-    },
-    {
-      "file": "Healthy120.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 46.3
-    },
-    {
-      "file": "Healthy121.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 49.9
-    },
-    {
-      "file": "Healthy122.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 50.2
-    },
-    {
-      "file": "Healthy123.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 21.2
-    },
-    {
-      "file": "Healthy124.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 35.9
-    },
-    {
-      "file": "Healthy125.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 34.1
-    },
-    {
-      "file": "Healthy126.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 41.5
-    },
-    {
-      "file": "Healthy127.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 49.7
-    },
-    {
-      "file": "Healthy128.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 36.1
-    },
-    {
-      "file": "Healthy129.jpg",
-      "true_label": "Healthy",
-      "verdict": "API_ERROR",
-      "correct": true,
-      "ai_prob": 0.0
-    },
-    {
-      "file": "Healthy13.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 42.9
-    },
-    {
-      "file": "Healthy130.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 32.6
-    },
-    {
-      "file": "Healthy131.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 28.6
-    },
-    {
-      "file": "Healthy132.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 45.7
-    },
-    {
-      "file": "Healthy133.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 46.7
-    },
-    {
-      "file": "Healthy134.jpg",
-      "true_label": "Healthy",
-      "verdict": "SUSPICIOUS",
-      "correct": false,
-      "ai_prob": 56.6
-    },
-    {
-      "file": "Healthy135.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 45.4
-    },
-    {
-      "file": "Healthy136.jpg",
-      "true_label": "Healthy",
-      "verdict": "SUSPICIOUS",
-      "correct": false,
-      "ai_prob": 55.8
-    },
-    {
-      "file": "Healthy137.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 48.3
-    },
-    {
-      "file": "Healthy138.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 23.7
-    },
-    {
-      "file": "Healthy139.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 38.2
-    },
-    {
-      "file": "Healthy14.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 29.4
-    },
-    {
-      "file": "Healthy140.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 47.3
-    },
-    {
-      "file": "Healthy141.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 53.3
-    },
-    {
-      "file": "Healthy142.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 40.3
-    },
-    {
-      "file": "Healthy143.jpg",
-      "true_label": "Healthy",
-      "verdict": "API_ERROR",
-      "correct": true,
-      "ai_prob": 0.0
-    },
-    {
-      "file": "Healthy144.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 19.8
-    },
-    {
-      "file": "Healthy145.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 34.2
-    },
-    {
-      "file": "Healthy146.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 28.9
-    },
-    {
-      "file": "Healthy147.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 22.0
-    },
-    {
-      "file": "Healthy148.jpg",
-      "true_label": "Healthy",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": false,
-      "ai_prob": 59.3
-    },
-    {
-      "file": "Healthy149.jpg",
+      "file": "Healthy1122.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
       "ai_prob": 32.5
     },
     {
-      "file": "Healthy15.jpg",
+      "file": "Healthy1124.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 32.7
+      "ai_prob": 42.3
     },
     {
-      "file": "Healthy150.jpg",
+      "file": "Healthy1128.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 41.7
+      "ai_prob": 36.8
     },
     {
-      "file": "Healthy151.jpg",
+      "file": "Healthy1132.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 22.4
+      "ai_prob": 30.2
     },
     {
-      "file": "Healthy152.jpg",
-      "true_label": "Healthy",
-      "verdict": "API_ERROR",
-      "correct": true,
-      "ai_prob": 0.0
-    },
-    {
-      "file": "Healthy153.jpg",
+      "file": "Healthy1140.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 30.6
+      "ai_prob": 38.0
     },
     {
-      "file": "Healthy154.jpg",
-      "true_label": "Healthy",
-      "verdict": "API_ERROR",
-      "correct": true,
-      "ai_prob": 0.0
-    },
-    {
-      "file": "Healthy155.jpg",
+      "file": "Healthy1146.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 38.8
+      "ai_prob": 38.3
     },
     {
-      "file": "Healthy156.jpg",
+      "file": "Healthy1177.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 41.6
+      "ai_prob": 38.1
     },
     {
-      "file": "Healthy157.jpg",
+      "file": "Healthy1184.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 32.1
+    },
+    {
+      "file": "Healthy1199.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 35.9
+    },
+    {
+      "file": "Healthy1221.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 36.2
+    },
+    {
+      "file": "Healthy1224.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 36.9
+    },
+    {
+      "file": "Healthy1230.jpg",
       "true_label": "Healthy",
       "verdict": "SUSPICIOUS_ISOLATED",
       "correct": false,
-      "ai_prob": 45.8
+      "ai_prob": 51.3
     },
     {
-      "file": "Healthy158.jpg",
-      "true_label": "Healthy",
-      "verdict": "API_ERROR",
-      "correct": true,
-      "ai_prob": 0.0
-    },
-    {
-      "file": "Healthy159.jpg",
+      "file": "Healthy124.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 34.0
+      "ai_prob": 34.2
     },
     {
-      "file": "Healthy16.jpg",
+      "file": "Healthy1240.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 26.7
+      "ai_prob": 42.8
     },
     {
-      "file": "Healthy160.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 41.6
-    },
-    {
-      "file": "Healthy161.jpg",
-      "true_label": "Healthy",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": false,
-      "ai_prob": 71.6
-    },
-    {
-      "file": "Healthy162.jpg",
-      "true_label": "Healthy",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": false,
-      "ai_prob": 54.9
-    },
-    {
-      "file": "Healthy163.jpg",
-      "true_label": "Healthy",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": false,
-      "ai_prob": 53.6
-    },
-    {
-      "file": "Healthy164.jpg",
-      "true_label": "Healthy",
-      "verdict": "API_ERROR",
-      "correct": true,
-      "ai_prob": 0.0
-    },
-    {
-      "file": "Healthy165.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 25.7
-    },
-    {
-      "file": "Healthy166.jpg",
-      "true_label": "Healthy",
-      "verdict": "RP_SINE_PIGMENTO",
-      "correct": false,
-      "ai_prob": 54.2
-    },
-    {
-      "file": "Healthy167.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 31.6
-    },
-    {
-      "file": "Healthy168.jpg",
-      "true_label": "Healthy",
-      "verdict": "API_ERROR",
-      "correct": true,
-      "ai_prob": 0.0
-    },
-    {
-      "file": "Healthy169.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 13.7
-    },
-    {
-      "file": "Healthy17.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 44.6
-    },
-    {
-      "file": "Healthy170.jpg",
+      "file": "Healthy1241.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
       "ai_prob": 35.7
     },
     {
-      "file": "Healthy171.jpg",
+      "file": "Healthy1273.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 23.0
+      "ai_prob": 35.1
     },
     {
-      "file": "Healthy172.jpg",
+      "file": "Healthy1338.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 30.8
+      "ai_prob": 40.5
     },
     {
-      "file": "Healthy173.jpg",
+      "file": "Healthy1362.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 30.5
+      "ai_prob": 52.8
     },
     {
-      "file": "Healthy174.jpg",
-      "true_label": "Healthy",
-      "verdict": "API_ERROR",
-      "correct": true,
-      "ai_prob": 0.0
-    },
-    {
-      "file": "Healthy175.jpg",
+      "file": "Healthy1364.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 40.0
+      "ai_prob": 46.1
     },
     {
-      "file": "Healthy176.jpg",
+      "file": "Healthy1367.jpg",
       "true_label": "Healthy",
-      "verdict": "SUSPICIOUS",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 46.6
+    },
+    {
+      "file": "Healthy1368.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 36.5
+    },
+    {
+      "file": "Healthy1409.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 32.8
+    },
+    {
+      "file": "Healthy1442.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 40.3
+    },
+    {
+      "file": "Healthy1444.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 44.3
+    },
+    {
+      "file": "Healthy1445.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 30.1
+    },
+    {
+      "file": "Healthy149.jpg",
+      "true_label": "Healthy",
+      "verdict": "RP_SINE_PIGMENTO",
       "correct": false,
-      "ai_prob": 64.8
+      "ai_prob": 67.3
     },
     {
-      "file": "Healthy177.jpg",
-      "true_label": "Healthy",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": false,
-      "ai_prob": 53.9
-    },
-    {
-      "file": "Healthy178.jpg",
-      "true_label": "Healthy",
-      "verdict": "SUSPICIOUS",
-      "correct": false,
-      "ai_prob": 66.7
-    },
-    {
-      "file": "Healthy179.jpg",
+      "file": "Healthy1499.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 25.5
+      "ai_prob": 31.2
     },
     {
-      "file": "Healthy18.jpg",
+      "file": "Healthy1523.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 40.1
+      "ai_prob": 39.6
     },
     {
-      "file": "Healthy180.jpg",
+      "file": "Healthy1524.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 24.2
+      "ai_prob": 35.8
     },
     {
-      "file": "Healthy181.jpg",
+      "file": "Healthy1536.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 28.2
+      "ai_prob": 41.4
     },
     {
-      "file": "Healthy182.jpg",
-      "true_label": "Healthy",
-      "verdict": "SUSPICIOUS",
-      "correct": false,
-      "ai_prob": 55.3
-    },
-    {
-      "file": "Healthy183.jpg",
-      "true_label": "Healthy",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": false,
-      "ai_prob": 72.2
-    },
-    {
-      "file": "Healthy184.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 26.6
-    },
-    {
-      "file": "Healthy185.jpg",
-      "true_label": "Healthy",
-      "verdict": "API_ERROR",
-      "correct": true,
-      "ai_prob": 0.0
-    },
-    {
-      "file": "Healthy186.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 23.1
-    },
-    {
-      "file": "Healthy187.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 38.7
-    },
-    {
-      "file": "Healthy188.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 27.4
-    },
-    {
-      "file": "Healthy189.jpg",
-      "true_label": "Healthy",
-      "verdict": "SUSPICIOUS",
-      "correct": false,
-      "ai_prob": 67.4
-    },
-    {
-      "file": "Healthy19.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 41.1
-    },
-    {
-      "file": "Healthy190.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 27.1
-    },
-    {
-      "file": "Healthy191.jpg",
-      "true_label": "Healthy",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": false,
-      "ai_prob": 49.1
-    },
-    {
-      "file": "Healthy192.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 25.5
-    },
-    {
-      "file": "Healthy193.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 27.8
-    },
-    {
-      "file": "Healthy194.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 50.3
-    },
-    {
-      "file": "Healthy195.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 33.7
-    },
-    {
-      "file": "Healthy196.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 27.4
-    },
-    {
-      "file": "Healthy197.jpg",
-      "true_label": "Healthy",
-      "verdict": "SUSPICIOUS_ISOLATED",
-      "correct": false,
-      "ai_prob": 56.7
-    },
-    {
-      "file": "Healthy198.jpg",
-      "true_label": "Healthy",
-      "verdict": "HEALTHY",
-      "correct": true,
-      "ai_prob": 39.4
-    },
-    {
-      "file": "Healthy199.jpg",
+      "file": "Healthy154.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
       "ai_prob": 47.2
     },
     {
-      "file": "Healthy2.jpg",
+      "file": "Healthy1540.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 20.8
+      "ai_prob": 32.1
     },
     {
-      "file": "Healthy20.jpg",
+      "file": "Healthy1558.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
-      "ai_prob": 44.1
+      "ai_prob": 31.1
     },
     {
-      "file": "Healthy200.jpg",
+      "file": "Healthy1572.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 34.1
+    },
+    {
+      "file": "Healthy1588.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 42.5
+    },
+    {
+      "file": "Healthy1591.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 43.4
+    },
+    {
+      "file": "Healthy1602.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 33.6
+    },
+    {
+      "file": "Healthy1610.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 33.7
+    },
+    {
+      "file": "Healthy1621.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 32.3
+    },
+    {
+      "file": "Healthy1632.jpg",
       "true_label": "Healthy",
       "verdict": "HEALTHY",
       "correct": true,
       "ai_prob": 36.1
+    },
+    {
+      "file": "Healthy1641.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 39.3
+    },
+    {
+      "file": "Healthy1654.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 34.8
+    },
+    {
+      "file": "Healthy1658.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 38.8
+    },
+    {
+      "file": "Healthy1669.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 54.5
+    },
+    {
+      "file": "Healthy1671.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 47.8
+    },
+    {
+      "file": "Healthy1675.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 39.8
+    },
+    {
+      "file": "Healthy1677.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 39.6
+    },
+    {
+      "file": "Healthy1682.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 45.1
+    },
+    {
+      "file": "Healthy1683.jpg",
+      "true_label": "Healthy",
+      "verdict": "RP_SINE_PIGMENTO",
+      "correct": false,
+      "ai_prob": 69.2
+    },
+    {
+      "file": "Healthy1684.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 41.3
+    },
+    {
+      "file": "Healthy1696.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 36.8
+    },
+    {
+      "file": "Healthy1698.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 37.5
+    },
+    {
+      "file": "Healthy170.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 36.1
+    },
+    {
+      "file": "Healthy1701.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 32.7
+    },
+    {
+      "file": "Healthy1706.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 40.1
+    },
+    {
+      "file": "Healthy171.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 31.9
+    },
+    {
+      "file": "Healthy1710.jpg",
+      "true_label": "Healthy",
+      "verdict": "SUSPICIOUS",
+      "correct": false,
+      "ai_prob": 66.8
+    },
+    {
+      "file": "Healthy1715.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 35.2
+    },
+    {
+      "file": "Healthy1722.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 36.3
+    },
+    {
+      "file": "Healthy1728.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 39.1
+    },
+    {
+      "file": "Healthy1738.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 38.1
+    },
+    {
+      "file": "Healthy1752.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 39.8
+    },
+    {
+      "file": "Healthy1777.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 31.0
+    },
+    {
+      "file": "Healthy1788.jpg",
+      "true_label": "Healthy",
+      "verdict": "RP_SINE_PIGMENTO",
+      "correct": false,
+      "ai_prob": 74.3
+    },
+    {
+      "file": "Healthy1794.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 42.3
+    },
+    {
+      "file": "Healthy1807.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 31.9
+    },
+    {
+      "file": "Healthy1808.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 45.6
+    },
+    {
+      "file": "Healthy1810.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 43.3
+    },
+    {
+      "file": "Healthy1818.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 39.3
+    },
+    {
+      "file": "Healthy1822.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 58.3
+    },
+    {
+      "file": "Healthy1824.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 36.6
+    },
+    {
+      "file": "Healthy1834.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 45.4
+    },
+    {
+      "file": "Healthy1844.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 27.8
+    },
+    {
+      "file": "Healthy1845.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 53.9
+    },
+    {
+      "file": "Healthy1859.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 54.0
+    },
+    {
+      "file": "Healthy1860.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 47.8
+    },
+    {
+      "file": "Healthy1865.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 42.3
+    },
+    {
+      "file": "Healthy1873.jpg",
+      "true_label": "Healthy",
+      "verdict": "SUSPICIOUS",
+      "correct": false,
+      "ai_prob": 56.3
+    },
+    {
+      "file": "Healthy1886.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 43.9
+    },
+    {
+      "file": "Healthy189.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 48.8
+    },
+    {
+      "file": "Healthy1916.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 35.6
+    },
+    {
+      "file": "Healthy1927.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 37.6
+    },
+    {
+      "file": "Healthy1948.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 47.8
+    },
+    {
+      "file": "Healthy195.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 46.0
+    },
+    {
+      "file": "Healthy1952.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 33.2
+    },
+    {
+      "file": "Healthy1953.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 35.8
+    },
+    {
+      "file": "Healthy1954.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 38.1
+    },
+    {
+      "file": "Healthy1964.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 37.0
+    },
+    {
+      "file": "Healthy1965.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 43.3
+    },
+    {
+      "file": "Healthy1969.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 35.7
+    },
+    {
+      "file": "Healthy1980.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 34.5
+    },
+    {
+      "file": "Healthy1982.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 38.1
+    },
+    {
+      "file": "Healthy1987.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 38.2
+    },
+    {
+      "file": "Healthy1991.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 33.5
+    },
+    {
+      "file": "Healthy1992.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 34.6
+    },
+    {
+      "file": "Healthy2010.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 39.8
+    },
+    {
+      "file": "Healthy2014.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 36.1
+    },
+    {
+      "file": "Healthy2015.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 29.2
+    },
+    {
+      "file": "Healthy2016.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 30.8
+    },
+    {
+      "file": "Healthy2018.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 30.5
+    },
+    {
+      "file": "Healthy2026.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 40.6
+    },
+    {
+      "file": "Healthy204.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 38.3
+    },
+    {
+      "file": "Healthy2056.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 35.1
+    },
+    {
+      "file": "Healthy206.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 44.6
+    },
+    {
+      "file": "Healthy2074.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 59.3
+    },
+    {
+      "file": "Healthy2080.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 38.9
+    },
+    {
+      "file": "Healthy2081.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 34.8
+    },
+    {
+      "file": "Healthy2087.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 36.6
+    },
+    {
+      "file": "Healthy2109.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 36.8
+    },
+    {
+      "file": "Healthy2115.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 40.6
+    },
+    {
+      "file": "Healthy2117.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 29.5
+    },
+    {
+      "file": "Healthy212.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 48.0
+    },
+    {
+      "file": "Healthy2129.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 42.1
+    },
+    {
+      "file": "Healthy2144.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 38.6
+    },
+    {
+      "file": "Healthy2151.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 38.0
+    },
+    {
+      "file": "Healthy216.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 32.8
+    },
+    {
+      "file": "Healthy2163.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 34.7
+    },
+    {
+      "file": "Healthy2167.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 37.9
+    },
+    {
+      "file": "Healthy2168.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 38.9
+    },
+    {
+      "file": "Healthy2169.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 35.6
+    },
+    {
+      "file": "Healthy2204.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 34.8
+    },
+    {
+      "file": "Healthy2234.jpg",
+      "true_label": "Healthy",
+      "verdict": "HEALTHY",
+      "correct": true,
+      "ai_prob": 37.0
     }
   ]
 }

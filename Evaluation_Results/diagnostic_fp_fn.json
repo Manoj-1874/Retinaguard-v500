@@ -1,0 +1,828 @@
+{
+  "fp_details": [],
+  "fn_details": [
+    {
+      "file": "Retinitis Pigmentosa1.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa10.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa100.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa101.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa102.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa103.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa104.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa105.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa106.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa107.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa108.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa109.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa11.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa110.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa111.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa112.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa113.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa114.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa115.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa116.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa117.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa118.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa119.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa12.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa120.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa121.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa122.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa123.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa124.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa125.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa126.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa127.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa128.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa129.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa13.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa130.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa131.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa132.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa133.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa134.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa135.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa136.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa137.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa138.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa139.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa14.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa15.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa16.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa17.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa18.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa19.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa20.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa21.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa22.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa23.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa24.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa25.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa27.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa28.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa29.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa3.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa30.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa31.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa32.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa33.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa34.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa35.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa36.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa37.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa38.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa39.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa4.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa40.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa41.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa42.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa43.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa44.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa45.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa46.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa47.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa48.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa49.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa5.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa50.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa51.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa52.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa53.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa54.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa55.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa56.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa57.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa58.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa59.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa6.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa60.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa61.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa62.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa63.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa64.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa65.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa66.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa67.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa68.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa69.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa7.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa70.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa71.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa72.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa73.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa74.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa75.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa76.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa77.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa78.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa79.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa8.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa80.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa81.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa82.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa83.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa84.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa85.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa86.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa87.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa88.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa89.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa9.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa90.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa91.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa92.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa93.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa94.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa95.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa96.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa97.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa98.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    },
+    {
+      "file": "Retinitis Pigmentosa99.jpg",
+      "verdict_code": "ERROR",
+      "ai_prob": 0,
+      "verdict": ""
+    }
+  ],
+  "fp_by_verdict": {}
+}
