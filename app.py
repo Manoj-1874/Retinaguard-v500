@@ -181,7 +181,7 @@ os.makedirs(MODEL_PATH, exist_ok=True)
 
 CONFIG = {
     # Model path
-    "MODEL_PATH": f"{MODEL_PATH}/finetuned_model.h5",
+    "MODEL_PATH": f"{MODEL_PATH}/efficientnet_model.weights.h5",
     "INPUT_SIZE": (224, 224),
 
     # EXPERT WEIGHTS - 10 CLINICAL SCANNERS (Total = 1.00)
@@ -320,17 +320,38 @@ if TENSORFLOW_AVAILABLE:
         from tensorflow import keras
         import joblib
         if os.path.exists(CONFIG["MODEL_PATH"]):
-            DEEP_LEARNING_MODEL = keras.models.load_model(CONFIG["MODEL_PATH"], compile=False)
-            log_print(f"[+] Loaded base model from {CONFIG['MODEL_PATH']}")
-            
-            # Prepare Feature Extractor and load Meta-Learner
-            FEATURE_EXTRACTOR = keras.Model(inputs=DEEP_LEARNING_MODEL.inputs, outputs=DEEP_LEARNING_MODEL.layers[-2].output)
-            rf_path = "e:/V500/models/meta_learner.pkl"
-            if os.path.exists(rf_path):
-                META_LEARNER = joblib.load(rf_path)
-                log_print(f"[+] Loaded Random Forest Meta-Learner from {rf_path}")
+            if "efficientnet" in CONFIG["MODEL_PATH"].lower() and "weights" in CONFIG["MODEL_PATH"].lower():
+                from tensorflow.keras import layers
+                base_model = keras.applications.EfficientNetB4(weights=None, include_top=False, input_shape=(224, 224, 3))
+                inputs = keras.Input(shape=(224, 224, 3))
+                
+                # FIX: app.py scales images to [0, 1], but EfficientNet was trained on [0, 255]
+                x = inputs * 255.0
+                x = keras.applications.efficientnet.preprocess_input(x)
+                
+                x = base_model(x, training=False)
+                x = layers.GlobalAveragePooling2D()(x)
+                x = layers.Dropout(0.3)(x)
+                x = layers.Dense(256, activation='relu')(x)
+                x = layers.Dropout(0.3)(x)
+                outputs = layers.Dense(1, activation='sigmoid')(x)
+                DEEP_LEARNING_MODEL = keras.Model(inputs, outputs)
+                DEEP_LEARNING_MODEL.load_weights(CONFIG["MODEL_PATH"])
+                log_print(f"[+] Rebuilt EfficientNetB4 and loaded weights from {CONFIG['MODEL_PATH']}")
+                FEATURE_EXTRACTOR = None
+                META_LEARNER = None
             else:
-                log_print(f"[!] Meta-Learner NOT FOUND at {rf_path}")
+                DEEP_LEARNING_MODEL = keras.models.load_model(CONFIG["MODEL_PATH"], compile=False)
+                log_print(f"[+] Loaded base model from {CONFIG['MODEL_PATH']}")
+                
+                # Prepare Feature Extractor and load Meta-Learner
+                FEATURE_EXTRACTOR = keras.Model(inputs=DEEP_LEARNING_MODEL.inputs, outputs=DEEP_LEARNING_MODEL.layers[-2].output)
+                rf_path = "e:/V500/models/meta_learner.pkl"
+                if os.path.exists(rf_path):
+                    META_LEARNER = joblib.load(rf_path)
+                    log_print(f"[+] Loaded Random Forest Meta-Learner from {rf_path}")
+                else:
+                    log_print(f"[!] Meta-Learner NOT FOUND at {rf_path}")
     except Exception as e:
         log_print(f"[!] Could not load model: {e}")
 
@@ -2039,18 +2060,18 @@ def analyze_retinal_scan():
         
         # ========== SUSPICIOUS VERDICTS (NEEDS REVIEW) ==========
 
-        # RULE 5a: ULTRA-HIGH RANDOM FOREST CONFIDENCE
-        # RF maxes out around 90-95%, so we lower the ultra-high threshold to 0.82
-        elif ai_confidence > 0.82 and mild_findings >= 1:
-            verdict = "POSITIVE: RP DETECTED (FINE-TUNED AI STRONG DETECTION)"
+        # RULE 5a: ULTRA-HIGH CNN CONFIDENCE
+        # For CNNs (EfficientNet/ResNet), trust if confidence is extreme, even with minimal physical votes
+        if ai_confidence > 0.85 and mild_findings >= 1:
+            verdict = "POSITIVE: RP DETECTED (DEEP LEARNING STRONG DETECTION)"
             confidence = "HIGH"
             verdict_code = "RP_POSITIVE"
             log_print(f"      Γ₧ö Rule 5a: ULTRA-HIGH AI CONFIDENCE OVERRIDE (AI={ai_confidence*100:.1f}%)")
         elif ai_confidence > 0.85 and (clinical_rp_votes >= 1 or mild_findings >= 1 or rp_score >= 20.0):
-            verdict = f"POSITIVE: {syndromic_prefix} (FINE-TUNED AI STRONG DETECTION)"
+            verdict = f"POSITIVE: {syndromic_prefix} (DEEP LEARNING STRONG DETECTION)"
             confidence = "HIGH"
             verdict_code = "RP_POSITIVE"
-            log_print(f"      Γ₧ö Rule 5a: FINE-TUNED AI DOMINANCE (AI={ai_confidence*100:.1f}%, Mild={mild_findings}, RP_Score={rp_score:.1f}%)")
+            log_print(f"      Γ₧ö Rule 5a: DEEP LEARNING DOMINANCE (AI={ai_confidence*100:.1f}%, Mild={mild_findings}, RP_Score={rp_score:.1f}%)")
 
 
         # Rule 5b-5k: Suspicious triggers (CALIBRATED - tightened to reduce FPs)
@@ -2148,8 +2169,8 @@ def analyze_retinal_scan():
 
         # ========== BORDERLINE VERDICTS (MONITOR) ==========
         # RULE 6: AI HALLUCINATION OVERRIDE vs. EARLY-STAGE PRE-CLINICAL RP
-        # RF probabilities are shifted up (healthy often 40-50%), so we raise the base threshold to 0.70
-        elif ai_confidence >= 0.70 or (ai_confidence > 0.30 and (patient_data.get('risk_score', 0) if patient_data else 0) >= 70):
+        # For polarized CNNs, base threshold is 0.50
+        elif ai_confidence >= 0.50 or (ai_confidence > 0.10 and (patient_data.get('risk_score', 0) if patient_data else 0) >= 70):
             log_print(f"DEBUG EVAL: Rule 6 triggered! ai_conf={ai_confidence}, risk_score={patient_data.get('risk_score', 0) if patient_data else 0}, clinical_rp_votes={clinical_rp_votes}")
             risk_score = patient_data.get('risk_score', 0) if patient_data else 0
             if risk_score >= 70:
@@ -2175,23 +2196,23 @@ def analyze_retinal_scan():
                     log_print(f"      ╬ô├Ñ├å Rule 6d: AI HALLUCINATION ON ANGIO (AI={ai_confidence*100:.1f}%, 0 structural findings. AI Overridden.)")
             else:
                 # BALANCED FIX: Smart AI interpretation using Multi-Disease Differential (rp_score)
-                if ai_confidence >= 0.80:
+                if ai_confidence >= 0.75:
                     if rp_score >= 15.0:
-                        verdict = "POSITIVE: EARLY-STAGE RP DETECTED (FINE-TUNED AI + DIFFERENTIAL)"
+                        verdict = "POSITIVE: EARLY-STAGE RP DETECTED (DEEP LEARNING AI + DIFFERENTIAL)"
                         confidence = "MODERATE"
                         verdict_code = "RP_POSITIVE"
-                        log_print(f"      ΓåÆ Rule 6a: FINE-TUNED AI EARLY DETECTION (AI={ai_confidence*100:.1f}%, RP_Score={rp_score:.1f}%)")
+                        log_print(f"      ΓåÆ Rule 6a: DEEP LEARNING AI EARLY DETECTION (AI={ai_confidence*100:.1f}%, RP_Score={rp_score:.1f}%)")
                     else:
                         verdict = "SUSPICIOUS: VERY HIGH AI CONFIDENCE - RECOMMEND SPECIALIST REVIEW"
                         confidence = "MODERATE"
                         verdict_code = "SUSPICIOUS"
                         log_print(f"      ΓåÆ Rule 6a: VERY HIGH AI (AI={ai_confidence*100:.1f}%)")
-                elif ai_confidence >= 0.70 and rp_score >= 25.0:
+                elif ai_confidence >= 0.55 and rp_score >= 25.0:
                     verdict = "BORDERLINE: AI POSITIVE WITH DIFFERENTIAL CORRELATION"
                     confidence = "LOW"
                     verdict_code = "BORDERLINE"
                     log_print(f"      ΓåÆ Rule 6e: MODERATE AI + DIFFERENTIAL (AI={ai_confidence*100:.1f}%, RP_Score={rp_score:.1f}%)")
-                elif ai_confidence >= 0.65 and non_optic_votes >= 1:
+                elif ai_confidence >= 0.50 and non_optic_votes >= 1:
                     verdict = "BORDERLINE: AI POSITIVE WITH MULTIPLE CLINICAL SIGNS"
                     confidence = "LOW"
                     verdict_code = "BORDERLINE"
