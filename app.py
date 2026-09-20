@@ -180,8 +180,12 @@ os.makedirs(MODEL_PATH, exist_ok=True)
 # ==============================================================================
 
 CONFIG = {
-    # Model path
-    "MODEL_PATH": f"{MODEL_PATH}/efficientnet_model.weights.h5",
+    # ENSEMBLE CONFIG
+    "ENSEMBLE_MODE": True,
+    "RESNET_PATH": f"{MODEL_PATH}/finetuned_model.h5",
+    "RF_PATH": f"{MODEL_PATH}/meta_learner.pkl",
+    "EFFICIENTNET_PATH": f"{MODEL_PATH}/efficientnet_model.weights.h5",
+    "MODEL_PATH": f"{MODEL_PATH}/finetuned_model.h5",
     "INPUT_SIZE": (224, 224),
 
     # EXPERT WEIGHTS - 10 CLINICAL SCANNERS (Total = 1.00)
@@ -310,50 +314,48 @@ CONFIG = {
     "SINE_PIGMENTO_BONUS": 0.18,
 }
 
-# Try to load the model
+# Try to load the models (Ensemble Mode)
 DEEP_LEARNING_MODEL = None
 FEATURE_EXTRACTOR = None
 META_LEARNER = None
+EFFICIENTNET_MODEL = None
+
 if TENSORFLOW_AVAILABLE:
     try:
         import tensorflow as tf
         from tensorflow import keras
         import joblib
-        if os.path.exists(CONFIG["MODEL_PATH"]):
-            if "efficientnet" in CONFIG["MODEL_PATH"].lower() and "weights" in CONFIG["MODEL_PATH"].lower():
-                from tensorflow.keras import layers
-                base_model = keras.applications.EfficientNetB4(weights=None, include_top=False, input_shape=(224, 224, 3))
-                inputs = keras.Input(shape=(224, 224, 3))
+        
+        # Load RESNET (Option A)
+        if os.path.exists(CONFIG.get("RESNET_PATH", "")):
+            DEEP_LEARNING_MODEL = keras.models.load_model(CONFIG["RESNET_PATH"], compile=False)
+            log_print(f"[+] Loaded ResNet CNN (Option A)")
+            
+            # Load Random Forest (Option B)
+            FEATURE_EXTRACTOR = keras.Model(inputs=DEEP_LEARNING_MODEL.inputs, outputs=DEEP_LEARNING_MODEL.layers[-2].output)
+            if os.path.exists(CONFIG.get("RF_PATH", "")):
+                META_LEARNER = joblib.load(CONFIG["RF_PATH"])
+                log_print(f"[+] Loaded Random Forest Meta-Learner (Option B)")
                 
-                # FIX: app.py scales images to [0, 1], but EfficientNet was trained on [0, 255]
-                x = inputs * 255.0
-                x = keras.applications.efficientnet.preprocess_input(x)
-                
-                x = base_model(x, training=False)
-                x = layers.GlobalAveragePooling2D()(x)
-                x = layers.Dropout(0.3)(x)
-                x = layers.Dense(256, activation='relu')(x)
-                x = layers.Dropout(0.3)(x)
-                outputs = layers.Dense(1, activation='sigmoid')(x)
-                DEEP_LEARNING_MODEL = keras.Model(inputs, outputs)
-                DEEP_LEARNING_MODEL.load_weights(CONFIG["MODEL_PATH"])
-                log_print(f"[+] Rebuilt EfficientNetB4 and loaded weights from {CONFIG['MODEL_PATH']}")
-                FEATURE_EXTRACTOR = None
-                META_LEARNER = None
-            else:
-                DEEP_LEARNING_MODEL = keras.models.load_model(CONFIG["MODEL_PATH"], compile=False)
-                log_print(f"[+] Loaded base model from {CONFIG['MODEL_PATH']}")
-                
-                # Prepare Feature Extractor and load Meta-Learner
-                FEATURE_EXTRACTOR = keras.Model(inputs=DEEP_LEARNING_MODEL.inputs, outputs=DEEP_LEARNING_MODEL.layers[-2].output)
-                rf_path = "e:/V500/models/meta_learner.pkl"
-                if os.path.exists(rf_path):
-                    META_LEARNER = joblib.load(rf_path)
-                    log_print(f"[+] Loaded Random Forest Meta-Learner from {rf_path}")
-                else:
-                    log_print(f"[!] Meta-Learner NOT FOUND at {rf_path}")
+        # Load EFFICIENTNET (Option C)
+        if os.path.exists(CONFIG.get("EFFICIENTNET_PATH", "")):
+            from tensorflow.keras import layers
+            base_model = keras.applications.EfficientNetB4(weights=None, include_top=False, input_shape=(224, 224, 3))
+            inputs = keras.Input(shape=(224, 224, 3))
+            x = inputs * 255.0
+            x = keras.applications.efficientnet.preprocess_input(x)
+            x = base_model(x, training=False)
+            x = layers.GlobalAveragePooling2D()(x)
+            x = layers.Dropout(0.3)(x)
+            x = layers.Dense(256, activation='relu')(x)
+            x = layers.Dropout(0.3)(x)
+            outputs = layers.Dense(1, activation='sigmoid')(x)
+            EFFICIENTNET_MODEL = keras.Model(inputs, outputs)
+            EFFICIENTNET_MODEL.load_weights(CONFIG["EFFICIENTNET_PATH"])
+            log_print(f"[+] Loaded EfficientNet-B4 (Option C)")
+            
     except Exception as e:
-        log_print(f"[!] Could not load model: {e}")
+        log_print(f"[!] Could not load models: {e}")
 
 # ==============================================================================
 #   FEATURE EXTRACTION - Clinical Analysis (FOV-Masked)
@@ -1055,26 +1057,28 @@ def ai_pattern_recognition_expert(img, is_angiography=False):
             for x in batch
         ])
 
-        # BUG FIX: Use model(batch, training=False) instead of model.predict() to prevent memory leaks in Flask server
+        # ENSEMBLE INFERENCE: Average the predictions of all available models
+        confidences = []
+        
+        if DEEP_LEARNING_MODEL is not None:
+            probs = np.array(DEEP_LEARNING_MODEL(batch_arr, training=False))
+            conf = float(np.mean(probs[:, 1])) if probs.shape[-1] > 1 else float(np.mean(probs))
+            confidences.append(conf)
+            
         if META_LEARNER is not None and FEATURE_EXTRACTOR is not None:
-            features_tensor = FEATURE_EXTRACTOR(batch_arr, training=False)
-            features = np.array(features_tensor)
+            features = np.array(FEATURE_EXTRACTOR(batch_arr, training=False))
             rf_probs = META_LEARNER.predict_proba(features)
-            confidence = float(np.mean(rf_probs[:, 1]))
-            # log_print(f"      [AI] Random Forest Confidence: {confidence*100:.1f}%")
+            confidences.append(float(np.mean(rf_probs[:, 1])))
+            
+        if EFFICIENTNET_MODEL is not None:
+            probs = np.array(EFFICIENTNET_MODEL(batch_arr, training=False))
+            confidences.append(float(np.mean(probs)))
+            
+        if confidences:
+            confidence = float(np.mean(confidences))
+            # log_print(f"      [AI] Ensemble Confidence: {confidence*100:.1f}% (Models: {len(confidences)})")
         else:
-            probs_tensor = DEEP_LEARNING_MODEL(batch_arr, training=False)
-            probs = np.array(probs_tensor)
-
-            # THE PROBABILITY FIX:
-            # If output is [Healthy, RP] (2 classes), grab index 1 (RP probability).
-            # If it's a single sigmoid output, grab it directly.
-            if probs.shape[-1] > 1:
-                # Multi-class: index 1 = RP probability, average across TTA
-                confidence = float(np.mean(probs[:, 1]))
-            else:
-                # Single sigmoid: output IS the RP probability
-                confidence = float(np.mean(probs))
+            confidence = 0.0
         
         # ANGIOGRAPHY ADJUSTMENT: Slight reduction (model trained on color fundus)
         # Reduce by only 5% so we don't accidentally silence a true positive.
@@ -2170,7 +2174,8 @@ def analyze_retinal_scan():
         # ========== BORDERLINE VERDICTS (MONITOR) ==========
         # RULE 6: AI HALLUCINATION OVERRIDE vs. EARLY-STAGE PRE-CLINICAL RP
         # For polarized CNNs, base threshold is 0.50
-        elif ai_confidence >= 0.50 or (ai_confidence > 0.10 and (patient_data.get('risk_score', 0) if patient_data else 0) >= 70):
+        # For the 3-model Ensemble, base hallucination threshold is raised to 0.60
+        elif ai_confidence >= 0.60 or (ai_confidence > 0.20 and (patient_data.get('risk_score', 0) if patient_data else 0) >= 70):
             log_print(f"DEBUG EVAL: Rule 6 triggered! ai_conf={ai_confidence}, risk_score={patient_data.get('risk_score', 0) if patient_data else 0}, clinical_rp_votes={clinical_rp_votes}")
             risk_score = patient_data.get('risk_score', 0) if patient_data else 0
             if risk_score >= 70:
