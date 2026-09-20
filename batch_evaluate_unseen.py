@@ -34,7 +34,7 @@ import seaborn as sns
 API_URL = "http://127.0.0.1:5001/api/analyze"
 
 # Dataset paths - CHANGE THESE if your folder names are different
-DATASET_ROOT = r"e:\V500\Dataset\test_dataset\eye\test"
+DATASET_ROOT = r"e:\V500\Dataset\Original Dataset"
 RP_FOLDER = os.path.join(DATASET_ROOT, "Retinitis Pigmentosa")
 HEALTHY_FOLDER = os.path.join(DATASET_ROOT, "Healthy")
 

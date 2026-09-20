@@ -1,4 +1,4 @@
-def print(*args, **kwargs):
+﻿def print(*args, **kwargs):
     pass
 
 """
@@ -52,20 +52,20 @@ DISEASE_PATTERNS = {
         "name": "Hypertensive Retinopathy",
         "features": {"vessel_tortuosity": 0.50, "optic_disc_edema": 0.30, "exudates": 0.20},
         "exclusions": ["bone_spicules", "drusen"],
-        "note": "Silver/copper wire appearance in vessels; papilledema in malignant hypertension — rule out if BP history unavailable",
+        "note": "Silver/copper wire appearance in vessels; papilledema in malignant hypertension ΓÇö rule out if BP history unavailable",
     },
     "choroideremia": {
         "name": "Choroideremia",
         "features": {"chorioretinal_atrophy": 0.45, "peripheral_loss": 0.30, "vessel_attenuation": 0.15, "macular_preservation": 0.10},
         "exclusions": ["bone_spicules", "microaneurysms", "drusen"],
-        "note": "X-linked — affects males; macular island preserved until late stage; key differentiator from RP",
+        "note": "X-linked ΓÇö affects males; macular island preserved until late stage; key differentiator from RP",
     },
     "usher_syndrome": {
         "name": "Usher Syndrome",
         "features": {"bone_spicules": 0.30, "vessel_attenuation": 0.25, "disc_pallor": 0.20, "peripheral_loss": 0.15, "early_onset": 0.10},
         "exclusions": ["drusen", "microaneurysms"],
         "age_filter": "pediatric_or_young_adult",
-        "note": "RP + congenital sensorineural hearing loss — always consider in patients under 30",
+        "note": "RP + congenital sensorineural hearing loss ΓÇö always consider in patients under 30",
         "exclusions": ["drusen", "microaneurysms"],
     },
 }
@@ -78,13 +78,10 @@ class MultiDiseaseClassifier:
         'retinitis_pigmentosa': {
             'name': 'Retinitis Pigmentosa',
             'key_features': {
-                'bone_spicules': 0.18,
-                'vessel_attenuation': 0.20,
-                'optic_disc_pallor': 0.12,
-                'ai_rp_probability': 0.25,
-                'vessel_tortuosity': 0.10,
-                'abnormal_texture': 0.08,
-                'peripheral_loss': 0.07
+                'bone_spicules': 0.35,      # Strongest indicator
+                'vessel_attenuation': 0.30,
+                'optic_disc_pallor': 0.25,
+                'peripheral_loss': 0.10
             },
             'exclusions': ['microaneurysms', 'drusen', 'disc_cupping']
         },
@@ -223,7 +220,7 @@ class MultiDiseaseClassifier:
         pass #print(f"\n      [F] FEATURE EXTRACTION:")
         for feature, value in features.items():
             if value > 0:
-                pass #print(f"         • {feature.replace('_', ' ').title()}: {value:.2f}")
+                pass #print(f"         ΓÇó {feature.replace('_', ' ').title()}: {value:.2f}")
         
         # Calculate confidence score for each disease
         disease_scores = {}
@@ -293,12 +290,9 @@ class MultiDiseaseClassifier:
         
         
         return {
-            "top_diagnosis": self.DISEASE_PATTERNS[sorted_diseases[0][0]]["name"] if sorted_diseases else "Unknown",
-            "top_confidence": round(sorted_diseases[0][1] * 100, 1) if sorted_diseases else 0.0,
+            "top_diagnosis": DISEASE_PATTERNS[ranked[0][0]]["name"],
+            "top_confidence": round(ranked[0][1] * 100, 1),
             "differential": differential,
-            "disease_scores": disease_scores,
-            "clinical_notes": clinical_notes,
-            "features": features
         }
     
     def _extract_features(self, expert_results: Dict, patient_age: int,
@@ -312,7 +306,7 @@ class MultiDiseaseClassifier:
         features = {}
         
         # AI Pattern Recognition probability
-        ai_pattern = expert_results.get('ai_pattern_result') or expert_results.get('ai_pattern') or expert_results.get('ai') or {}
+        ai_pattern = expert_results.get('ai_pattern_result') or expert_results.get('ai_pattern') or {}
         features['ai_rp_probability'] = ai_pattern.get('confidence', 0.0) / 100.0
         
         # RETINITIS PIGMENTOSA features
@@ -440,12 +434,12 @@ class MultiDiseaseClassifier:
             if feature_name in features:
                 score += features[feature_name] * weight
         
-        # FIX #11: Scaled exclusion penalty — stronger blocking based on feature strength
+        # FIX #11: Scaled exclusion penalty ΓÇö stronger blocking based on feature strength
         # Instead of flat 0.5 per exclusion, scale penalty with how strong the exclusion is
         exclusions = pattern.get('exclusions', [])
         for exclusion in exclusions:
             if exclusion in features and features[exclusion] > 0.3:
-                # Penalty scales with exclusion strength: 0.3→0.7 multiplier, 1.0→0.2 multiplier
+                # Penalty scales with exclusion strength: 0.3ΓåÆ0.7 multiplier, 1.0ΓåÆ0.2 multiplier
                 penalty = max(0.2, 1.0 - features[exclusion] * 0.8)
                 score *= penalty
         
@@ -492,8 +486,56 @@ class MultiDiseaseClassifier:
         
         return notes
 
+    def _extract_features(self, expert_results: Dict, age: int) -> Dict:
+        pigment = expert_results.get("pigment_result", {})
+        vessel  = expert_results.get("vessel_result", {})
+        disc    = expert_results.get("optic_disc_result", {})
+        spatial = expert_results.get("spatial_result", {})
+        texture = expert_results.get("texture_result", {})
+        bright  = expert_results.get("bright_lesion_result", {})
+        macula  = expert_results.get("macula_result", {})
+        tort    = expert_results.get("tortuosity_result", {})
+
+        vessel_density  = vessel.get("density", 0.30)
+        disc_brightness = disc.get("brightness", 160)
+
+        return {
+            "bone_spicules":       min(pigment.get("cluster_count", 0) / 30.0, 1.0),
+            "vessel_attenuation":  max(0, (0.30 - vessel_density) / 0.30),
+            "disc_pallor":         max(0, (disc_brightness - 180) / 50),
+            "peripheral_loss":     spatial.get("degradation_score", 0.0),
+            "microaneurysms":      0.0,
+            "hemorrhages":         0.0,
+            "exudates":            min(texture.get("local_variation", 0) / 6.0, 1.0),
+            "cotton_wool_spots":   0.0,
+            "drusen":              min(bright.get("fleck_count", 0) / 20.0, 1.0),
+            "macular_edema":       macula.get("cme_score", 0.0),
+            "abnormal_texture":    min(texture.get("entropy", 5.0) / 7.0, 1.0),
+            "geographic_atrophy":  0.0,
+            "disc_cupping":        0.0,
+            "rnfl_thinning":       max(0, (0.30 - vessel_density) / 0.30) * 0.5,
+            "peripapillary_atrophy": 0.0,
+            "vessel_tortuosity":   max(0, min((tort.get("tortuosity", 1.0) - 1.3) / 0.7, 1.0)),
+            "optic_disc_edema":    max(0, min((170 - disc_brightness) / 40, 1.0)),
+            "chorioretinal_atrophy": spatial.get("degradation_score", 0.0) * 0.8,
+            "macular_preservation": max(0, 1.0 - macula.get("cme_score", 0.0)),
+            "early_onset":         1.0 if age < 20 else 0.5 if age < 30 else 0.0,
+        }
+
 def classify_diseases(expert_results: Dict, patient_age: int = 40) -> Dict:
-    return MultiDiseaseClassifier().classify(expert_results, patient_age=patient_age)
+    return MultiDiseaseClassifier().classify(expert_results, patient_age)
+
+    def _apply_sine_pigmento_boost(self, scores: dict, features: dict) -> dict:
+        """
+        Boost RP score for Sine Pigmento variant:
+        Classic RP has bone spicules. Sine Pigmento has vessel attenuation
+        and disc pallor WITHOUT visible bone spicules.
+        Without this boost the classifier would rank RP low and miss this variant.
+        Trigger: vessel_attenuation > 0.4 OR ai_prob > 0.5, AND bone_spicules < 0.3
+        """
+        vessel_att = features.get("vessel_attenuation", 0.0)
+        bone_spic  = features.get("bone_spicules", 0.0)
+        ai_prob    = features.get("ai_rp_probability", 0.0)
 
 # Testing harness
 if __name__ == "__main__":

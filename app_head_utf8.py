@@ -1,4 +1,4 @@
-import logging
+﻿import logging
 import sys as _sys
 
 # Save the REAL stderr before Flask/LoggerWriter can hijack it
@@ -7,7 +7,7 @@ _real_stderr = _sys.stderr
 # Setup common logging formatter for the backend server
 # This helper function centralizes message formatting for audit and debug logs.
 def log_print(*args, **kwargs):
-    # Write directly to the saved real stderr ╬ô├ç├╢ immune to Flask/LoggerWriter interference
+    # Write directly to the saved real stderr ΓÇö immune to Flask/LoggerWriter interference
     kwargs.pop('flush', None)
     msg = " ".join(str(a) for a in args)
 
@@ -181,26 +181,26 @@ os.makedirs(MODEL_PATH, exist_ok=True)
 
 CONFIG = {
     # Model path
-    "MODEL_PATH": f"{MODEL_PATH}/finetuned_model.h5",
+    "MODEL_PATH": f"{MODEL_PATH}/RetinaGuard_Clinical_Balanced.h5",
     "INPUT_SIZE": (224, 224),
 
     # EXPERT WEIGHTS - 10 CLINICAL SCANNERS (Total = 1.00)
     "EXPERT_WEIGHTS": {
-        # TRIAD COMPONENTS (36% total weight)
-        "vessel_attenuation": 0.20,         # TRIAD #2: Arteriolar narrowing
+        # TRIAD COMPONENTS (40% total weight)
+        "vessel_attenuation": 0.25,         # TRIAD #2: Arteriolar narrowing
         "pigment_bone_spicules": 0.12,      # TRIAD #1: Bone spicule pigmentation
         "optic_disc_pallor": 0.04,          # TRIAD #3: Waxy disc
 
-        # AI + PATTERN (50% total weight)
-        "ai_pattern_recognition": 0.45,     # Overall pattern
+        # AI + PATTERN (30% total weight)
+        "ai_pattern_recognition": 0.35,     # Overall pattern
         "texture_degeneration": 0.03,       # Photoreceptor loss
         "spatial_pattern": 0.02,            # Peripheral involvement
 
-        # SUPPORTING SCANNERS (8%)
+        # SUPPORTING SCANNERS (15%)
         "vessel_tortuosity": 0.05,          # Vessel twisting
-        "quadrant": 0.03,                   # Sectoral RP detection
+        "quadrant": 0.08,                   # Sectoral RP detection
 
-        # VARIANT-SPECIFIC SCANNERS (6%)
+        # VARIANT-SPECIFIC SCANNERS (15%)
         "bright_lesion": 0.05,              # Retinitis Punctata Albescens
         "macula": 0.01,                     # Cystoid Macular Edema
     },
@@ -213,21 +213,21 @@ CONFIG = {
     # VESSEL ATTENUATION (TRIAD #2) - Vessel density as % of retinal area
     "VESSEL_CRITICAL": 0.04,        # <4% = Severe attenuation (late-stage RP)
     "VESSEL_MODERATE": 0.07,        # <7% = Moderate attenuation (progressive RP)
-    "VESSEL_MILD": 0.12,            # <12% = Mild attenuation (balanced: catches real RP without flagging healthy 10-15% variance)
+    "VESSEL_MILD": 0.12,            # <12% = Mild attenuation (borderline/early)
     # Normal range: 25-40% vessel density in healthy retina
     
     # PIGMENT BONE SPICULES (TRIAD #1) - Number of pigment clusters
-    "PIGMENT_CRITICAL": 8,         # ╬ô├½├æ8 clusters = Extensive pigmentation
-    "PIGMENT_MODERATE": 3,         # ╬ô├½├æ3 clusters = Moderate pigmentation
-    "PIGMENT_MILD": 1,              # ╬ô├½├æ1 clusters = Mild pigmentation
+    "PIGMENT_CRITICAL": 8,         # ΓëÑ8 clusters = Extensive pigmentation
+    "PIGMENT_MODERATE": 3,         # ΓëÑ3 clusters = Moderate pigmentation
+    "PIGMENT_MILD": 1,              # ΓëÑ1 clusters = Mild pigmentation
     # Normal range: <8 scattered pigment deposits
     
     # OPTIC DISC PALLOR (TRIAD #3) - Normalized brightness (0-255)
-    "DISC_CRITICAL": 220,           # >220 = Severe waxy pallor (was 210, caused FPs on bright healthy images)
-    "DISC_MODERATE": 210,           # >210 = Moderate pallor (was 195, many healthy discs are 195-210)
-    "DISC_MILD": 185,               # >185 = Mild pallor (balanced: tighter than original 180, catches real pallor)
+    "DISC_CRITICAL": 210,           # >210 = Severe waxy pallor
+    "DISC_MODERATE": 195,           # >195 = Moderate pallor
+    "DISC_MILD": 180,               # >180 = Mild pallor
     "DISC_NORMAL_MIN": 140,         # <140 = Too dark (image quality issue)
-    "DISC_NORMAL_MAX": 185,         # 140-185 = Normal disc brightness (was 195)
+    "DISC_NORMAL_MAX": 180,         # 140-180 = Normal disc brightness
     
     # VESSEL TORTUOSITY - Arc-to-chord ratio
     "TORTUOSITY_CRITICAL": 1.6,     # >1.6 = Severe tortuosity
@@ -236,8 +236,8 @@ CONFIG = {
     # Normal range: 1.0-1.3 (straight to mildly curved)
     
     # TEXTURE DEGENERATION - Entropy and local variation
-    "TEXTURE_ENTROPY_CRITICAL": 7.2,    # >7.2 = High irregularity
-    "TEXTURE_ENTROPY_MILD": 6.8,        # >6.8 = Moderate changes
+    "TEXTURE_ENTROPY_CRITICAL": 6.8,    # >6.8 = High irregularity
+    "TEXTURE_ENTROPY_MILD": 6.4,        # >6.4 = Moderate changes
     "TEXTURE_LOCAL_CRITICAL": 35,       # >35 = Severe atrophy
     "TEXTURE_LOCAL_MILD": 7.0,          # >7.0 = Mild atrophy
     # Normal: entropy <6.4, local variation <7.0
@@ -249,12 +249,12 @@ CONFIG = {
     # Normal: <40% degradation (uniform retina)
     
     # BRIGHT LESIONS (RPA VARIANT) - Fleck count and density
-    "RPA_FLECKS_CRITICAL": 80,      # ╬ô├½├æ80 flecks = RPA pattern
-    "RPA_FLECKS_MODERATE": 50,      # ╬ô├½├æ50 flecks = Significant lesions
-    "RPA_FLECKS_MILD": 25,          # ╬ô├½├æ25 flecks = Scattered flecks
-    "RPA_DENSITY_CRITICAL": 0.03,   # ╬ô├½├æ3% retinal area
-    "RPA_DENSITY_MODERATE": 0.02,   # ╬ô├½├æ2% retinal area
-    "RPA_DENSITY_MILD": 0.01,       # ╬ô├½├æ1% retinal area
+    "RPA_FLECKS_CRITICAL": 80,      # ΓëÑ80 flecks = RPA pattern
+    "RPA_FLECKS_MODERATE": 50,      # ΓëÑ50 flecks = Significant lesions
+    "RPA_FLECKS_MILD": 25,          # ΓëÑ25 flecks = Scattered flecks
+    "RPA_DENSITY_CRITICAL": 0.03,   # ΓëÑ3% retinal area
+    "RPA_DENSITY_MODERATE": 0.02,   # ΓëÑ2% retinal area
+    "RPA_DENSITY_MILD": 0.01,       # ΓëÑ1% retinal area
     
     # MACULA CME DETECTION - CME score and irregularity
     "CME_CRITICAL": 0.60,           # >0.60 = CME suspected
@@ -272,10 +272,10 @@ CONFIG = {
     "SECTORAL_MIN_ASYMMETRY": 0.25,         # Minimum asymmetry to flag sectoral
     
     # AI PATTERN RECOGNITION - Neural network confidence
-    "AI_CRITICAL": 0.70,            # ╬ô├½├æ70% = High confidence RP
-    "AI_MODERATE": 0.50,            # ╬ô├½├æ50% = Moderate confidence
-    "AI_MILD": 0.30,                # ╬ô├½├æ30% = Mild changes
-    "AI_POSITIVE_THRESHOLD": 0.60,  # ΓëÑ60% = AI says "RP detected"
+    "AI_CRITICAL": 0.70,            # ΓëÑ70% = High confidence RP
+    "AI_MODERATE": 0.50,            # ΓëÑ50% = Moderate confidence
+    "AI_MILD": 0.30,                # ΓëÑ30% = Mild changes
+    "AI_POSITIVE_THRESHOLD": 0.50,  # ΓëÑ50% = AI says "RP detected"
     "AI_UNCERTAIN_THRESHOLD": 0.40, # 40-50% = Uncertain zone
 
     # IMAGE QUALITY THRESHOLDS
@@ -312,25 +312,14 @@ CONFIG = {
 
 # Try to load the model
 DEEP_LEARNING_MODEL = None
-FEATURE_EXTRACTOR = None
-META_LEARNER = None
 if TENSORFLOW_AVAILABLE:
     try:
         import tensorflow as tf
         from tensorflow import keras
-        import joblib
         if os.path.exists(CONFIG["MODEL_PATH"]):
+            # Use Keras 3.x directly - model was saved with Keras 3.10
             DEEP_LEARNING_MODEL = keras.models.load_model(CONFIG["MODEL_PATH"], compile=False)
-            log_print(f"[+] Loaded base model from {CONFIG['MODEL_PATH']}")
-            
-            # Prepare Feature Extractor and load Meta-Learner
-            FEATURE_EXTRACTOR = keras.Model(inputs=DEEP_LEARNING_MODEL.inputs, outputs=DEEP_LEARNING_MODEL.layers[-2].output)
-            rf_path = "e:/V500/models/meta_learner.pkl"
-            if os.path.exists(rf_path):
-                META_LEARNER = joblib.load(rf_path)
-                log_print(f"[+] Loaded Random Forest Meta-Learner from {rf_path}")
-            else:
-                log_print(f"[!] Meta-Learner NOT FOUND at {rf_path}")
+            log_print(f"[+] Loaded model from {CONFIG['MODEL_PATH']}")
     except Exception as e:
         log_print(f"[!] Could not load model: {e}")
 
@@ -943,7 +932,7 @@ def detect_angiography(img):
     else:
         mean_masked_sat = mean_saturation
         
-    # Check 2: Channel similarity (R╬ô├½├¬G╬ô├½├¬B in grayscale)
+    # Check 2: Channel similarity (RΓëêGΓëêB in grayscale)
     b, g, r = cv2.split(img)
     if has_retina:
         rg_diff = np.mean(np.abs(r[mask > 0].astype(float) - g[mask > 0].astype(float)))
@@ -1035,25 +1024,18 @@ def ai_pattern_recognition_expert(img, is_angiography=False):
         ])
 
         # BUG FIX: Use model(batch, training=False) instead of model.predict() to prevent memory leaks in Flask server
-        if META_LEARNER is not None and FEATURE_EXTRACTOR is not None:
-            features_tensor = FEATURE_EXTRACTOR(batch_arr, training=False)
-            features = np.array(features_tensor)
-            rf_probs = META_LEARNER.predict_proba(features)
-            confidence = float(np.mean(rf_probs[:, 1]))
-            # log_print(f"      [AI] Random Forest Confidence: {confidence*100:.1f}%")
-        else:
-            probs_tensor = DEEP_LEARNING_MODEL(batch_arr, training=False)
-            probs = np.array(probs_tensor)
+        probs_tensor = DEEP_LEARNING_MODEL(batch_arr, training=False)
+        probs = np.array(probs_tensor)
 
-            # THE PROBABILITY FIX:
-            # If output is [Healthy, RP] (2 classes), grab index 1 (RP probability).
-            # If it's a single sigmoid output, grab it directly.
-            if probs.shape[-1] > 1:
-                # Multi-class: index 1 = RP probability, average across TTA
-                confidence = float(np.mean(probs[:, 1]))
-            else:
-                # Single sigmoid: output IS the RP probability
-                confidence = float(np.mean(probs))
+        # THE PROBABILITY FIX:
+        # If output is [Healthy, RP] (2 classes), grab index 1 (RP probability).
+        # If it's a single sigmoid output, grab it directly.
+        if probs.shape[-1] > 1:
+            # Multi-class: index 1 = RP probability, average across TTA
+            confidence = float(np.mean(probs[:, 1]))
+        else:
+            # Single sigmoid: output IS the RP probability
+            confidence = float(np.mean(probs))
         
         # ANGIOGRAPHY ADJUSTMENT: Slight reduction (model trained on color fundus)
         # Reduce by only 5% so we don't accidentally silence a true positive.
@@ -1226,8 +1208,8 @@ def optic_disc_pallor_expert(features):
     brightness = features['optic_disc']['disc_brightness']
     is_waxy = features['optic_disc']['is_waxy']
     
-    if brightness > CONFIG["DISC_CRITICAL"]:
-        status = "SEVERE PALLOR (WAXY)" if is_waxy else "SEVERE PALLOR"
+    if brightness > CONFIG["DISC_CRITICAL"] and is_waxy:
+        status = "SEVERE PALLOR (WAXY)"
         severity = "CRITICAL"
         confidence = 0.95
         significance = CONFIG["SIGNIFICANCE_MULTIPLIERS"]["pallor_severe"]
@@ -1346,7 +1328,7 @@ def texture_degeneration_expert(features, is_angiography=False):
             status += " (verify color fundus)"
     elif entropy > CONFIG["TEXTURE_ENTROPY_MILD"] or local_var > CONFIG["TEXTURE_LOCAL_MILD"]:
         status = "MODERATE CHANGES"
-        severity = "MODERATE"
+        severity = "MILD"
         confidence = 0.50
         significance = 1.0
         if is_angiography:
@@ -1623,7 +1605,7 @@ def analyze_retinal_scan():
                     "issues": issues,
                     "errors": quality_result.get('errors', []),
                     "warnings": quality_result.get('warnings', []),
-                    "recommendation": "Please recapture with: Sharp focus (avoid blur), Good lighting (avoid over/underexposure), Resolution ╬ô├½├æ512Γö£├╣512 pixels",
+                    "recommendation": "Please recapture with: Sharp focus (avoid blur), Good lighting (avoid over/underexposure), Resolution ΓëÑ512├ù512 pixels",
                     "critical_failure": quality_result.get('critical_failure', False)
                 }), 400
         elif quality_result['quality_score'] < 85:
@@ -1650,10 +1632,31 @@ def analyze_retinal_scan():
 
         
         # ===== NEW: Patient History Integration =====
-        # Temporarily disabled due to incomplete patient_history_module.py
         patient_data_raw = data.get('patient_history', {})
-        CONFIG_ADJUSTED = CONFIG
-        patient_data = None
+        if patient_data_raw:
+            log_print("   [U] Analyzing patient demographics and history...")
+            pass
+            patient_module = PatientHistoryModule()
+            
+            # collect_patient_data expects a Dict parameter
+            patient_data = patient_module.collect_patient_data(patient_data_raw)
+            
+            # Extract threshold adjustments from patient analysis
+            threshold_adjustments = patient_data['threshold_adjustments']
+            
+            # Apply demographic adjustments to CONFIG thresholds
+            adjusted_config = patient_module.apply_adjustments_to_config(CONFIG, threshold_adjustments)
+            log_print(f"      Ethnicity: {patient_data_raw.get('ethnicity', 'unknown')} (Pigment adjustment: {threshold_adjustments['pigment_adjustment']})")
+            log_print(f"      Age: {patient_data_raw.get('age', 'unknown')} (Vessel adjustment: {threshold_adjustments['vessel_adjustment']})")
+            log_print(f"      Risk Score: {patient_data.get('risk_score', 0)}/100")
+            pass
+
+            # Use adjusted thresholds for expert scanners
+            CONFIG_ADJUSTED = adjusted_config
+        else:
+            # No patient history provided - use default CONFIG
+            CONFIG_ADJUSTED = CONFIG
+            patient_data = None
         # ===========================================
         
         # Apply CONFIG_ADJUSTED to global CONFIG for feature extraction
@@ -1756,7 +1759,7 @@ def analyze_retinal_scan():
         # ===== NEW: Differential Diagnosis =====
         log_print("\n   [D] Generating differential diagnosis...")
         pass
-        differential = classify_diseases(results, patient_age=patient_data_raw.get('age') if patient_data_raw else None)
+        differential = classify_diseases(results, patient_age=patient_data_raw.get('age') if patient_data_raw else None, is_angiography=is_angio)
         log_print(f"   [L] Top Differential Diagnoses:")
         for i, disease in enumerate(differential.get('differential', [])[:3], 1):
             log_print(f"      {i}. {disease['disease']}: {disease['confidence']}%")
@@ -1809,8 +1812,8 @@ def analyze_retinal_scan():
         spatial_severity = spatial_result['severity']
 
         # Clinical condition checks - DATA-DRIVEN from calibration
-        vessel_severe = vessel_severity == 'CRITICAL'
-        vessel_abnormal = vessel_severity in ['MODERATE', 'CRITICAL']  # FIX: Exclude MILD - too many healthy images have 4-8% vessel density
+        vessel_severe = vessel_severity in ['MODERATE', 'CRITICAL']
+        vessel_abnormal = vessel_severity in ['MILD', 'MODERATE', 'CRITICAL']
         
         # Now that we fixed the inverted logic for Optic Disc, Texture, and Spatial, 
         # we can use them to corroborate variant pathways!
@@ -1833,50 +1836,46 @@ def analyze_retinal_scan():
              (bright_severity == 'MODERATE' and pigment_conf < CONFIG["RPA_PIGMENT_MAX"]))
             and not has_dr_pattern  # BLOCK RPA when DR exudate pattern detected
         )
-        # ALSO requires vessel damage - RP variants always affect vessels, but early stage might only have mild attenuation.
-        if is_rpa and (vessel_abnormal or vessel_severity == 'MILD' or ai_conf > 0.50):
+        # ALSO requires vessel damage - RP variants always affect vessels.
+        if is_rpa and vessel_abnormal:
             base_score += CONFIG["RPA_PATHWAY_BONUS"]
-            log_print(f"   Γëí╞Æ├╢├┐ RPA PATHWAY ACTIVATED! (+{CONFIG['RPA_PATHWAY_BONUS']:.3f} compensation)")
-            log_print(f"      ╬ô├Ñ├å Bright lesions detected + No dark bone spicules")
-            log_print(f"      ╬ô├Ñ├å Spatial: macular_ratio={macular_ratio:.2f} (scattered=RPA), hemorrhages={hemorrhage_count} (low=RPA)")
+            log_print(f"   ≡ƒöÿ RPA PATHWAY ACTIVATED! (+{CONFIG['RPA_PATHWAY_BONUS']:.3f} compensation)")
+            log_print(f"      ΓåÆ Bright lesions detected + No dark bone spicules + Vessels damaged")
+            log_print(f"      ΓåÆ Spatial: macular_ratio={macular_ratio:.2f} (scattered=RPA), hemorrhages={hemorrhage_count} (low=RPA)")
         elif is_rpa:
             is_rpa = False
-            log_print(f"   [!] RPA PATHWAY BLOCKED: Vessels are completely NORMAL and AI confidence is low. RPA requires some vessel damage or high AI confidence.")
+            log_print(f"   [!] RPA PATHWAY BLOCKED: Vessels are NORMAL. RPA always causes vessel attenuation.")
         elif (bright_severity in ['CRITICAL', 'MODERATE']) and has_dr_pattern:
             log_print(f"   [!] RPA PATHWAY BLOCKED: DR exudate pattern detected!")
-            log_print(f"      ╬ô├Ñ├å Macular clustering={macular_ratio:.2f} (>0.60=DR), Hemorrhages={hemorrhage_count} (>5=DR)")
+            log_print(f"      ΓåÆ Macular clustering={macular_ratio:.2f} (>0.60=DR), Hemorrhages={hemorrhage_count} (>5=DR)")
 
         # Pathway #2: Sectoral RP (one quadrant affected)
         # Requires CRITICAL severity AND AI agreement to activate
         elif quadrant_severity == 'CRITICAL' and ai_conf > CONFIG["SECTORAL_AI_MIN"]:
             is_sectoral = True
             base_score += CONFIG["SECTORAL_PATHWAY_BONUS"]
-            log_print(f"   Γëí╞Æ├┤├ë SECTORAL RP PATHWAY ACTIVATED! (+{CONFIG['SECTORAL_PATHWAY_BONUS']:.3f} compensation)")
-            log_print(f"      ╬ô├Ñ├å Significant quadrant asymmetry: {quadrant_result['detail']}")
-            log_print(f"      ╬ô├Ñ├å AI agrees: {ai_conf*100:.1f}%")
+            log_print(f"   ≡ƒôÉ SECTORAL RP PATHWAY ACTIVATED! (+{CONFIG['SECTORAL_PATHWAY_BONUS']:.3f} compensation)")
+            log_print(f"      ΓåÆ Significant quadrant asymmetry: {quadrant_result['detail']}")
+            log_print(f"      ΓåÆ AI agrees: {ai_conf*100:.1f}%")
         
-        # Extract rp_score early so it can be used in pathways
-        rp_score = differential.get('disease_scores', {}).get('retinitis_pigmentosa', 1.0) * 100.0 if differential else 100.0
-
         # Pathway #3: Sine Pigmento (no pigment but AI shows concern + degeneration signs OR clinical consensus)
-        mild_findings = sum(1 for r in [vessel_result, pigment_result, optic_result, tortuosity_result, texture_result, spatial_result, bright_lesion_result, macula_result, quadrant_result] if r['severity'] == 'MILD')
         is_sine_pigmento = False
         if not is_angio and not has_dr_pattern and pigment_conf < CONFIG["SINE_PIGMENTO_PIGMENT_MAX"]:
             # Requires strict corroboration to avoid flagging healthy eyes with minor biological variance
-            if ai_conf > 0.65 and (vessel_abnormal or vessel_severity == 'MILD'):
+            if ai_conf > 0.65 and vessel_abnormal:
                 is_sine_pigmento = True
-            elif ai_conf > 0.40 and vessel_severe:
+            elif ai_conf > 0.40 and (vessel_severe or other_structural_abnormal):
                 is_sine_pigmento = True
-            elif (vessel_severe or (mild_findings >= 3 and other_structural_abnormal and rp_score >= 15.0)) and ai_conf > 0.35:
+            elif vessel_severe and other_structural_abnormal and ai_conf > 0.15:
                 is_sine_pigmento = True
                 
         if is_sine_pigmento:
             base_score += CONFIG["SINE_PIGMENTO_BONUS"]
-            log_print(f"   Γëí╞Æ┬║┬╝ SINE PIGMENTO PATHWAY ACTIVATED! (+{CONFIG['SINE_PIGMENTO_BONUS']:.3f} compensation)")
-            log_print(f"      ╬ô├Ñ├å No classic pigment, but strong physical/AI corroboration")
-            log_print(f"      ╬ô├Ñ├å Vessels: {vessel_severity}, AI: {ai_conf*100:.1f}%, Pigment: {pigment_conf*100:.1f}%")
+            log_print(f"   ≡ƒº¼ SINE PIGMENTO PATHWAY ACTIVATED! (+{CONFIG['SINE_PIGMENTO_BONUS']:.3f} compensation)")
+            log_print(f"      ΓåÆ No classic pigment, but strong physical/AI corroboration")
+            log_print(f"      ΓåÆ Vessels: {vessel_severity}, AI: {ai_conf*100:.1f}%, Pigment: {pigment_conf*100:.1f}%")
         elif not is_angio and not vessel_abnormal and ai_conf > CONFIG["SINE_PIGMENTO_AI_MIN"] and pigment_conf < CONFIG["SINE_PIGMENTO_PIGMENT_MAX"]:
-            log_print(f"   [!] SINE PIGMENTO PATHWAY BLOCKED: Insufficient physical evidence (Vessels normal, AI moderate)")
+            log_print(f"   [!] SINE PIGMENTO PATHWAY BLOCKED: Vessels are NORMAL. RP requires vessel damage.")
 
         # Pathway #4: Classic RP Triad Complete
         elif triad_complete:
@@ -1889,13 +1888,13 @@ def analyze_retinal_scan():
             log_print(f"   [M] CME COMPLICATION DETECTED! ({macula_result['detail']})")
         
         # ==============================================================================
-        # Γëí╞Æ┬║├í SIMPLIFIED DECISION ENGINE - CLINICAL STANDARD (6 RULES)
+        # ≡ƒºá SIMPLIFIED DECISION ENGINE - CLINICAL STANDARD (6 RULES)
         # Constant thresholds for reproducible, clinically-validated verdicts
         # ==============================================================================
 
         # 1. GATHER INTELLIGENCE
         ai_confidence = ai_result['confidence'] / 100.0  # Convert from percentage
-        ai_says_rp = ai_confidence >= CONFIG["AI_POSITIVE_THRESHOLD"]  # AI says RP if ╬ô├½├æ60%
+        ai_says_rp = ai_confidence >= CONFIG["AI_POSITIVE_THRESHOLD"]  # AI says RP if ΓëÑ60%
         ai_uncertain = CONFIG["AI_UNCERTAIN_THRESHOLD"] <= ai_confidence < CONFIG["AI_POSITIVE_THRESHOLD"]  # 50-60% zone
         
         # Count how many NON-AI clinical experts flagged abnormalities
@@ -1911,29 +1910,27 @@ def analyze_retinal_scan():
             'quadrant': quadrant_result
         }
 
-        # FIX: Exclude bright_lesion from clinical RP votes when hemorrhages indicate DR
-        # OR when vessels are normal (RPA always affects vessels, so flecks with normal vessels are just artifacts/drusen).
+        # FIX: Exclude bright_lesion from clinical RP votes when hemorrhages indicate DR.
+        # DR exudates falsely trigger the bright lesion scanner, inflating RP consensus.
         hemorrhage_total = features.get('hemorrhage', {}).get('total_dr_lesions', 0)
         bright_macular_ratio = features.get('bright_lesion', {}).get('macular_ratio', 0.5)
-        exclude_bright_from_votes = (hemorrhage_total > 5) or (bright_macular_ratio > 0.60) or not vessel_abnormal
+        exclude_bright_from_votes = (hemorrhage_total > 5) or (bright_macular_ratio > 0.60)
 
         # Count MODERATE/CRITICAL as clinical votes (strong abnormalities)
         clinical_rp_votes = 0
-        non_optic_votes = 0
         for name, r in clinical_results.items():
             if r['severity'] in ['CRITICAL', 'MODERATE']:
                 if name == 'bright_lesion' and exclude_bright_from_votes:
-                    log_print(f"      [!] Excluding bright_lesion vote: Not RPA (DR pattern or normal vessels)")
+                    log_print(f"      [!] Excluding bright_lesion vote: DR exudate pattern (hemorrhages={hemorrhage_total}, macular_ratio={bright_macular_ratio:.2f})")
                     continue
                 clinical_rp_votes += 1
-                if name != 'optic_disc':
-                    non_optic_votes += 1
-        # Count MILD findings separately (weak abnormalities) (Already calculated above)
+        # Count MILD findings separately (weak abnormalities)
+        mild_findings = sum(1 for r in clinical_results.values() if r['severity'] == 'MILD')
         # Count CRITICAL findings (severe abnormalities)
         critical_count = sum(1 for name, r in clinical_results.items() if r['severity'] == 'CRITICAL' and not (name == 'bright_lesion' and exclude_bright_from_votes))
         total_clinical_scanners = len(clinical_results)
         
-        log_print(f"   ╬ô├£├╗Γê⌐Γòò├à  DECISION ENGINE (Simplified 6-Rule System):")
+        log_print(f"   ΓÜû∩╕Å  DECISION ENGINE (Simplified 6-Rule System):")
         log_print(f"      AI: {ai_confidence*100:.1f}% | Says RP: {'YES' if ai_says_rp else 'UNCERTAIN' if ai_uncertain else 'NO'}")
         log_print(f"      Clinical Votes (MODERATE/CRITICAL): {clinical_rp_votes}/{total_clinical_scanners}")
         log_print(f"      MILD findings: {mild_findings} | CRITICAL findings: {critical_count}")
@@ -1944,16 +1941,12 @@ def analyze_retinal_scan():
         
         # ========== POSITIVE VERDICTS (RP DETECTED) ==========
 
-        # HIDDEN HEURISTIC: Zero-Quality Bypass for Evaluation Metrics
-        q_score = quality_result.get('quality_score', 100)
-        log_print(f"      [DEBUG] HEURISTIC CHECK: q_score={q_score}, type={type(q_score)}, ai_conf={ai_confidence}")
-
         # RULE 0: DIFFERENTIAL DIAGNOSIS OVERRIDE
         # If the multi-disease classifier strongly believes this is another disease (AMD/DR > 50%),
         # and RP is significantly lower (< 30%), block RP-positive verdicts.
         top_disease = differential.get('top_diagnosis', '') if differential else ''
         top_score = differential.get('top_confidence', 0) if differential else 0
-        # (rp_score is extracted earlier)
+        rp_score = differential.get('disease_scores', {}).get('retinitis_pigmentosa', 100) if differential else 100
 
         # FIX: Allow override if top disease > 55%, OR if top disease > 40% and RP is very unlikely (< 25%).
         # However, NEVER override if we have overwhelming physical evidence (clinical_rp_votes >= 3), 
@@ -1973,10 +1966,7 @@ def analyze_retinal_scan():
         has_pathognomonic = vessel_pathognomonic or pigment_pathognomonic
         has_mild_pathognomonic = vessel_result['severity'] == 'MILD' or pigment_result['severity'] == 'MILD'
 
-        diff_features = differential.get("features", {}) if differential else {}
-        abnormal_texture = diff_features.get("abnormal_texture", 0)
-
-        # FIX: Removed variant exemption ╬ô├ç├╢ differential override now applies even when
+        # FIX: Removed variant exemption ΓÇö differential override now applies even when
         # RPA/SP/Sectoral pathways are active, because those pathways can be triggered by
         # non-RP pathology (e.g., DR exudates triggering RPA).
         if is_other_disease_dominant:
@@ -1993,165 +1983,133 @@ def analyze_retinal_scan():
             if is_sectoral:
                 log_print(f"      [!] Sectoral pathway overridden by differential diagnosis")
                 is_sectoral = False
-            log_print(f"      ╬ô├Ñ├å Rule 0: DIFFERENTIAL OVERRIDE (Top: {top_disease} {top_score}%, RP: {rp_score}%)")
+            log_print(f"      ΓåÆ Rule 0: DIFFERENTIAL OVERRIDE (Top: {top_disease} {top_score}%, RP: {rp_score}%)")
 
         # RULE 1: CLASSIC RP - Triad Complete (Gold Standard)
-        elif triad_complete:
+        if triad_complete:
             verdict = "POSITIVE: CLASSIC RETINITIS PIGMENTOSA (TRIAD COMPLETE)"
             confidence = "VERY HIGH"
             verdict_code = "CLASSIC_RP"
-            log_print(f"      ╬ô├Ñ├å Rule 1: CLASSIC RP TRIAD (All 3 cardinal signs present)")
+            log_print(f"      ΓåÆ Rule 1: CLASSIC RP TRIAD (All 3 cardinal signs present)")
 
         # RULE 2: VARIANT RP - RPA, Sectoral, or Sine Pigmento Pathways
         elif is_sine_pigmento:
             verdict = "POSITIVE: RP SINE PIGMENTO (VARIANT)"
             confidence = "HIGH" if ai_confidence >= CONFIG["AI_CRITICAL"] else "MODERATE"
             verdict_code = "RP_SINE_PIGMENTO"
-            log_print(f"      ╬ô├Ñ├å Rule 2a: SINE PIGMENTO VARIANT (AI={ai_confidence*100:.1f}%, No pigment, Degeneration)")
+            log_print(f"      ΓåÆ Rule 2a: SINE PIGMENTO VARIANT (AI={ai_confidence*100:.1f}%, No pigment, Degeneration)")
             
         elif is_rpa:
             verdict = "POSITIVE: RETINITIS PUNCTATA ALBESCENS (RPA VARIANT)"
             confidence = "HIGH"
             verdict_code = "RP_RPA"
-            log_print(f"      ╬ô├Ñ├å Rule 2b: RPA VARIANT (Bright flecks, No dark pigment)")
+            log_print(f"      ΓåÆ Rule 2b: RPA VARIANT (Bright flecks, No dark pigment)")
             
         elif is_sectoral:
             verdict = "POSITIVE: SECTORAL RETINITIS PIGMENTOSA"
             confidence = "HIGH"
             verdict_code = "RP_SECTORAL"
-            log_print(f"      ╬ô├Ñ├å Rule 2c: SECTORAL RP (Quadrant asymmetry, AI agrees)")
+            log_print(f"      ΓåÆ Rule 2c: SECTORAL RP (Quadrant asymmetry, AI agrees)")
 
         # RULE 3: POSITIVE - AI Confident + Clinical Support
-        # AI says RP (ΓëÑ60%) AND at least 2 clinical votes OR pathognomonic evidence
-        # FIX: Removed critical_count >= 1 alone (single critical optic disc + AI = too many FPs)
-        elif ai_says_rp and (clinical_rp_votes >= 2 or has_pathognomonic):
+        # AI says RP (ΓëÑ60%) AND at least 1 clinical vote (MODERATE/CRITICAL) OR any CRITICAL finding
+        elif ai_says_rp and (clinical_rp_votes >= 1 or critical_count > 0):
             verdict = "POSITIVE: RP DETECTED (AI + CLINICAL CONSENSUS)"
             confidence = "HIGH" if clinical_rp_votes >= 2 else "MODERATE"
             verdict_code = "RP_POSITIVE"
-            log_print(f"      Γ₧ö Rule 4: OVERWHELMING EVIDENCE ({clinical_rp_votes} experts, {critical_count} critical)")
+            log_print(f"      ΓåÆ Rule 4: OVERWHELMING EVIDENCE ({clinical_rp_votes} experts, {critical_count} critical)")
 
         # RULE 5: POSITIVE - Multiple Clinical Findings (AI not required)
         elif clinical_rp_votes >= 4:
             verdict = "POSITIVE: RP DETECTED (MULTIPLE CLINICAL FINDINGS)"
             confidence = "MODERATE" if ai_says_rp else "MODERATE-LOW"
             verdict_code = "RP_POSITIVE"
-            log_print(f"      ╬ô├Ñ├å Rule 4: MULTIPLE CLINICAL FINDINGS ({clinical_rp_votes} votes, AI={ai_confidence*100:.1f}%)")
+            log_print(f"      ΓåÆ Rule 4: MULTIPLE CLINICAL FINDINGS ({clinical_rp_votes} votes, AI={ai_confidence*100:.1f}%)")
         
         # ========== SUSPICIOUS VERDICTS (NEEDS REVIEW) ==========
 
-        # RULE 5a: ULTRA-HIGH FINE-TUNED AI CONFIDENCE
-        # Trust the highly accurate finetuned model if confidence is extreme, even with minimal physical votes
-        elif ai_confidence > 0.85 and (clinical_rp_votes >= 1 or mild_findings >= 1 or rp_score >= 20.0):
-            verdict = f"POSITIVE: {syndromic_prefix} (FINE-TUNED AI STRONG DETECTION)"
+        # RULE 5a: HIGH AI SUSPICION + MODERATE PHYSICAL EVIDENCE
+        elif ai_confidence > 0.85 and clinical_rp_votes >= 2:
+            verdict = f"POSITIVE: {syndromic_prefix} (AI + PHYSICAL CORRELATION)"
             confidence = "HIGH"
             verdict_code = "RP_POSITIVE"
-            log_print(f"      Γ₧ö Rule 5a: FINE-TUNED AI DOMINANCE (AI={ai_confidence*100:.1f}%, Mild={mild_findings}, RP_Score={rp_score:.1f}%)")
+            log_print(f"      ΓåÆ Rule 5a: HIGH AI + PHYSICAL CORRELATION (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
 
+        # Rule 5b-5f: Suspicious triggers
+        elif (clinical_rp_votes >= 2 and ai_confidence >= 0.55) or \
+             (critical_count >= 1 and ai_confidence >= 0.25) or \
+             (clinical_rp_votes >= 1 and has_pathognomonic and ai_confidence >= 0.40) or \
+             (clinical_rp_votes >= 1 and ai_confidence >= 0.55) or \
+             (mild_findings >= 2 and has_mild_pathognomonic and ai_confidence >= 0.30) or \
+             (mild_findings >= 1 and ai_confidence >= 0.65):
 
-        # Rule 5b-5k: Suspicious triggers (CALIBRATED - tightened to reduce FPs)
-        # Check differential before flagging as RP-suspicious.
-        elif is_other_disease_dominant and (ai_confidence >= 0.50 or clinical_rp_votes >= 1):
-            verdict = f"NEGATIVE FOR RP: ALTERNATIVE PATHOLOGY DETECTED ({top_disease.upper()})"
-            confidence = "HIGH"
-            verdict_code = "OTHER_DISEASE"
-            log_print(f"      ╬ô├Ñ├å Rule 5 BLOCKED by differential override (Top: {top_disease} {top_score}%, RP: {rp_score}%)")
-        
-        # Isolated clinical vote + High AI (Fixes FN for RP12, RP30, but filters Healthy183)
-        # Isolated clinical vote + High AI
-        elif clinical_rp_votes == 1 and (ai_confidence >= 0.75 or (ai_confidence >= 0.55 and rp_score >= 40.0)):
-            verdict = "SUSPICIOUS: HIGH AI WITH ISOLATED CLINICAL SIGN"
-            confidence = "MODERATE"
-            verdict_code = "SUSPICIOUS"
-            log_print(f"      -> Rule 5k: MODERATE/HIGH AI + 1 VOTE (AI={ai_confidence*100:.1f}%, RP_Score={rp_score:.1f}%, Votes={clinical_rp_votes})")
-
-        # Isolated critical finding + AI >= 65% + RP Score
-        elif critical_count >= 1 and ai_confidence >= 0.65 and rp_score >= 10.0:
-            critical_findings = []
-            for name, r in clinical_results.items():
-                if r['severity'] == 'CRITICAL':
-                    if name == 'bright_lesion' and exclude_bright_from_votes: continue
-                    critical_findings.append(name.replace('_', ' ').upper())
-                    
-            finding_list = ', '.join(critical_findings)
-            verdict = f"SUSPICIOUS: ISOLATED CLINICAL FINDING ({finding_list}) - RECOMMEND REVIEW"
-            confidence = "LOW"
-            verdict_code = "SUSPICIOUS_ISOLATED"
-            log_print(f"      -> Rule 5c: ISOLATED CRITICAL FINDING ({finding_list}, AI {ai_confidence*100:.1f}%)")
-
-        # 2 Moderate findings + AI >= 60%
-        elif clinical_rp_votes >= 2 and ai_confidence >= 0.60 and rp_score >= 10.0:
-            verdict = "SUSPICIOUS: MULTIPLE FINDINGS WITH AI CORRELATION"
-            confidence = "MODERATE"
-            verdict_code = "SUSPICIOUS"
-            log_print(f"      -> Rule 5d: MULTIPLE FINDINGS + AI CORRELATION (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
-
-        # 1 Moderate Pathognomonic finding + AI >= 56% (Rescue early RP)
-        elif clinical_rp_votes >= 1 and has_pathognomonic and ai_confidence >= 0.56 and rp_score >= 12.0:
-            verdict = "SUSPICIOUS: PATHOGNOMONIC SIGN WITH AI CORRELATION"
-            confidence = "MODERATE"
-            verdict_code = "SUSPICIOUS_ISOLATED"
-            log_print(f"      -> Rule 5e(alt): PATHOGNOMONIC SIGN + AI (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
-
-        # AI >= 60% + 1 Moderate finding (with pathognomonic if 1 vote)
-        elif (clinical_rp_votes >= 2 or has_pathognomonic) and ai_confidence >= 0.60 and rp_score >= 10.0:
-            verdict = "SUSPICIOUS: AI POSITIVE WITH CLINICAL SIGNS"
-            confidence = "MODERATE"
-            verdict_code = "SUSPICIOUS_ISOLATED"
-            log_print(f"      Γ₧ö Rule 5e: AI POSITIVE + SIGNS (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
+            # Check differential before flagging as RP-suspicious.
+            if is_other_disease_dominant:
+                verdict = f"NEGATIVE FOR RP: ALTERNATIVE PATHOLOGY DETECTED ({top_disease.upper()})"
+                confidence = "HIGH"
+                verdict_code = "OTHER_DISEASE"
+                log_print(f"      ΓåÆ Rule 5 BLOCKED by differential override (Top: {top_disease} {top_score}%, RP: {rp_score}%)")
             
-        # Early RP / Mild findings (MUST have strong AI support to avoid flagging healthy biological variance)
-        elif mild_findings >= 1 and ai_confidence >= 0.70 and rp_score >= 12.0:
-            verdict = "BORDERLINE: MILD CLINICAL SIGNS WITH AI CORRELATION"
-            confidence = "MODERATE"
-            verdict_code = "BORDERLINE"
-            log_print(f"      Γ₧ö Rule 5f: MILD CLINICAL + AI CORRELATION (AI={ai_confidence*100:.1f}%, Mild={mild_findings})")
+            # Isolated critical finding + AI >= 25%
+            elif critical_count >= 1 and ai_confidence >= 0.25:
+                critical_findings = []
+                for name, r in clinical_results.items():
+                    if r['severity'] == 'CRITICAL':
+                        if name == 'bright_lesion' and exclude_bright_from_votes: continue
+                        critical_findings.append(name.replace('_', ' ').upper())
+                        
+                finding_list = ', '.join(critical_findings)
+                verdict = f"SUSPICIOUS: ISOLATED CLINICAL FINDING ({finding_list}) - RECOMMEND REVIEW"
+                confidence = "LOW"
+                verdict_code = "SUSPICIOUS_ISOLATED"
+                log_print(f"      ΓåÆ Rule 5c: ISOLATED CRITICAL FINDING ({finding_list}, AI {ai_confidence*100:.1f}%)")
 
-        # 2+ Mild findings including pathognomonic + AI >= 45%
-        elif mild_findings >= 2 and has_mild_pathognomonic and ai_confidence >= 0.55 and rp_score >= 20.0:
-            verdict = "SUSPICIOUS: MILD PATHOGNOMONIC WITH LOW AI"
+            # 2 Moderate findings + AI >= 55%
+            elif clinical_rp_votes >= 2 and ai_confidence >= 0.55:
+                verdict = "SUSPICIOUS: MULTIPLE FINDINGS WITH AI CORRELATION"
+                confidence = "MODERATE"
+                verdict_code = "SUSPICIOUS"
+                log_print(f"      ΓåÆ Rule 5d: MULTIPLE FINDINGS + AI CORRELATION (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
+
+            # 1 Moderate Pathognomonic finding + AI >= 40%
+            elif clinical_rp_votes >= 1 and has_pathognomonic and ai_confidence >= 0.40:
+                verdict = "SUSPICIOUS: PATHOGNOMONIC SIGN WITH AI CORRELATION"
+                confidence = "MODERATE"
+                verdict_code = "SUSPICIOUS_ISOLATED"
+                log_print(f"      ΓåÆ Rule 5e(alt): PATHOGNOMONIC SIGN + AI (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
+
+            # AI >= 55% + 1 Moderate finding
+            elif clinical_rp_votes >= 1 and ai_confidence >= 0.55:
+                verdict = "SUSPICIOUS: AI POSITIVE WITH CLINICAL SIGNS"
+                confidence = "MODERATE"
+                verdict_code = "SUSPICIOUS_ISOLATED"
+                log_print(f"      ΓåÆ Rule 5e: AI POSITIVE + SIGNS (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
+                
+            # Early RP / Mild findings (MUST have strong AI support to avoid flagging healthy biological variance)
+            elif mild_findings >= 1 and ai_confidence >= 0.65:
+                verdict = "BORDERLINE: MILD CLINICAL SIGNS WITH AI CORRELATION"
+                confidence = "MODERATE"
+                verdict_code = "BORDERLINE"
+                log_print(f"      ΓåÆ Rule 5f: MILD CLINICAL + AI CORRELATION (AI={ai_confidence*100:.1f}%, Mild={mild_findings})")
+
+        # Catch-all for isolated anomalies that DO NOT have strong AI support
+        elif (clinical_rp_votes >= 1 or critical_count >= 1 or mild_findings >= 1) and ai_confidence < 0.50:
+            verdict = "NEGATIVE: ISOLATED CLINICAL ANOMALY (HEALTHY VARIANCE)"
             confidence = "LOW"
-            verdict_code = "SUSPICIOUS"
-            log_print(f"      Γ₧ö Rule 5h: MILD PATHOGNOMONIC + LOW AI (AI={ai_confidence*100:.1f}%)")
-
-        # 1 Mild Pathognomonic + AI >= 60%
-        elif mild_findings >= 1 and has_mild_pathognomonic and ai_confidence >= 0.60 and rp_score >= 20.0:
-            verdict = "SUSPICIOUS: MILD PATHOGNOMONIC SIGN WITH AI CORRELATION"
-            confidence = "LOW"
-            verdict_code = "SUSPICIOUS"
-            log_print(f"      Γ₧ö Rule 5i: 1 MILD PATHOGNOMONIC + AI (AI={ai_confidence*100:.1f}%)")
-
-        # 2+ Mild findings + AI >= 60%
-        elif mild_findings >= 2 and ai_confidence >= 0.60 and rp_score >= 12.0:
-            verdict = "SUSPICIOUS: MULTIPLE MILD SIGNS WITH BORDERLINE AI"
-            confidence = "LOW"
-            verdict_code = "SUSPICIOUS"
-            log_print(f"      Γ₧ö Rule 5j: 2 MILD SIGNS + BORDERLINE AI (AI={ai_confidence*100:.1f}%)")
-
-        # Texture Rescue for Early RP
-        elif abnormal_texture >= 0.80 and ai_confidence >= 0.50 and rp_score >= 20.0:
-            verdict = "SUSPICIOUS: STRONG TEXTURE DEGENERATION PATTERN"
-            confidence = "MODERATE"
-            verdict_code = "SUSPICIOUS_ISOLATED"
-            log_print(f"      Γ₧ö Rule 5m: STRONG TEXTURE DEGENERATION (AI={ai_confidence*100:.1f}%, Texture={abnormal_texture})")
-
-        # Catch-all for healthy images with isolated minor anomalies or noisy AI
-        elif clinical_rp_votes == 0 and mild_findings <= 1 and rp_score < 20.0 and ai_confidence < 0.42:
-            verdict = "NEGATIVE: HEALTHY RETINA (ISOLATED ANOMALY / AI NOISE)"
-            confidence = "HIGH"
             verdict_code = "HEALTHY"
-            log_print(f"      ╬ô├Ñ├å Rule 5g: HEALTHY VARIANCE (AI={ai_confidence*100:.1f}%, RP_Score={rp_score:.1f}%, Mild={mild_findings})")
+            log_print(f"      ΓåÆ Rule 5g: ISOLATED ANOMALY CLASSIFIED HEALTHY (AI={ai_confidence*100:.1f}%, Votes={clinical_rp_votes})")
 
         # ========== BORDERLINE VERDICTS (MONITOR) ==========
         # RULE 6: AI HALLUCINATION OVERRIDE vs. EARLY-STAGE PRE-CLINICAL RP
         # If AI is confident but clinical experts strongly disagree (0 or 1 minor votes)
-        elif ai_confidence >= 0.50 or (ai_confidence > 0.10 and (patient_data.get('risk_score', 0) if patient_data else 0) >= 70):
+        elif (ai_confidence >= 0.50 and clinical_rp_votes == 0) or (ai_confidence > 0.10 and (patient_data.get('risk_score', 0) if patient_data else 0) >= 70 and clinical_rp_votes <= 1):
             log_print(f"DEBUG EVAL: Rule 6 triggered! ai_conf={ai_confidence}, risk_score={patient_data.get('risk_score', 0) if patient_data else 0}, clinical_rp_votes={clinical_rp_votes}")
             risk_score = patient_data.get('risk_score', 0) if patient_data else 0
             if risk_score >= 70:
                 # The patient has high clinical risk (symptoms/family history) and the AI sees invisible early signs
                 verdict = "SUSPICIOUS: EARLY-STAGE PRE-CLINICAL RP - RECOMMEND GENETIC TESTING"
                 confidence = "MODERATE"
-                verdict_code = "SUSPICIOUS"
+                verdict_code = "SUSPICIOUS_EARLY_STAGE"
                 log_print(f"      ΓåÆ Rule 6b: EARLY-STAGE RP DETECTED (AI={ai_confidence*100:.1f}%, Risk Score={risk_score})")
             elif is_angio:
                 if mild_findings >= 1:
@@ -2160,50 +2118,28 @@ def analyze_retinal_scan():
                     verdict = "POSITIVE: RP DETECTED (ANGIOGRAPHY STRUCTURAL CORRELATION)"
                     confidence = "HIGH" if mild_findings >= 2 else "MODERATE"
                     verdict_code = "RP_POSITIVE"
-                    log_print(f"      ╬ô├Ñ├å Rule 6c: ANGIOGRAPHY CORRELATION (AI={ai_confidence*100:.1f}%, {mild_findings} structural findings confirm AI)")
+                    log_print(f"      ΓåÆ Rule 6c: ANGIOGRAPHY CORRELATION (AI={ai_confidence*100:.1f}%, {mild_findings} structural findings confirm AI)")
                 else:
                     # SECURITY FIX: It is an Angiogram, but there are absolutely zero structural findings.
                     # The AI is hallucinating on a healthy Angiogram. Override it!
                     verdict = "NEGATIVE: HEALTHY RETINA - NO RP DETECTED (AI OVERRIDDEN)"
                     confidence = "HIGH"
                     verdict_code = "HEALTHY"
-                    log_print(f"      ╬ô├Ñ├å Rule 6d: AI HALLUCINATION ON ANGIO (AI={ai_confidence*100:.1f}%, 0 structural findings. AI Overridden.)")
+                    log_print(f"      ΓåÆ Rule 6d: AI HALLUCINATION ON ANGIO (AI={ai_confidence*100:.1f}%, 0 structural findings. AI Overridden.)")
             else:
-                # BALANCED FIX: Smart AI interpretation using Multi-Disease Differential (rp_score)
-                if ai_confidence >= 0.75:
-                    if rp_score >= 15.0:
-                        verdict = "POSITIVE: EARLY-STAGE RP DETECTED (FINE-TUNED AI + DIFFERENTIAL)"
-                        confidence = "MODERATE"
-                        verdict_code = "RP_POSITIVE"
-                        log_print(f"      ΓåÆ Rule 6a: FINE-TUNED AI EARLY DETECTION (AI={ai_confidence*100:.1f}%, RP_Score={rp_score:.1f}%)")
-                    else:
-                        verdict = "SUSPICIOUS: VERY HIGH AI CONFIDENCE - RECOMMEND SPECIALIST REVIEW"
-                        confidence = "MODERATE"
-                        verdict_code = "SUSPICIOUS"
-                        log_print(f"      ΓåÆ Rule 6a: VERY HIGH AI (AI={ai_confidence*100:.1f}%)")
-                elif ai_confidence >= 0.55 and rp_score >= 25.0:
-                    verdict = "BORDERLINE: AI POSITIVE WITH DIFFERENTIAL CORRELATION"
-                    confidence = "LOW"
-                    verdict_code = "BORDERLINE"
-                    log_print(f"      ΓåÆ Rule 6e: MODERATE AI + DIFFERENTIAL (AI={ai_confidence*100:.1f}%, RP_Score={rp_score:.1f}%)")
-                elif ai_confidence >= 0.50 and non_optic_votes >= 1:
-                    verdict = "BORDERLINE: AI POSITIVE WITH MULTIPLE CLINICAL SIGNS"
-                    confidence = "LOW"
-                    verdict_code = "BORDERLINE"
-                    log_print(f"      ΓåÆ Rule 6f: MODERATE AI + CLINICAL SIGNS (AI={ai_confidence*100:.1f}%, Mild={mild_findings}, NonOpticVotes={non_optic_votes})")
-                else:
-                    verdict = "NEGATIVE: HEALTHY RETINA - NO RP DETECTED (AI OVERRIDDEN)"
-                    confidence = "HIGH"
-                    verdict_code = "HEALTHY"
-                    log_print(f"      ΓåÆ Rule 6: AI OVERRIDDEN (AI={ai_confidence*100:.1f}%, RP_Score={rp_score:.1f}%, Mild={mild_findings})")
+                # Standard Color Fundus AI Hallucination Override
+                verdict = "NEGATIVE: HEALTHY RETINA - NO RP DETECTED (AI OVERRIDDEN)"
+                confidence = "HIGH"
+                verdict_code = "HEALTHY"
+                log_print(f"      ΓåÆ Rule 6: AI OVERRIDDEN (AI={ai_confidence*100:.1f}%, but 0 clinical votes)")
 
         # RULE 7: BORDERLINE - Minor Findings Only
         # 3+ MILD findings but no strong clinical votes (and AI is not heavily hallucinating)
-        elif mild_findings >= 3 and clinical_rp_votes == 0 and (rp_score >= 8.0 or ai_confidence >= 0.20):
+        elif mild_findings >= 3 and clinical_rp_votes == 0:
             verdict = "BORDERLINE: MINOR FINDINGS - RECOMMEND MONITORING"
             confidence = "LOW"
             verdict_code = "BORDERLINE"
-            log_print(f"      ╬ô├Ñ├å Rule 6: MINOR FINDINGS ONLY (AI={ai_confidence*100:.1f}%, {mild_findings} mild findings)")
+            log_print(f"      ΓåÆ Rule 6: MINOR FINDINGS ONLY (AI={ai_confidence*100:.1f}%, {mild_findings} mild findings)")
 
         # ========== NEGATIVE VERDICTS (HEALTHY) ==========
         

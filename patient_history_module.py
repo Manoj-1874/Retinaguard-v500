@@ -169,7 +169,7 @@ class PatientHistoryModule:
         # Extract patient data
         age = data.get('age', 40)
         gender = data.get('gender', 'unknown').lower()
-        ethnicity = data.get('ethnicity', 'unknown').lower()
+        ethnicity = data.get('ethnicity', 'unknown').lower().replace(" ", "_")
         symptoms_raw = data.get('symptoms', {})
         symptoms = {}
         for k, v in symptoms_raw.items():
@@ -191,14 +191,7 @@ class PatientHistoryModule:
             else:
                 symptoms[k] = 0
 
-    def process(self, patient_data: Dict) -> Dict:
-        age       = patient_data.get("age", 40)
-        ethnicity = patient_data.get("ethnicity", "caucasian").lower().replace(" ", "_")
-        symptoms  = patient_data.get("symptoms", {})
-        family_hx = patient_data.get("family_history", False)
-
-        pigment_adjustment = ETHNICITY_ADJUSTMENTS.get(ethnicity, 0)
-
+        family_history = data.get("family_history", False)
         visual_field_data = data.get('visual_field_data', None)
         
         clinical_flags = []
